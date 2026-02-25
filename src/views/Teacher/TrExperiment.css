@@ -1,0 +1,117 @@
+/* --- TrExpeiment 專屬作用域樣式 --- */
+
+.TrExpeiment {
+  --navy: #3a5a8a;
+  --soft-navy: rgba(58, 90, 138, 0.1);
+  --success-green: #16a34a;
+  --soft-success: #f0fdf4;
+}
+
+.TrExpeiment .text-navy {
+  color: var(--navy);
+}
+
+/* --- 卡片與容器 --- */
+.TrExpeiment .card {
+  border-radius: 16px !important;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.TrExpeiment .card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* --- 圖示方塊 (Icon Box) --- */
+.TrExpeiment .icon-box {
+  width: 48px;
+  height: 48px;
+  background-color: var(--soft-navy);
+  color: var(--navy);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.TrExpeiment .icon-box.bg-soft-success {
+  background-color: var(--soft-success);
+  color: var(--success-green);
+}
+
+/* --- 表單控制件 --- */
+.TrExpeiment textarea.form-control {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: none;
+}
+
+.TrExpeiment textarea.form-control:focus {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px var(--soft-navy);
+  border-color: var(--navy);
+}
+
+/* --- 組別列表項目 --- */
+.TrExpeiment .input-group {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.TrExpeiment .input-group:focus-within {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px var(--soft-navy);
+}
+
+.TrExpeiment .input-group-text {
+  border: none;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+/* --- 自定義開關 (Switch) --- */
+.TrExpeiment .custom-switch .form-check-input {
+  width: 2.8rem;
+  height: 1.4rem;
+  margin-top: 0.25rem;
+  cursor: pointer;
+}
+
+.TrExpeiment .custom-switch .form-check-input:checked {
+  background-color: var(--navy);
+  border-color: var(--navy);
+}
+
+.TrExpeiment .form-check-label {
+  padding-left: 0.5rem;
+  color: #334155;
+}
+
+/* --- 按鈕 --- */
+.TrExpeiment .btn-primary {
+  background-color: var(--navy);
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.TrExpeiment .btn-primary:hover {
+  background-color: #2d456b;
+  transform: translateY(-1px);
+}
+
+.TrExpeiment .btn-outline-primary {
+  color: var(--navy);
+  border-color: var(--navy);
+}
+
+.TrExpeiment .btn-outline-primary:hover {
+  background-color: var(--navy);
+  color: #fff;
+}

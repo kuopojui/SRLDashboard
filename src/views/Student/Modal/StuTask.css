@@ -1,0 +1,162 @@
+/* --- StudentTask 統一核心視覺體系 --- */
+.StudentHW,
+.StudentExam,
+.StudentDiscussion,
+.StudentTest {
+  --navy: #3a5a8a;
+  --soft-navy: rgba(58, 90, 138, 0.08);
+  --oatmeal: #fcfbf7;
+  --border-color: #eeede4;
+  background-color: white;
+}
+
+/* 側邊欄進度條 */
+.answer-sidebar {
+  width: 280px;
+  background-color: var(--oatmeal) !important;
+  border-right: 1px solid var(--border-color);
+}
+
+.answer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.answer-status-box {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.answer-status-box.active {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: white;
+  box-shadow: 0 4px 10px rgba(58, 90, 138, 0.2);
+}
+
+.answer-status-box.completed:not(.active) {
+  background: #e8f5e9;
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+/* 題目作答區 */
+.question-workspace {
+  background: white;
+}
+
+.option-pill {
+  display: flex;
+  align-items: center;
+  padding: 18px 24px;
+  background: #f8fafc;
+  border: 2px solid #f1f5f9;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.option-pill:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.option-pill.selected {
+  border-color: var(--navy);
+  background: var(--soft-navy);
+}
+
+.option-marker {
+  width: 32px;
+  height: 32px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  margin-right: 15px;
+  font-size: 0.85rem;
+}
+
+.option-pill.selected .option-marker {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+
+/* 量表題 (Likert Scale) */
+.likert-circle-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.circle-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  transition: all 0.3s;
+}
+
+.selected .circle-btn {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+  transform: scale(1.15);
+}
+
+/* 討論區卡片 */
+.discussion-item {
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.discussion-item:hover {
+  transform: translateX(10px);
+  border-color: var(--navy);
+  box-shadow: 0 10px 20px rgba(58, 90, 138, 0.05);
+}
+
+/* 狀態標籤 */
+.status-tag {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-weight: 800;
+}
+.is-done {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.is-pending {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* RWD */
+@media (max-width: 768px) {
+  .answer-sidebar {
+    display: none;
+  }
+  .option-pill {
+    padding: 14px 18px;
+  }
+}

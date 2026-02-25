@@ -1,0 +1,101 @@
+/* --- TrScore 核心容器 --- */
+.TrScore {
+  --navy: #3a5a8a;
+  --soft-navy: rgba(58, 90, 138, 0.1);
+  --oatmeal: #f5f2e9;
+  min-height: 80vh;
+}
+
+/* --- 導航容器設計 --- */
+.ScoreNavContainer {
+  background: #ffffff;
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 50px;
+  border: 1px solid #e2e8f0;
+}
+
+.ScoreNavButton {
+  border: none;
+  background: transparent;
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-weight: 700;
+  color: #64748b;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+.ScoreNavButton i {
+  font-size: 1.1rem;
+}
+
+.ScoreNavButton:hover {
+  color: var(--navy);
+  background-color: #f8fafc;
+}
+
+.ScoreNavButton.active {
+  background-color: var(--navy);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(58, 90, 138, 0.25);
+}
+
+/* --- 內容區域過度動畫 --- */
+.ScoreContentWrapper {
+  min-height: 400px;
+}
+
+.score-fade-enter-active,
+.score-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.score-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.score-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* --- RWD 響應式優化 --- */
+
+/* 平板與手機版：導航按鈕變窄或改為水平捲動 */
+@media (max-width: 768px) {
+  .ScoreNavContainer {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .ScoreNavButton {
+    padding: 10px 15px;
+    font-size: 0.85rem;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .ScoreNavButton span {
+    display: none; /* 小螢幕只顯示 Icon 節省空間，或者縮減文字 */
+  }
+}
+
+/* 超小螢幕：顯示文字但縮小間距 */
+@media (max-width: 480px) {
+  .ScoreNavButton span {
+    display: inline;
+    font-size: 0.75rem;
+  }
+  .ScoreNavButton i {
+    font-size: 0.9rem;
+    margin-right: 4px !important;
+  }
+  .ScoreNavButton {
+    padding: 8px 10px;
+  }
+}

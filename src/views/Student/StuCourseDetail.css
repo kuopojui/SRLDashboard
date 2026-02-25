@@ -1,0 +1,151 @@
+/* --- StuCourseDetail 全域視覺規範 --- */
+
+:root {
+  --navy: #3a5a8a;
+  --navy-soft: rgba(58, 90, 138, 0.1);
+  --oatmeal: #efece3;
+  --white: #ffffff;
+  --text-gray: #64748b;
+}
+
+.text-navy {
+  color: var(--navy) !important;
+}
+.bg-navy-soft {
+  background-color: var(--navy-soft) !important;
+}
+.xx-small {
+  font-size: 0.7rem;
+}
+.smaller {
+  font-size: 0.85rem;
+}
+
+/* 1. 標頭裝飾 */
+.course-hero {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.view-indicator-badge {
+  background-color: var(--navy-soft);
+  color: var(--navy);
+  padding: 0.6rem 1.2rem;
+}
+
+/* 2. 切換標籤 (Tab Switcher) */
+.NavTabs {
+  border: 1px solid #eef2f7;
+}
+
+.SwitchButton {
+  border: none;
+  background: transparent;
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-weight: 700;
+  color: var(--text-gray);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.95rem;
+}
+
+.SwitchButton.active {
+  background-color: var(--navy);
+  color: var(--white);
+  box-shadow: 0 4px 15px rgba(58, 90, 138, 0.25);
+}
+
+.SwitchButton:hover:not(.active) {
+  background-color: #f8fafc;
+  color: var(--navy);
+}
+
+/* 3. 單元卡片設計 */
+.unit-card-modern {
+  background: var(--white);
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.unit-card-modern:hover {
+  transform: translateX(12px);
+  border-color: var(--navy);
+  box-shadow: 0 12px 24px rgba(58, 90, 138, 0.08);
+}
+
+.unit-index-circle {
+  width: 48px;
+  height: 48px;
+  background: #f8fafc;
+  color: var(--navy);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  border: 2px solid #eef2f7;
+  flex-shrink: 0;
+}
+
+.unit-card-modern:hover .unit-index-circle {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+
+.icon-arrow {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.unit-card-modern:hover .icon-arrow {
+  transform: scale(1.2);
+  opacity: 1 !important;
+}
+
+/* 4. 動畫效果 */
+.view-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 5. 空狀態 */
+.empty-state-card {
+  border: 2px dashed #e2e8f0;
+}
+
+/* 手機版適配 (RWD) */
+@media (max-width: 576px) {
+  .course-hero {
+    padding: 2rem 0;
+  }
+  .NavTabs {
+    width: 100%;
+    display: flex;
+  }
+  .SwitchButton {
+    flex: 1;
+    padding: 10px 15px;
+    font-size: 0.85rem;
+  }
+  .unit-card-modern {
+    padding: 1.25rem !important;
+  }
+  .unit-index-circle {
+    width: 36px;
+    height: 36px;
+    margin-right: 1rem !important;
+  }
+}

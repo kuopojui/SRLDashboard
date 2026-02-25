@@ -1,11 +1,15 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore"; // 必須手動加入
-import { getAuth } from "firebase/auth"; // 必須手動加入
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database"; // 導入 Realtime Database
 
 const firebaseConfig = {
   apiKey: "AIzaSyDBCpMlaHkweTb3bf__cB56Vabvq5bHTYI",
   authDomain: "srldashboard-1085a.firebaseapp.com",
+  databaseURL: "https://srldashboard-1085a-default-rtdb.firebaseio.com",
+  databaseURL:
+    "https://srldashboard-1085a-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "srldashboard-1085a",
   storageBucket: "srldashboard-1085a.firebasestorage.app",
   messagingSenderId: "979362328568",
@@ -18,8 +22,9 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
 // 建立實例
-const db = getFirestore(app);
-const auth = getAuth(app);
+const db = getFirestore(app); // Firestore (原本的)
+const rtdb = getDatabase(app); // Realtime Database (新加入的)
+const auth = getAuth(app); // 驗證功能
 
-// 導出，這樣 UnitDefinition.vue 才能 import db
-export { db, auth, analytics };
+// 導出 rtdb，之後在組件中就可以 import { rtdb }
+export { db, rtdb, auth, analytics };

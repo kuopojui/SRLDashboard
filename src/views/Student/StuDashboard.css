@@ -1,0 +1,126 @@
+/* --- StuDashboard 視覺體系 --- */
+
+.text-navy {
+  color: #3a5a8a !important;
+}
+
+/* 1. 概覽卡片 */
+.stats-card {
+  background: white;
+  border-radius: 24px;
+  border: 1px solid #eeede4;
+  transition: all 0.3s ease;
+}
+
+.stat-item .label {
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+/* 2. 排行榜按鈕 */
+.btn-quick-kanban {
+  background: #3a5a8a;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.btn-quick-kanban:hover {
+  background: #2d456b;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(58, 90, 138, 0.2);
+}
+
+/* 3. 圖表卡片 */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.chart-container {
+  position: relative;
+  height: 320px;
+  width: 100%;
+}
+
+/* 4. AI 診斷助理 (特製樣式) */
+.ai-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fcfbf8 100%);
+  border-left: 8px solid #3a5a8a !important;
+}
+
+.ai-analysis-box {
+  background: rgba(58, 90, 138, 0.04);
+  padding: 1.5rem;
+  border-radius: 18px;
+  line-height: 1.8;
+  font-size: 1.05rem;
+  min-height: 120px;
+}
+
+/* 5. 排行榜 Modal */
+.modal-overlay-custom {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(10px);
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.kanban-modal {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.modal-header-custom {
+  background: #3a5a8a;
+  color: white;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-scroll-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* RWD 適配 */
+@media (max-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-responsive {
+    flex-direction: column;
+    gap: 1.5rem !important;
+    width: 100%;
+  }
+  .stat-item.border-start {
+    border-left: none !important;
+    border-top: 1px solid #f1f1f1;
+    padding-left: 0 !important;
+    padding-top: 1rem;
+  }
+}

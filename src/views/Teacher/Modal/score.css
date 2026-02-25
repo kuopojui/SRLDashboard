@@ -1,0 +1,128 @@
+/* --- 教師評分中心共用規範 (score.css) --- */
+.score-view-container {
+  --navy: #3a5a8a;
+  --bg-light: #f8fafc;
+  --border-color: #f1f5f9;
+}
+
+/* 列表卡片設計 (用於 HW/Test 列表) */
+.score-list-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  padding: 1.25rem 1.5rem;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.score-list-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(58, 90, 138, 0.08);
+  border-color: var(--navy);
+}
+
+/* 規格化表格容器 */
+.ex-table-wrapper {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.ex-score-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.ex-score-table th {
+  background: var(--bg-light);
+  padding: 1.2rem 1rem;
+  font-weight: 700;
+  color: #64748b;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.ex-score-table td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* 學生資訊欄位 */
+.stu-info .name {
+  font-weight: 800;
+  color: var(--navy);
+  display: block;
+}
+.stu-info .id {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+/* 狀態標籤 */
+.status-pill {
+  padding: 5px 14px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: inline-block;
+}
+.badge-done {
+  background: #e8f5e9;
+  color: #16a34a;
+}
+.badge-pending {
+  background: #fff1f2;
+  color: #e11d48;
+}
+.badge-pre {
+  background: #eef2f7;
+  color: var(--navy);
+}
+.badge-post {
+  background: #fff8e1;
+  color: #f57c00;
+}
+
+/* 評分輸入框 */
+.quick-score-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.quick-score-box input {
+  width: 65px;
+  text-align: center;
+  border: 2px solid var(--bg-light);
+  border-radius: 10px;
+  padding: 5px;
+  font-weight: 800;
+  color: var(--navy);
+  transition: all 0.2s;
+}
+
+.quick-score-box input:focus {
+  border-color: var(--navy);
+  background: #fff;
+  outline: none;
+}
+
+/* RWD 適配 */
+@media (max-width: 768px) {
+  .ex-score-table th:nth-child(2),
+  .ex-score-table td:nth-child(2) {
+    display: none;
+  }
+  .ex-form-container {
+    padding: 1rem;
+  }
+}

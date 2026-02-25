@@ -1,0 +1,207 @@
+/* --- AuthPage 作用域開始 --- */
+
+.AuthPage {
+  background-color: #efece3;
+  min-height: 100vh;
+  font-family: "Inter", "Noto Sans TC", sans-serif;
+  color: #1a1a1a;
+}
+
+/* 核心卡片：增加輕微的邊框質感 */
+.AuthPage .login-card {
+  background: #ffffff;
+  border-radius: 28px; /* 更圓潤的高級感 */
+  border: 1px solid #f2f2f2;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.03) !important;
+}
+
+.AuthPage .AuthTitle {
+  color: #1a1a1a;
+  font-weight: 800;
+  font-size: 1.85rem;
+  letter-spacing: -0.5px;
+}
+
+.AuthPage .title-underline {
+  width: 45px;
+  height: 5px;
+  background-color: #4a70a9;
+  border-radius: 10px;
+}
+
+/* 表單控制項 */
+.AuthPage .form-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #4a5568;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.AuthPage .form-control {
+  border: 2px solid #f1f4f8; /* 增加邊框存在感但保持色淡 */
+  border-radius: 14px;
+  padding: 0.85rem 1.15rem;
+  background-color: FFF4EA;
+  font-size: 0.95rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.AuthPage .form-control:focus {
+  background-color: #ffffff;
+  border-color: #4a70a9;
+  box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.08);
+  outline: none;
+}
+
+/* 按鈕區：極致對稱設計 */
+.AuthPage .btn-login,
+.AuthPage .btn-register {
+  border-radius: 14px !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  height: 56px; /* 固定高度，強迫症絕對對齊 */
+}
+
+/* 主按鈕：深藍 */
+.AuthPage .btn-login {
+  background-color: #4a70a9 !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+
+.AuthPage .btn-login:hover {
+  background-color: #365a85 !important;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(74, 112, 169, 0.15) !important;
+}
+
+/* 次按鈕：白底藍框 */
+.AuthPage .btn-register {
+  background-color: transparent !important;
+  color: #4a70a9 !important;
+  border: 2px solid #4a70a9 !important;
+}
+
+.AuthPage .btn-register:hover {
+  background-color: rgba(74, 112, 169, 0.04) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(74, 112, 169, 0.05) !important;
+}
+
+/* 錯誤提示 */
+.AuthPage .error-msg {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 14px;
+  background-color: #fff5f5;
+  border-radius: 12px;
+  border: 1px solid #fed7d7;
+}
+
+.AuthPage .hidden {
+  display: none !important;
+}
+
+.AuthPage .extra-small {
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+/*註冊頁面*/
+
+/* 教師勾選區塊美化 */
+.AuthPage .TeacherContainer.bg-light {
+  background-color: FFF4EA !important; /* 與輸入框背景色一致 */
+  border-color: #e2e8f0 !important;
+  transition: all 0.2s ease;
+}
+
+/* 當勾選教師時，區塊亮起藍邊增加確認感 */
+.AuthPage .TeacherContainer:has(input:checked) {
+  border-color: #4a70a9 !important;
+  background-color: rgba(74, 112, 169, 0.02) !important;
+}
+
+.AuthPage .IsTeacher {
+  color: #4a5568;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 確保 form-check-input 顏色一致 */
+.AuthPage .form-check-input:checked {
+  background-color: #4a70a9;
+  border-color: #4a70a9;
+}
+
+/*警告彈窗*/
+/* 彈窗本體圓角 */
+.swal2-popup {
+  border-radius: 24px !important; /* 與登入卡片一致 */
+  padding: 2.5rem 1.5rem !important;
+}
+
+/* 標題與內文 */
+.swal2-title {
+  color: #1a1a1a !important;
+  font-weight: 800 !important;
+}
+
+.swal2-html-container {
+  color: #4a5568 !important;
+}
+
+/* 關鍵：按鈕圓角與樣式 */
+.swal2-confirm,
+.swal2-cancel,
+.swal2-deny {
+  border-radius: 14px !important; /* 👈 這裡設定為 14px 完美圓角 */
+  padding: 12px 30px !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* 增加懸浮時的上浮感，維持系統一致性 */
+.swal2-confirm:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 15px rgba(74, 112, 169, 0.2) !important;
+}
+
+/*過度動畫*/
+
+/* 定義動畫過程 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 離開時：稍微向下沉並變透明 */
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+/* 進入前：從下方 15px 的位置開始向上浮入 */
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+/* 強迫症專用：按鈕點擊時的微縮放回饋 */
+.AuthPage .btn-login:active,
+.AuthPage .btn-register:active {
+  transform: scale(0.96) !important;
+  transition: transform 0.5s ease !important;
+}
+
+/* 確保卡片在切換時不會產生位移抖動 */
+.AuthPage .login-card {
+  will-change: transform, opacity;
+}
