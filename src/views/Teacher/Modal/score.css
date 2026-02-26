@@ -126,3 +126,142 @@
     padding: 1rem;
   }
 }
+/* --- 教師實驗監控中心 (作用域: .TrTest) --- */
+.TrTest.score-view-container {
+  --navy: #3a5a8a;
+  --bg-light: #f8fafc;
+  --border-color: #f1f5f9;
+  --text-muted: #94a3b8;
+  --soft-blue: rgba(58, 90, 138, 0.15);
+}
+
+/* 1. 頂部導航過濾列 */
+.TrTest .score-filter-bar {
+  background: #ffffff !important;
+  padding: 1.25rem 1.5rem !important;
+  border-left: 6px solid var(--navy) !important;
+}
+
+/* 2. 學生卡片主體 (Desktop 一行式) */
+.TrTest .student-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid var(--border-color) !important;
+  background: #ffffff !important;
+  border-radius: 1rem !important; /* 強制圓角 */
+  min-height: 80px;
+}
+
+.TrTest .student-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 25px var(--soft-blue) !important;
+  border-color: var(--navy) !important;
+}
+
+/* 🌟 已分組標記：左側深藍側邊條 */
+.TrTest .has-group-border {
+  border-left: 6px solid var(--navy) !important;
+}
+
+/* 3. 學生資訊元件 */
+.TrTest .avatar-circle {
+  width: 48px;
+  height: 48px;
+  background: var(--navy) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.TrTest .stu-info-box .name {
+  font-weight: 800;
+  color: var(--navy) !important;
+  font-size: 1.1rem;
+}
+
+/* 4. 狀態與按鈕 */
+.TrTest .status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.TrTest .btn-navy {
+  background-color: var(--navy) !important;
+  border-color: var(--navy) !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+/* 🌟 修正：圓角膠囊下拉選單 */
+.TrTest .ex-select-sm {
+  appearance: none !important; /* 移除預設方形外觀 */
+  -webkit-appearance: none !important;
+  font-size: 0.8rem !important;
+  padding: 6px 16px !important;
+  border-radius: 50px !important; /* 膠囊狀關鍵 */
+  border: 2px solid #e2e8f0 !important;
+  background-color: #f8fafc !important;
+  color: #64748b !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  min-width: 110px;
+}
+
+/* 當選中組別後的樣式 */
+.TrTest .ex-select-sm.selected-group,
+.TrTest .ex-select-sm.has-group {
+  background-color: var(--navy) !important;
+  color: #ffffff !important;
+  border-color: var(--navy) !important;
+}
+
+/* 5. 響應式佈局 (RWD) 優化 */
+
+@media (max-width: 767.98px) {
+  /* 手機版：強制改為垂直卡片堆疊 */
+  .TrTest .student-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 1.5rem !important;
+    gap: 1.25rem !important;
+  }
+
+  /* 調整手機版內部區塊對齊 */
+  .TrTest .student-card > div {
+    width: 100% !important;
+    display: flex;
+    justify-content: space-between !important;
+    align-items: center;
+  }
+
+  /* 擴大手機版點擊區域 */
+  .TrTest .btn-sm {
+    width: 100%;
+    padding: 10px 0 !important;
+    margin-top: 5px;
+  }
+
+  .TrTest .ex-select-sm {
+    width: 100%;
+    max-width: none !important;
+  }
+
+  .TrTest .avatar-circle {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* 輔助文字 */
+.TrTest .xx-small {
+  font-size: 0.65rem !important;
+}

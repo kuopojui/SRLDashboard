@@ -1,75 +1,110 @@
-/* --- StuCourse 作用域鎖定 --- */
+/* --- StuCourse 整合視覺樣式 --- */
 
-.StuCourse {
-  background-color: #efece3; /* 燕麥米色背景 */
-  font-family: "Inter", "Noto Sans TC", sans-serif;
+/* 基礎背景與字體 */
+.StuCourse.CoursePage {
+  background-color: #efece3 !important; /* 🌟 一致的米色背景 */
 }
 
-/* --- Navbar 微調 --- */
-.StuCourse .navbar {
-  border-bottom: 1px solid rgba(74, 112, 169, 0.1);
+/* 側邊導覽欄 */
+.StuCourse .CoursePage-sidebar {
+  width: 260px;
+  background-color: #4a70a9; /* 🌟 一致的深藍色 */
+  color: white;
+  height: 100vh;
+  position: sticky;
+  top: 0;
 }
 
-.StuCourse .navbar-brand {
-  letter-spacing: -0.5px;
+.StuCourse .CoursePage-nav-item {
+  padding: 14px 24px;
+  margin: 4px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-/* --- 標題與按鈕區 --- */
-.StuCourse h2.h3 {
-  color: #2d3748;
-  letter-spacing: -0.5px;
+.StuCourse .CoursePage-nav-item.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
 }
 
-.StuCourse .btn-primary {
+/* 課程圖卡樣式 */
+.StuCourse .course-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid #f1f5f9 !important;
+  min-height: 200px;
+}
+
+.StuCourse .course-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 一致的方塊頭像 */
+.StuCourse .avatar-circle-navy {
+  width: 50px;
+  height: 50px;
+  background-color: #4a70a9;
+  color: white;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+/* 加入日期徽章 */
+.StuCourse .joined-date-badge {
+  background: #f8fafc;
+  padding: 4px 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.StuCourse .joined-date-badge small {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 800;
+}
+
+/* 按鈕與文字 */
+.StuCourse .btn-enter-course {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #4a70a9;
+}
+
+.StuCourse .btn-navy {
   background-color: #4a70a9 !important;
-  border: none !important;
-  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  color: white !important;
 }
 
-.StuCourse .btn-primary:hover {
-  transform: translateY(-2px);
-  background-color: #35507d !important;
-  box-shadow: 0 8px 15px rgba(74, 112, 169, 0.25);
+/* 手機版懸浮按鈕 */
+.StuCourse .create-course-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 60px;
+  height: 60px;
+  background-color: #4a70a9;
+  color: white;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(74, 112, 169, 0.4);
+  z-index: 1030;
 }
 
-/* --- 課程卡片設計 --- */
-.StuCourse .course-card-hover {
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  background-color: #ffffff;
-  border-radius: 20px;
-  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-.StuCourse .course-card-hover:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
-  border-color: #4a70a9;
-}
-
-.StuCourse .card-title {
-  color: #2d3748;
-  line-height: 1.4;
-}
-
-.StuCourse .border-top {
-  border-top: 1px solid #f1f4f8 !important;
-}
-
-/* --- 空狀態樣式 --- */
-.StuCourse .empty-box {
-  color: #a0aec0;
-}
-
-.StuCourse .empty-box i {
-  opacity: 0.5;
-}
-
-/* --- SweetAlert2 彈窗主題化 --- */
-.swal2-popup {
-  border-radius: 20px !important;
-  font-family: "Inter", "Noto Sans TC", sans-serif !important;
-}
-
-.swal2-confirm {
-  border-radius: 10px !important;
+/* 輔助類別 */
+.StuCourse .text-line-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }

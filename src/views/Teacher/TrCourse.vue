@@ -1,149 +1,169 @@
 <template>
-  <div class="CoursePage d-flex flex-column min-vh-100 bg-light">
-    <nav
-      class="navbar navbar-expand-md navbar-light bg-white shadow-sm sticky-top"
-    >
-      <div class="container">
-        <a class="navbar-brand fw-bold text-primary" href="#"
-          >教師課程管理系統</a
-        >
+  <div class="CoursePage d-flex min-vh-100">
+    <aside class="CoursePage-sidebar d-none d-lg-flex flex-column py-4 shadow">
+      <div class="sidebar-brand px-4 mb-5">
+        <h5 class="fw-bold text-white mb-0">
+          <i class="bi bi-shield-check me-2"></i>課程管理中心
+        </h5>
+      </div>
 
-        <div class="ms-auto d-flex align-items-center gap-3">
-          <button
-            class="btn btn-outline-secondary btn-sm"
-            @click="showProfileModal = true"
-          >
-            個人設定
-          </button>
-          <button class="btn btn-danger btn-sm px-3" @click="handleLogout">
-            登出
+      <nav class="flex-grow-1 px-2">
+        <div class="CoursePage-nav-item active">
+          <i class="bi bi-grid-fill me-3"></i>我的課程
+        </div>
+        <div class="CoursePage-nav-item" @click="showProfileModal = true">
+          <i class="bi bi-person-circle me-3"></i>帳號設定
+        </div>
+      </nav>
+
+      <div class="mt-auto px-3">
+        <button class="btn btn-logout w-100 rounded-pill" @click="handleLogout">
+          <i class="bi bi-box-arrow-left me-2"></i>登出系統
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+      <header class="mobile-header d-lg-none p-3 shadow-sm text-white">
+        <div class="d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold">課程管理中心</h6>
+          <button class="hamburger-btn" @click="toggleSidebar">
+            <span class="hamburger-line"></span>
           </button>
         </div>
-      </div>
-    </nav>
+      </header>
 
-    <main class="container my-4 flex-grow-1">
-      <div class="row justify-content-center">
-        <div class="col-12 col-lg-10">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="h4 mb-0 fw-bold text-dark">我的所有課程</h2>
-            <button
-              class="btn btn-primary shadow-sm px-4 rounded-pill"
-              @click="showModal = true"
-            >
-              <i class="bi bi-plus-lg me-1"></i> 新建課程
-            </button>
+      <section class="container-fluid px-4 pt-4 pb-2">
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4"
+        >
+          <div>
+            <h2 class="fw-bold text-dark mb-1">所有單元課程</h2>
+            <p class="text-muted small mb-0">
+              歡迎回來，您目前管理 {{ filteredCourses.length }} 門課程
+            </p>
           </div>
+          <button
+            class="btn btn-navy shadow-sm rounded-pill px-4 py-2"
+            @click="showModal = true"
+          >
+            <i class="bi bi-plus-lg me-2"></i>新建課程單元
+          </button>
+        </div>
+      </section>
 
-          <div class="row g-4">
+      <section class="course-scroll-area container-fluid px-4 pb-5">
+        <div class="row g-4">
+          <div
+            class="col-12 col-md-6 col-xl-4"
+            v-for="course in filteredCourses"
+            :key="course.id"
+          >
             <div
-              class="col-12 col-md-6 col-lg-4"
-              v-for="course in filteredCourses"
-              :key="course.id"
+              class="course-card shadow-sm border-0 bg-white p-3 rounded-4"
+              @click="goToCourse(course)"
             >
-              <div
-                class="card h-100 border-0 shadow-sm course-card-hover"
-                @click="goToCourse(course)"
-              >
-                <div class="card-body d-flex flex-column">
-                  <h5 class="card-title fw-bold text-dark mb-2">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="avatar-circle-navy">
+                  {{ course.title?.substring(0, 1) || "?" }}
+                </div>
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold text-navy mb-0 text-truncate">
                     {{ course.title }}
                   </h5>
-                  <p class="card-text text-muted small mb-3 text-truncate-2">
-                    {{ course.description || "暫無課程描述" }}
-                  </p>
-
-                  <div
-                    class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center"
-                  >
-                    <div class="small text-muted">
-                      邀請碼:
-                      <span
-                        class="fw-bold text-primary font-monospace fs-5 ms-1"
-                        >{{ course.joinCode }}</span
-                      >
-                    </div>
-                    <i
-                      v-if="course.creatorId === auth.currentUser?.uid"
-                      class="bi bi-person-check-fill text-success fs-5"
-                      title="我管理的課程"
-                    ></i>
+                  <div class="xx-small text-muted">
+                    課程 ID: {{ course.id?.substring(0, 8) }}
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div
-              v-if="filteredCourses.length === 0"
-              class="col-12 text-center py-5"
-            >
-              <div class="text-muted py-5">
-                <i class="bi bi-journal-x display-4"></i>
-                <p class="mt-3 fs-5">
-                  目前沒有任何課程，點擊「新建課程」開始吧！
-                </p>
+              <div class="text-line-clamp text-secondary small mb-3">
+                {{
+                  course.description ||
+                  "點擊進入查看數據看板、任務繳交及單元開放進度。"
+                }}
+              </div>
+
+              <div
+                class="d-flex justify-content-between align-items-center border-top pt-3"
+              >
+                <div class="invite-badge">
+                  <small>邀請碼</small>
+                  <span class="font-monospace fw-bold text-primary">{{
+                    course.joinCode
+                  }}</span>
+                </div>
+                <div
+                  v-if="course.creatorId === auth.currentUser?.uid"
+                  class="status-indicator-done"
+                >
+                  <i class="bi bi-check2-circle me-1"></i>管理中
+                </div>
               </div>
             </div>
           </div>
+
+          <div
+            v-if="filteredCourses.length === 0"
+            class="col-12 text-center py-5 mt-5"
+          >
+            <div class="opacity-50">
+              <i class="bi bi-journal-x display-1"></i>
+              <p class="mt-3 fs-5">
+                目前沒有任何課程，點擊「新建課程」開始吧！
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </main>
 
     <div
       v-if="showModal"
-      class="modal fade show d-block"
-      style="background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px)"
+      class="modal-overlay d-flex align-items-center justify-content-center fixed-top w-100 h-100"
+      style="z-index: 2000"
     >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-          <div class="modal-header border-0 pb-0 pt-4 px-4">
-            <h5 class="modal-title fw-bold">建立新課程單元</h5>
-            <button
-              type="button"
-              class="btn-close"
-              @click="showModal = false"
-            ></button>
-          </div>
-          <div class="modal-body p-4">
-            <div class="mb-4">
-              <label class="form-label small fw-bold text-secondary"
-                >課程名稱</label
-              >
-              <input
-                v-model="form.title"
-                class="form-control form-control-lg bg-light border-0"
-                placeholder="例如：基礎英語自我調節學習單元"
-              />
-            </div>
-            <div class="mb-0">
-              <label class="form-label small fw-bold text-secondary"
-                >課程描述</label
-              >
-              <textarea
-                v-model="form.description"
-                class="form-control bg-light border-0"
-                rows="3"
-                placeholder="簡短介紹此單元的學習目標..."
-              ></textarea>
-            </div>
-          </div>
-          <div class="modal-footer border-0 p-4 pt-0">
-            <button class="btn btn-light px-4" @click="showModal = false">
-              取消
-            </button>
-            <button class="btn btn-primary px-4 fw-bold" @click="createCourse">
-              確認建立
-            </button>
-          </div>
+      <div
+        class="modal-content-custom bg-white p-4 rounded-4 shadow-lg animate__animated animate__zoomIn"
+        style="width: 90%; max-width: 500px"
+      >
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold mb-0 text-navy">建立新課程單元</h5>
+          <button class="btn-close" @click="showModal = false"></button>
+        </div>
+        <div class="mb-3">
+          <label class="small fw-bold text-muted mb-2">課程名稱</label>
+          <input
+            v-model="form.title"
+            class="form-control border-0 bg-light-soft py-2"
+            placeholder="輸入單元名稱..."
+          />
+        </div>
+        <div class="mb-4">
+          <label class="small fw-bold text-muted mb-2">課程描述</label>
+          <textarea
+            v-model="form.description"
+            class="form-control border-0 bg-light-soft"
+            rows="3"
+            placeholder="簡短介紹此單元的學習目標..."
+          ></textarea>
+        </div>
+        <div class="d-flex gap-2">
+          <button
+            class="btn btn-light flex-grow-1 rounded-pill"
+            @click="showModal = false"
+          >
+            取消
+          </button>
+          <button
+            class="btn btn-navy flex-grow-1 rounded-pill fw-bold"
+            @click="createCourse"
+          >
+            確認建立
+          </button>
         </div>
       </div>
     </div>
-
-    <footer
-      class="py-4 mt-auto bg-white border-top text-center text-muted small"
-    >
-      © 2026 AI SRL Learning System
-    </footer>
   </div>
 </template>
 

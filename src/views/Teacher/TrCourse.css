@@ -1,163 +1,137 @@
-/* --- CoursePage 作用域 --- */
+/* --- CoursePage 全域整合風格 --- */
+
 .CoursePage {
-  background-color: #efece3;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  /* 修正：不要在手機版強制鎖死 max-height，讓 overflow-y 交給 main 處理 */
+  background-color: #efece3 !important; /* 🌟 圖片中的米色背景 */
   font-family: "Inter", "Noto Sans TC", sans-serif;
 }
 
-/* --- Header：圓角與陰影 --- */
-.CoursePage header.auth-header {
-  background-color: #4a70a9 !important;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-  box-shadow: 0 8px 20px rgba(74, 112, 169, 0.15) !important;
-  z-index: 1050; /* 高於一般內容 */
+/* 側邊導覽欄樣式 */
+.CoursePage .CoursePage-sidebar {
+  width: 260px;
+  background-color: #4a70a9; /* 🌟 圖片中的深藍色 */
+  color: white;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 1060;
 }
 
-.CoursePage .CourseTitle {
-  color: #efece3 !important;
-  font-weight: 800;
-  font-size: clamp(1.2rem, 3.5vw, 1.75rem);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* --- 1. 漢堡按鈕優化 --- */
-.CoursePage .hamburger-btn {
-  background-color: rgba(239, 236, 227, 0.1);
-  border: 1.5px solid rgba(239, 236, 227, 0.3);
-  padding: 8px;
+.CoursePage .CoursePage-nav-item {
+  padding: 14px 24px;
+  margin: 4px 12px;
   border-radius: 12px;
-  display: inline-flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 42px;
-  height: 40px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.CoursePage .CoursePage-nav-item.active,
+.CoursePage .CoursePage-nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+/* 課程圖卡樣式 */
+.CoursePage .course-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid #f1f5f9 !important;
+  min-height: 200px;
 }
 
-.CoursePage .hamburger-btn:hover {
-  background-color: #efece3;
-  transform: translateY(-2px);
+.CoursePage .course-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
 }
 
-.CoursePage .hamburger-line {
-  height: 2px;
-  width: 22px;
-  background-color: #efece3;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-}
-
-.CoursePage .hamburger-btn:hover .hamburger-line {
+/* 圖片風格頭像 */
+.CoursePage .avatar-circle-navy {
+  width: 50px;
+  height: 50px;
   background-color: #4a70a9;
+  color: white;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.4rem;
 }
 
-/* --- 2. 內容區域佈局 (修正滾動邏輯) --- */
-.CoursePage main {
-  flex: 1;
+/* 邀請碼徽章 */
+.CoursePage .invite-badge {
+  background: #f8fafc;
+  padding: 6px 14px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  /* 確保在不同螢幕下都有正確的可用空間 */
-  height: calc(100vh - 100px);
-  overflow: hidden;
+}
+.CoursePage .invite-badge small {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
-.CoursePage .fixed-top-section {
-  padding: 1rem 0;
-  flex-shrink: 0;
+/* 狀態指示標籤 */
+.CoursePage .status-indicator-done {
+  background-color: #e8f5e9;
+  color: #16a34a;
+  padding: 5px 14px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 800;
 }
 
-/* ✨ 滾動區域優化 */
+/* 按鈕風格統一 */
+.CoursePage .btn-navy {
+  background-color: #4a70a9 !important;
+  color: white !important;
+  border: none;
+}
+.CoursePage .btn-navy:hover {
+  background-color: #3a5a8a !important;
+}
+
+.CoursePage .btn-logout {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 10px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+.CoursePage .btn-logout:hover {
+  background-color: #efece3;
+  color: #4a70a9;
+}
+
+/* 滾動區域 */
 .CoursePage .course-scroll-area {
   flex: 1;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* iOS 絲滑滾動 */
-  padding-bottom: 100px; /* 預留給浮動按鈕空間 */
+  -webkit-overflow-scrolling: touch;
 }
 
-/* --- 3. 課程圖卡：修正斜切角與文字寬度 --- */
-.CoursePage .course-card {
-  border-radius: 24px;
-  background: #ffffff;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  height: 100%;
+/* 手機版適配 */
+.CoursePage .mobile-header {
+  background-color: #4a70a9;
 }
 
-.CoursePage .course-diagonal-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(248, 250, 252, 0.95);
-  /* 斜切角比例 */
-  clip-path: polygon(0 0, 85% 0, 55% 100%, 0% 100%);
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  transition: clip-path 0.4s ease;
-}
-
-/* 手機版修正：斜切角不要太誇張，以免擋住文字 */
-@media (max-width: 768px) {
-  .CoursePage .course-diagonal-content {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); /* 取消斜切或減輕 */
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-  .CoursePage .text-line-clamp,
-  .CoursePage .info-footer {
-    max-width: 100% !important; /* 手機版文字恢復全寬 */
+@media (max-width: 991.98px) {
+  .CoursePage .CoursePage-sidebar {
+    display: none;
   }
 }
 
+/* 背景與輸入框 */
+.CoursePage .bg-light-soft {
+  background-color: #f1f5f9;
+}
 .CoursePage .text-line-clamp {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
-  max-width: 65%; /* 桌面版避開斜切角區域 */
-  line-height: 1.5;
-  color: #4a5568;
-}
-
-.CoursePage .info-footer {
-  margin-top: auto;
-  max-width: 45%;
-}
-
-/* --- 4. 浮動按鈕與 Footer 修正 --- */
-.CoursePage .create-course-btn {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 1040;
-}
-
-/* 當頁尾出現時向上推，避免擋住資訊 */
-.CoursePage .create-course-btn.shifted-up {
-  transform: translateY(-80px);
-}
-
-/* --- 5. 彈窗 (Modal) 優化 --- */
-.CoursePage .modal-overlay {
-  backdrop-filter: blur(8px);
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.CoursePage .modal-content-custom {
-  border: none;
-  max-height: 90vh;
-  overflow-y: auto; /* 防止小螢幕時內容超出 */
-}
-
-/* 隱藏所有滾動條但保持功能 */
-.scroll-hide::-webkit-scrollbar {
-  display: none;
-}
-.scroll-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }

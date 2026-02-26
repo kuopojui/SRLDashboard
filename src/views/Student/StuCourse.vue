@@ -1,93 +1,129 @@
 <template>
-  <div class="StuCourse d-flex flex-column min-vh-100">
-    <nav
-      class="navbar navbar-expand-md navbar-light bg-white shadow-sm sticky-top"
-    >
-      <div class="container">
-        <a class="navbar-brand fw-bold text-primary" href="#"
-          >學生課程管理系統</a
-        >
-        <div class="ms-auto">
-          <button
-            class="btn btn-danger btn-sm px-3 rounded-pill"
-            @click="handleLogout"
-          >
-            登出
+  <div class="StuCourse CoursePage d-flex min-vh-100">
+    <aside class="CoursePage-sidebar d-none d-lg-flex flex-column py-4 shadow">
+      <div class="sidebar-brand px-4 mb-5">
+        <h5 class="fw-bold text-white mb-0">
+          <i class="bi bi-mortarboard me-2"></i>學生學習中心
+        </h5>
+      </div>
+
+      <nav class="flex-grow-1 px-2">
+        <div class="CoursePage-nav-item active">
+          <i class="bi bi-book-half me-3"></i>我的課程
+        </div>
+        <div class="CoursePage-nav-item">
+          <i class="bi bi-person-badge me-3"></i>個人學習歷程
+        </div>
+      </nav>
+
+      <div class="mt-auto px-3">
+        <button class="btn btn-logout w-100 rounded-pill" @click="handleLogout">
+          <i class="bi bi-box-arrow-left me-2"></i>登出系統
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+      <header class="mobile-header d-lg-none p-3 shadow-sm text-white">
+        <div class="d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold">學生學習中心</h6>
+          <button class="hamburger-btn" @click="toggleSidebar">
+            <span class="hamburger-line"></span>
           </button>
         </div>
-      </div>
-    </nav>
+      </header>
 
-    <main class="container my-5 flex-grow-1">
-      <div class="row justify-content-center">
-        <div class="col-12 col-lg-10">
-          <div class="d-flex justify-content-between align-items-center mb-5">
-            <div>
-              <h2 class="h3 mb-1 fw-bold text-dark">課程清單</h2>
-            </div>
-            <button
-              class="btn btn-primary btn-lg shadow-sm px-4 rounded-pill"
-              @click="promptJoinCode"
-            >
-              <i class="bi bi-plus-circle-fill me-2"></i>加入新課程
-            </button>
+      <section class="container-fluid px-4 pt-4 pb-2">
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4"
+        >
+          <div>
+            <h2 class="fw-bold text-dark mb-1">我的學習課程</h2>
+            <p class="text-muted small mb-0">
+              歡迎回來，今天也要繼續加油學習喔！
+            </p>
           </div>
+          <button
+            class="btn btn-navy shadow-sm rounded-pill px-4 py-2 d-none d-md-block"
+            @click="promptJoinCode"
+          >
+            <i class="bi bi-plus-circle-fill me-2"></i>加入新課程
+          </button>
+        </div>
+      </section>
 
-          <div class="row g-4">
+      <section class="course-scroll-area container-fluid px-4 pb-5">
+        <div class="row g-4">
+          <div
+            class="col-12 col-md-6 col-xl-4"
+            v-for="course in joinedCourses"
+            :key="course.id"
+          >
             <div
-              class="col-12 col-md-6 col-lg-4"
-              v-for="course in joinedCourses"
-              :key="course.id"
+              class="course-card shadow-sm border-0 bg-white p-3 rounded-4"
+              @click="goToDashboard(course.id)"
             >
-              <div
-                class="card h-100 border-0 shadow-sm course-card-hover p-2"
-                @click="goToDashboard(course.id)"
-              >
-                <div class="card-body d-flex flex-column">
-                  <h5 class="card-title fw-bold text-dark mb-3">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="avatar-circle-navy">
+                  {{ course.title?.substring(0, 1) || "?" }}
+                </div>
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold text-navy mb-0 text-truncate">
                     {{ course.title }}
                   </h5>
-                  <p class="card-text text-muted small mb-4 text-truncate-2">
-                    {{ course.description || "老師很懶，還沒寫描述..." }}
-                  </p>
-
-                  <div
-                    class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center"
-                  >
-                    <span class="text-muted xx-small">
-                      <i class="bi bi-clock-history me-1"></i> 加入於
-                      {{ formatDate(course.joinedAt) }}
-                    </span>
-                    <i class="bi bi-chevron-right text-primary"></i>
+                  <div class="xx-small text-muted">
+                    <i class="bi bi-person-fill me-1"></i>指導教師：{{
+                      course.creatorName || "系統教師"
+                    }}
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div
-              v-if="joinedCourses.length === 0"
-              class="col-12 text-center py-5"
-            >
-              <div class="empty-box py-5">
-                <i
-                  class="bi bi-journal-bookmark display-1 text-light-emphasis"
-                ></i>
-                <h4 class="mt-3 text-secondary">這裡空空如也</h4>
-                <p class="text-muted">
-                  點擊「加入新課程」並輸入老師提供的 6 位代碼
-                </p>
+              <div class="text-line-clamp text-secondary small mb-3">
+                {{
+                  course.description ||
+                  "點擊進入課程儀表板，開始你的自我調節學習旅程。"
+                }}
+              </div>
+
+              <div
+                class="d-flex justify-content-between align-items-center border-top pt-3"
+              >
+                <div class="joined-date-badge">
+                  <small>加入日期</small>
+                  <span class="fw-bold text-primary">{{
+                    formatDate(course.joinedAt)
+                  }}</span>
+                </div>
+                <div class="btn-enter-course">
+                  進入課程 <i class="bi bi-chevron-right"></i>
+                </div>
               </div>
             </div>
           </div>
+
+          <div
+            v-if="joinedCourses.length === 0"
+            class="col-12 text-center py-5 mt-5"
+          >
+            <div class="opacity-50">
+              <i class="bi bi-journal-plus display-1"></i>
+              <p class="mt-3 fs-5">尚未加入任何課程，請向老師索取 6 位代碼</p>
+              <button
+                class="btn btn-navy rounded-pill px-4"
+                @click="promptJoinCode"
+              >
+                立即加入
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </main>
 
-    <footer
-      class="py-4 mt-auto bg-white border-top text-center text-muted small"
-    >
-      © 2026 AI SRL Learning System
-    </footer>
+    <button class="create-course-btn d-md-none" @click="promptJoinCode">
+      <i class="bi bi-plus-lg fs-3"></i>
+    </button>
   </div>
 </template>
 
@@ -98,13 +134,136 @@ import { ref as dbRef, onValue, get, set } from "firebase/database";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
+import "./StuCourse.css";
 
 const router = useRouter();
 const joinedCourses = ref([]);
 
-/* --- 核心邏輯：讀取學生已加入的課程 --- */
+/* --- 1. 核心處理：兩階段驗證課程碼與分組碼 --- */
+// 🌟 必須先定義此函式，避免 promptJoinCode 呼叫時出現 ReferenceError
+const processJoin = async (inputJoinCode, inputPassCode) => {
+  const user = auth.currentUser;
+  try {
+    // 取得所有課程資料進行比對
+    const snap = await get(dbRef(rtdb, "courses"));
+    const courses = snap.val();
+
+    // A. 驗證課程邀請碼
+    const targetCourseId = Object.keys(courses || {}).find(
+      (k) => courses[k].joinCode === inputJoinCode,
+    );
+
+    if (!targetCourseId) {
+      Swal.fire("錯誤", "找不到該邀請碼對應的課程", "error");
+      return;
+    }
+
+    // B. 驗證該課程內的分組驗證碼
+    const groups = courses[targetCourseId].experiment?.groups;
+    if (!groups) {
+      Swal.fire("警告", "該課程尚未設定實驗組別，請聯繫老師", "warning");
+      return;
+    }
+
+    // 尋找匹配 passCode 的組別 ID
+    const matchedGroup = Object.entries(groups).find(
+      ([id, g]) => g.passCode?.toUpperCase() === inputPassCode,
+    );
+
+    if (!matchedGroup) {
+      Swal.fire("錯誤", "分組驗證碼不正確，請重新確認", "error");
+      return;
+    }
+
+    const [groupId, groupVal] = matchedGroup;
+
+    // C. 寫入學生資料 (同步寫入組別資訊實現自動分組)
+    await set(dbRef(rtdb, `courses/${targetCourseId}/profiles/${user.uid}`), {
+      uid: user.uid,
+      displayName: user.displayName || user.email.split("@")[0],
+      joinedAt: Date.now(),
+      groupId: groupId, // 🌟 直接分配組別
+      groupCodeUsed: inputPassCode, // 紀錄使用的驗證碼
+    });
+
+    Swal.fire({
+      icon: "success",
+      title: "加入成功",
+      text: `您已成功加入並分發至：${groupVal.name}`,
+      timer: 2000,
+    });
+  } catch (e) {
+    console.error("Join Error:", e);
+    Swal.fire("錯誤", "系統連線失敗", "error");
+  }
+};
+
+/* --- 2. 彈窗顯示：整合雙代碼輸入介面 --- */
+const promptJoinCode = async () => {
+  const { value: formValues } = await Swal.fire({
+    title: "加入新課程",
+    /* --- 修改 Swal.fire 中的 html 部分 --- */
+    html: `
+  <div class="swal-form-container px-2">
+    <div class="mb-4 text-start">
+      <div class="d-flex align-items-center mb-2">
+        <div class="badge bg-primary rounded-circle me-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px;">1</div>
+        <label class="small fw-bold text-navy mb-0">課程邀請碼 (6位代碼)</label>
+      </div>
+      <input id="swal-input-joincode" 
+             class="form-control form-control-lg rounded-pill border-2 shadow-sm passcode-input" 
+             placeholder="例如: K89X2P" 
+             style="text-align: center; letter-spacing: 2px;">
+    </div>
+
+    <div class="text-start">
+      <div class="d-flex align-items-center mb-2">
+        <div class="badge bg-success rounded-circle me-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px;">2</div>
+        <label class="small fw-bold text-navy mb-0">組別通行碼 (班級代碼)</label>
+      </div>
+      <input id="swal-input-passcode" 
+             class="form-control form-control-lg rounded-pill border-2 shadow-sm passcode-input" 
+             placeholder="例如: AAA" 
+             style="text-align: center; letter-spacing: 2px;">
+    </div>
+    
+    <div class="mt-3 p-2 bg-light rounded-4 small text-muted">
+      <i class="bi bi-info-circle me-1"></i> 請向授課教師索取以上代碼
+    </div>
+  </div>
+`,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonColor: "#3a5a8a",
+    preConfirm: () => {
+      const joinCode = document
+        .getElementById("swal-input-joincode")
+        .value.trim()
+        .toUpperCase();
+      const passCode = document
+        .getElementById("swal-input-passcode")
+        .value.trim()
+        .toUpperCase();
+
+      if (!joinCode || joinCode.length < 6) {
+        Swal.showValidationMessage("請輸入有效的 6 位課程邀請碼");
+        return false;
+      }
+      if (!passCode) {
+        Swal.showValidationMessage("請輸入分組驗證碼");
+        return false;
+      }
+      return { joinCode, passCode };
+    },
+  });
+
+  if (formValues) {
+    processJoin(formValues.joinCode, formValues.passCode);
+  }
+};
+
+/* --- 3. 讀取邏輯與進入課程檢查 --- */
 const fetchMyCourses = (uid) => {
-  // 監聽所有課程，過濾出 profiles 裡有自己 UID 的課程
   onValue(dbRef(rtdb, "courses"), (snapshot) => {
     const data = snapshot.val();
     const list = [];
@@ -123,50 +282,6 @@ const fetchMyCourses = (uid) => {
   });
 };
 
-/* --- 處理加入課程 --- */
-const promptJoinCode = async () => {
-  const { value: code } = await Swal.fire({
-    title: "輸入課程代碼",
-    input: "text",
-    inputPlaceholder: "請輸入 6 位大寫邀請碼",
-    showCancelButton: true,
-    confirmButtonColor: "#4a70a9",
-    inputValidator: (value) => {
-      if (!value || value.length < 6) return "請輸入完整的邀請碼";
-    },
-  });
-
-  if (code) {
-    processJoin(code.toUpperCase());
-  }
-};
-
-const processJoin = async (inputCode) => {
-  const user = auth.currentUser;
-  try {
-    const snap = await get(dbRef(rtdb, "courses"));
-    const courses = snap.val();
-    const targetKey = Object.keys(courses || {}).find(
-      (k) => courses[k].joinCode === inputCode,
-    );
-
-    if (targetKey) {
-      // 寫入學生資料到該課程
-      await set(dbRef(rtdb, `courses/${targetKey}/profiles/${user.uid}`), {
-        uid: user.uid,
-        displayName: user.displayName || user.email.split("@")[0],
-        joinedAt: Date.now(),
-      });
-      Swal.fire("成功", "已加入該學習單元", "success");
-    } else {
-      Swal.fire("錯誤", "找不到該代碼對應的課程", "error");
-    }
-  } catch (e) {
-    Swal.fire("錯誤", "連線失敗", "error");
-  }
-};
-
-/* --- 進入課程前的實驗攔截檢查 --- */
 const goToDashboard = async (courseId) => {
   const user = auth.currentUser;
   if (!user) return;
@@ -182,7 +297,6 @@ const goToDashboard = async (courseId) => {
         .filter(([id, val]) => val.visible === true)
         .map(([id, val]) => ({ id, ...val }));
 
-      // 🌟 找出所有「尚未提交」的問卷
       const pendingTests = [];
       for (const test of visibleTests) {
         const subSnap = await get(
@@ -197,19 +311,15 @@ const goToDashboard = async (courseId) => {
       }
 
       if (pendingTests.length > 0) {
-        const currentTest = pendingTests[0]; // 取得目前要填的第一份
-
+        const currentTest = pendingTests[0];
         await Swal.fire({
           title: "實驗前測任務",
-          // 🌟 顯示進度提示 (例如：還剩 2 份問卷)
           html: `進入課程前，請先完成前測問卷。<br><b class="text-primary">${currentTest.title}</b><br><small class="text-muted">(剩餘 ${pendingTests.length} 份待完成)</small>`,
           icon: "info",
           confirmButtonText: "開始填寫",
           confirmButtonColor: "#3a5a8a",
           allowOutsideClick: false,
         });
-
-        // 🌟 跳轉時帶上特定的 testId
         router.push(`/pretest/${courseId}/${currentTest.id}`);
         return;
       }
