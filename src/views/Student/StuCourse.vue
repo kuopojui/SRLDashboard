@@ -166,7 +166,59 @@ const processJoin = async (inputCode) => {
   }
 };
 
-const goToDashboard = (courseId) => router.push(`/studashboard/${courseId}`);
+/* --- 進入課程前的實驗攔截檢查 --- */
+const goToDashboard = async (courseId) => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    const pretestSnap = await get(
+      dbRef(rtdb, `courses/${courseId}/experiment/test/pretest`),
+    );
+    const pretests = pretestSnap.val();
+
+    if (pretests) {
+      const visibleTests = Object.entries(pretests)
+        .filter(([id, val]) => val.visible === true)
+        .map(([id, val]) => ({ id, ...val }));
+
+      // 🌟 找出所有「尚未提交」的問卷
+      const pendingTests = [];
+      for (const test of visibleTests) {
+        const subSnap = await get(
+          dbRef(
+            rtdb,
+            `courses/${courseId}/experiment/submissions/${test.id}/${user.uid}`,
+          ),
+        );
+        if (!subSnap.exists()) {
+          pendingTests.push(test);
+        }
+      }
+
+      if (pendingTests.length > 0) {
+        const currentTest = pendingTests[0]; // 取得目前要填的第一份
+
+        await Swal.fire({
+          title: "實驗前測任務",
+          // 🌟 顯示進度提示 (例如：還剩 2 份問卷)
+          html: `進入課程前，請先完成前測問卷。<br><b class="text-primary">${currentTest.title}</b><br><small class="text-muted">(剩餘 ${pendingTests.length} 份待完成)</small>`,
+          icon: "info",
+          confirmButtonText: "開始填寫",
+          confirmButtonColor: "#3a5a8a",
+          allowOutsideClick: false,
+        });
+
+        // 🌟 跳轉時帶上特定的 testId
+        router.push(`/pretest/${courseId}/${currentTest.id}`);
+        return;
+      }
+    }
+    router.push(`/studashboard/${courseId}`);
+  } catch (e) {
+    router.push(`/studashboard/${courseId}`);
+  }
+};
 
 const handleLogout = async () => {
   await signOut(auth);

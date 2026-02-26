@@ -30,7 +30,7 @@
 }
 
 .ScoreNavButton i {
-  font-size: 1.1rem;
+  font-size: 1.15rem; /* 微調圖示大小使其更醒目 */
 }
 
 .ScoreNavButton:hover {
@@ -66,36 +66,41 @@
 
 /* --- RWD 響應式優化 --- */
 
-/* 平板與手機版：導航按鈕變窄或改為水平捲動 */
 @media (max-width: 768px) {
   .ScoreNavContainer {
-    width: 100%;
+    width: 95%;
     justify-content: space-around;
   }
 
   .ScoreNavButton {
-    padding: 10px 15px;
+    padding: 10px 12px;
     font-size: 0.85rem;
     flex: 1;
     justify-content: center;
   }
 
+  /* 🌟 中小螢幕：隱藏文字，使圖示居中更精緻 */
   .ScoreNavButton span {
-    display: none; /* 小螢幕只顯示 Icon 節省空間，或者縮減文字 */
+    display: none;
+  }
+
+  .ScoreNavButton i {
+    margin: 0 !important;
+    font-size: 1.25rem;
   }
 }
 
-/* 超小螢幕：顯示文字但縮小間距 */
 @media (max-width: 480px) {
+  /* 🌟 超小螢幕：恢復文字顯示但極小化，確保老師清楚當前頁面 */
   .ScoreNavButton span {
     display: inline;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   .ScoreNavButton i {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     margin-right: 4px !important;
   }
   .ScoreNavButton {
-    padding: 8px 10px;
+    padding: 8px 6px;
   }
 }

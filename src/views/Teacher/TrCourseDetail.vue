@@ -1,218 +1,225 @@
 <template>
-  <div class="CourseDetail container-fluid py-4 bg-light min-vh-100">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-              <li class="breadcrumb-item">
-                <a href="#" @click.prevent="$router.push('/trcourse')"
-                  >課程列表</a
-                >
-              </li>
-              <li class="breadcrumb-item active">{{ courseInfo.title }}</li>
-            </ol>
-          </nav>
-          <h2 class="h3 fw-bold mb-0">課程管理中心</h2>
+  <div
+    class="TrLayout"
+    :class="{ 'sidebar-collapsed': isCollapsed, 'mobile-open': isMobileOpen }"
+  >
+    <aside class="TrSidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="bi bi-shield-lock-fill"></i>
+          <span>課程管理中心</span>
         </div>
-        <button
-          v-if="currentView === 'content'"
-          class="btn btn-primary px-4 rounded-pill shadow-sm"
-          @click="showAddUnitModal = true"
-        >
-          <i class="bi bi-plus-circle me-1"></i> 新增學習單元
-        </button>
       </div>
 
-      <ul
-        class="nav nav-tabs border-0 mb-4 gap-2 overflow-auto flex-nowrap pb-2"
-      >
-        <li class="nav-item">
-          <button
-            class="nav-link rounded-pill px-4 shadow-sm"
-            :class="{
-              'active bg-primary text-white': currentView === 'content',
-            }"
-            @click="currentView = 'content'"
-          >
-            <i class="bi bi-list-ul me-2"></i>單元大綱
-          </button>
-        </li>
+      <nav class="sidebar-nav">
+        <button
+          class="nav-item"
+          :class="{ active: currentView === 'dashboard' }"
+          @click="currentView = 'dashboard'"
+        >
+          <i class="bi bi-graph-up-arrow"></i>
+          <span class="nav-label">數據看板</span>
+        </button>
 
-        <li class="nav-item">
-          <button
-            class="nav-link rounded-pill px-4 shadow-sm"
-            :class="{ 'active bg-primary text-white': currentView === 'add' }"
-            @click="currentView = 'add'"
-          >
-            <i class="bi bi-plus-square-dotted me-2"></i>資源管理
-          </button>
-        </li>
+        <button
+          class="nav-item"
+          :class="{ active: currentView === 'content' }"
+          @click="currentView = 'content'"
+        >
+          <i class="bi bi-list-ul"></i>
+          <span class="nav-label">單元大綱</span>
+        </button>
 
-        <li class="nav-item">
-          <button
-            class="nav-link rounded-pill px-4 shadow-sm"
-            :class="{
-              'active bg-primary text-white': currentView === 'dashboard',
-            }"
-            @click="currentView = 'dashboard'"
-          >
-            <i class="bi bi-graph-up-arrow me-2"></i>數據看板
-          </button>
-        </li>
+        <button
+          class="nav-item"
+          :class="{ active: currentView === 'add' }"
+          @click="currentView = 'add'"
+        >
+          <i class="bi bi-plus-square-dotted"></i>
+          <span class="nav-label">資源管理</span>
+        </button>
 
-        <li class="nav-item">
-          <button
-            class="nav-link rounded-pill px-4 shadow-sm"
-            :class="{
-              'active bg-primary text-white': currentView === 'settings',
-            }"
-            @click="currentView = 'settings'"
-          >
-            <i class="bi bi-gear me-2"></i>實驗設定
-          </button>
-        </li>
+        <button
+          class="nav-item"
+          :class="{ active: currentView === 'score' }"
+          @click="currentView = 'score'"
+        >
+          <i class="bi bi-patch-check"></i>
+          <span class="nav-label">成績檢視</span>
+        </button>
 
-        <li class="nav-item">
-          <button
-            class="nav-link rounded-pill px-4 shadow-sm"
-            :class="{
-              'active bg-primary text-white': currentView === 'score',
-            }"
-            @click="currentView = 'score'"
-          >
-            <i class="bi bi-graph-up-arrow me-2"></i>成績檢視
-          </button>
-        </li>
-      </ul>
+        <button
+          class="nav-item"
+          :class="{ active: currentView === 'settings' }"
+          @click="currentView = 'settings'"
+        >
+          <i class="bi bi-gear"></i>
+          <span class="nav-label">實驗設定</span>
+        </button>
+      </nav>
 
-      <div
-        v-if="currentView === 'content'"
-        class="row g-4 animate__animated animate__fadeIn"
-      >
-        <div class="col-lg-8">
-          <div
-            v-if="units.length === 0"
-            class="card border-0 shadow-sm p-5 text-center"
-          >
-            <i class="bi bi-stack display-4 text-muted mb-3"></i>
-            <p class="text-muted">
-              目前尚未建立任何單元，請點擊右上方按鈕開始。
-            </p>
+      <div class="sidebar-footer">
+        <button class="nav-item return-btn" @click="$router.push('/trcourse')">
+          <i class="bi bi-arrow-left-square"></i>
+          <span class="nav-label">返回列表</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="TrMainContainer">
+      <header class="TrHeader shadow-sm">
+        <div class="header-left">
+          <div class="header-breadcrumb-area ms-3">
+            <div class="header-main-info">
+              <h5 class="fw-bold mb-0">{{ courseInfo.title }}</h5>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right d-flex align-items-center">
+          <div class="join-code-tag me-3 d-none d-md-flex">
+            <span class="label">邀請碼</span>
+            <span class="code">{{ courseInfo.joinCode }}</span>
           </div>
 
-          <div v-else class="accordion shadow-sm" id="unitAccordion">
+          <button
+            v-if="currentView === 'content'"
+            class="btn btn-primary px-4 rounded-pill shadow-sm"
+            @click="showAddUnitModal = true"
+          >
+            <i class="bi bi-plus-circle me-1"></i> 新增學習單元
+          </button>
+
+          <button
+            class="mobile-hamburger d-lg-none ms-3"
+            @click="isMobileOpen = !isMobileOpen"
+          >
+            <i :class="['bi', isMobileOpen ? 'bi-x-lg' : 'bi-list']"></i>
+          </button>
+        </div>
+      </header>
+
+      <main class="TrContent p-4 CourseDetail">
+        <div
+          v-if="currentView === 'content'"
+          class="row g-4 animate__animated animate__fadeIn"
+        >
+          <div class="col-lg-8">
             <div
-              v-for="(unit, index) in units"
-              :key="unit.id"
-              class="accordion-item border-0 mb-3 rounded-3 overflow-hidden"
+              v-if="units.length === 0"
+              class="card border-0 shadow-sm p-5 text-center"
             >
-              <h2 class="accordion-header">
-                <button
-                  class="accordion-button collapsed fw-bold"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  :data-bs-target="'#collapse' + index"
-                >
-                  {{ unit.title }}
-                </button>
-              </h2>
+              <i class="bi bi-stack display-4 text-muted mb-3"></i>
+              <p class="text-muted">
+                目前尚未建立任何單元，請點擊右上方按鈕開始。
+              </p>
+            </div>
+
+            <div v-else class="accordion shadow-sm" id="unitAccordion">
               <div
-                :id="'collapse' + index"
-                class="accordion-collapse collapse"
-                data-bs-parent="#unitAccordion"
+                v-for="(unit, index) in units"
+                :key="unit.id"
+                class="accordion-item border-0 mb-3 rounded-3 overflow-hidden"
               >
-                <div class="accordion-body bg-white">
-                  <p class="text-muted small">
-                    {{ unit.description || "暫無說明" }}
-                  </p>
-                  <div class="d-flex gap-2 mt-3">
-                    <button
-                      class="btn btn-sm btn-outline-primary"
-                      @click="manageUnitContent(unit)"
-                    >
-                      管理教材內容
-                    </button>
-                    <button
-                      class="btn btn-sm btn-outline-danger"
-                      @click="deleteUnit(unit.id)"
-                    >
-                      刪除
-                    </button>
+                <h2 class="accordion-header">
+                  <button
+                    class="accordion-button collapsed fw-bold"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    :data-bs-target="'#collapse' + index"
+                  >
+                    {{ unit.title }}
+                  </button>
+                </h2>
+                <div
+                  :id="'collapse' + index"
+                  class="accordion-collapse collapse"
+                  data-bs-parent="#unitAccordion"
+                >
+                  <div class="accordion-body bg-white">
+                    <p class="text-muted small">
+                      {{ unit.description || "暫無說明" }}
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        @click="manageUnitContent(unit)"
+                      >
+                        管理教材內容
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        @click="deleteUnit(unit.id)"
+                      >
+                        刪除
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="col-lg-4">
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-              <h5 class="fw-bold mb-3">課程資訊</h5>
-              <div class="mb-2">
-                邀請碼：<span class="badge bg-primary fs-6">{{
-                  courseInfo.joinCode
-                }}</span>
-              </div>
-              <div class="text-muted small">
-                建立日期：{{ formatDate(courseInfo.createdAt) }}
+          <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body">
+                <h5 class="fw-bold mb-3">課程資訊</h5>
+                <div class="text-muted small">
+                  建立日期：{{ formatDate(courseInfo.createdAt) }}
+                </div>
               </div>
             </div>
-          </div>
-          <div class="card border-0 shadow-sm">
-            <div class="card-body">
-              <h5 class="fw-bold mb-3">已加入學生 ({{ students.length }})</h5>
-              <div
-                v-if="students.length === 0"
-                class="text-muted small py-3 text-center"
-              >
-                尚無學生加入
-              </div>
-              <ul class="list-group list-group-flush">
-                <li
-                  v-for="stu in students"
-                  :key="stu.uid"
-                  class="list-group-item px-0 d-flex justify-content-between align-items-center"
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <h5 class="fw-bold mb-3">已加入學生 ({{ students.length }})</h5>
+                <div
+                  v-if="students.length === 0"
+                  class="text-muted small py-3 text-center"
                 >
-                  <span>{{ stu.displayName || "匿名學生" }}</span>
-                  <span class="badge rounded-pill bg-light text-dark border"
-                    >未開始</span
+                  尚無學生加入
+                </div>
+                <ul class="list-group list-group-flush">
+                  <li
+                    v-for="stu in students"
+                    :key="stu.uid"
+                    class="list-group-item px-0 d-flex justify-content-between align-items-center"
                   >
-                </li>
-              </ul>
+                    <span>{{ stu.displayName || "匿名學生" }}</span>
+                    <span class="badge rounded-pill bg-light text-dark border"
+                      >未開始</span
+                    >
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div
-        v-if="currentView === 'dashboard'"
-        class="animate__animated animate__fadeIn"
-      >
-        <TrDashboard :courseId="courseId" />
-      </div>
-
-      <div
-        v-if="currentView === 'settings'"
-        class="animate__animated animate__fadeIn"
-      >
-        <TrExperiment :courseId="courseId" />
-      </div>
-
-      <div
-        v-if="currentView === 'add'"
-        class="animate__animated animate__fadeIn"
-      >
-        <TrAdd :courseId="courseId" />
-      </div>
-
-      <div
-        v-if="currentView === 'score'"
-        class="animate__animated animate__fadeIn"
-      >
-        <TrScore :courseId="courseId" />
-      </div>
+        <div
+          v-if="currentView === 'dashboard'"
+          class="animate__animated animate__fadeIn"
+        >
+          <TrDashboard :courseId="courseId" />
+        </div>
+        <div
+          v-if="currentView === 'settings'"
+          class="animate__animated animate__fadeIn"
+        >
+          <TrExperiment :courseId="courseId" />
+        </div>
+        <div
+          v-if="currentView === 'add'"
+          class="animate__animated animate__fadeIn"
+        >
+          <TrAdd :courseId="courseId" />
+        </div>
+        <div
+          v-if="currentView === 'score'"
+          class="animate__animated animate__fadeIn"
+        >
+          <TrScore :courseId="courseId" />
+        </div>
+      </main>
     </div>
 
     <div
@@ -253,17 +260,24 @@
         </div>
       </div>
     </div>
+
+    <div
+      class="mobile-overlay"
+      v-if="isMobileOpen"
+      @click="isMobileOpen = false"
+    ></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { rtdb } from "../../firebase/config";
 import { ref as dbRef, onValue, push, set, remove } from "firebase/database";
 import Swal from "sweetalert2";
+import "./TrCourseDetail.css";
 
-//插件引入
+// 插件引入
 import TrDashboard from "./TrDashboard.vue";
 import TrExperiment from "./TrExperiment.vue";
 import TrAdd from "./TrAdd.vue";
@@ -271,26 +285,52 @@ import TrScore from "./TrScore.vue";
 
 const route = useRoute();
 const router = useRouter();
-const courseId = route.params.courseId;
+
+/** * ✨ 關鍵修正 1：變數宣告
+ * 確保模板中使用的 isCollapsed 和 isMobileOpen 都有被定義
+ */
+const isCollapsed = ref(false); // 控制側邊欄收合 (電腦版)
+const isMobileOpen = ref(false); // 控制側邊欄開啟 (手機版)
+const currentView = ref("dashboard");
+
+/**
+ * ✨ 關鍵修正 2：路由參數
+ * 請確認你的 router 設定中是用 :id 還是 :courseId
+ * 根據你之前的報錯，這裡統整為抓取 params.id
+ */
+const courseId = route.params.id || route.params.courseId;
 
 const courseInfo = ref({});
 const units = ref([]);
 const students = ref([]);
 const showAddUnitModal = ref(false);
 const newUnit = ref({ title: "", description: "" });
-const currentView = ref("content");
+
+// ✨ 輔助：定義選單項目
+const menuItems = [
+  { id: "content", label: "單元大綱", icon: "bi-list-ul" },
+  { id: "add", label: "資源管理", icon: "bi-plus-square-dotted" },
+  { id: "dashboard", label: "數據看板", icon: "bi-graph-up-arrow" },
+  { id: "score", label: "成績檢視", icon: "bi-patch-check" },
+  { id: "settings", label: "實驗設定", icon: "bi-gear" },
+];
 
 onMounted(() => {
+  if (!courseId) {
+    Swal.fire("錯誤", "找不到課程 ID", "error");
+    return;
+  }
+
   // 1. 抓取課程基礎資訊
   onValue(dbRef(rtdb, `courses/${courseId}`), (snap) => {
     courseInfo.value = snap.val() || {};
   });
 
-  // 2. 監聽單元列表 (儲存在 courses/:id/units)
+  // 2. 監聽單元列表
   onValue(dbRef(rtdb, `courses/${courseId}/units`), (snap) => {
     const data = snap.val();
     units.value = data
-      ? Object.entries(data).map(([id, val]) => ({ id, ...id, ...val }))
+      ? Object.entries(data).map(([id, val]) => ({ id, ...val }))
       : [];
   });
 
@@ -300,6 +340,12 @@ onMounted(() => {
     students.value = data ? Object.values(data) : [];
   });
 });
+
+// ✨ 輔助方法：切換視圖並關閉手機版側欄
+const switchView = (viewId) => {
+  currentView.value = viewId;
+  isMobileOpen.value = false;
+};
 
 const addUnit = async () => {
   if (!newUnit.value.title.trim()) return;
@@ -311,7 +357,12 @@ const addUnit = async () => {
     });
     showAddUnitModal.value = false;
     newUnit.value = { title: "", description: "" };
-    Swal.fire("成功", "單元已建立", "success");
+    Swal.fire({
+      title: "成功",
+      text: "單元已建立",
+      icon: "success",
+      timer: 1500,
+    });
   } catch (e) {
     Swal.fire("錯誤", "無法建立單元", "error");
   }
@@ -319,10 +370,13 @@ const addUnit = async () => {
 
 const deleteUnit = (unitId) => {
   Swal.fire({
-    title: "確定刪除？",
-    text: "這將會移除該單元內的所有內容",
+    title: "確定要刪除此單元？",
+    text: "刪除後將無法還原該單元內容",
     icon: "warning",
     showCancelButton: true,
+    confirmButtonColor: "#d33",
+    confirmButtonText: "確定刪除",
+    cancelButtonText: "取消",
   }).then((res) => {
     if (res.isConfirmed) {
       remove(dbRef(rtdb, `courses/${courseId}/units/${unitId}`));
@@ -331,8 +385,9 @@ const deleteUnit = (unitId) => {
 };
 
 const manageUnitContent = (unit) => {
-  // 未來導向具體的教材編輯頁
-  Swal.fire("提示", `準備進入單元：${unit.title} 的詳細編輯頁面`, "info");
+  // 切換到資源管理頁面，並可以考慮自動帶入單元篩選 (進階功能)
+  currentView.value = "add";
+  Swal.fire("跳轉", `已切換至資源管理，請編輯單元：${unit.title}`, "info");
 };
 
 const formatDate = (ts) => (ts ? new Date(ts).toLocaleDateString() : "N/A");

@@ -154,6 +154,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, rtdb } from "../../firebase/config";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
+import "./TrCourse.css";
 
 // 如果檔案已建立，取消下方註解
 // import TrProfile from "./TrProfile.vue";

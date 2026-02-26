@@ -1,0 +1,70 @@
+/* --- PrePost 共用視覺規範 --- */
+.PrePost-Container {
+  --navy: #3a5a8a;
+  --navy-dark: #2d456b;
+  --bg-light: #f8fafc;
+  --white: #ffffff;
+  background-color: var(--white);
+}
+
+.PrePost-Container .text-navy {
+  color: var(--navy) !important;
+}
+.PrePost-Container .bg-navy {
+  background-color: var(--navy) !important;
+}
+
+/* 頂部進度條 */
+.test-header {
+  border-bottom: 2px solid #f1f5f9;
+  z-index: 1020;
+}
+
+.progress {
+  background-color: #eef2f7;
+  border-radius: 10px;
+}
+
+.progress-bar {
+  transition: width 0.4s ease;
+}
+
+/* 題目卡片設計 */
+.question-card {
+  transition: all 0.3s ease;
+  border: 2px solid transparent !important;
+}
+
+.question-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(58, 90, 138, 0.08) !important;
+}
+
+/* Likert 量表樣式 */
+.likert-option .form-check-input {
+  width: 1.8rem;
+  height: 1.8rem;
+  cursor: pointer;
+  border: 2px solid #cbd5e1;
+}
+
+.likert-option .form-check-input:checked {
+  background-color: var(--navy);
+  border-color: var(--navy);
+}
+
+/* 答題回饋動畫 */
+.answered-card {
+  border-left: 5px solid var(--navy) !important;
+  background-color: #f0f4f8 !important;
+}
+
+/* RWD 適配 */
+@media (max-width: 576px) {
+  .likert-container {
+    padding: 0 !important;
+  }
+  .likert-option label {
+    font-size: 0.7rem;
+  }
+}

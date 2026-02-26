@@ -1,0 +1,131 @@
+/* --- 背景遮罩 --- */
+.test-create-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2100;
+}
+
+/* --- Modal 主體 --- */
+.test-create-modal {
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  border-radius: 28px;
+  border: 1px solid rgba(74, 112, 169, 0.1);
+  border-top: 8px solid #4a70a9;
+  position: relative;
+  animation: modalSlideUp 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.modal-title-navy {
+  color: #4a70a9;
+}
+
+/* --- 欄位樣式 --- */
+.custom-field {
+  background-color: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.custom-field:focus {
+  background-color: #ffffff;
+  border-color: #4a70a9;
+  box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
+}
+
+/* --- 題目卡片 --- */
+.question-card {
+  border: 1px solid #edf2f7 !important;
+  transition: all 0.2s;
+}
+
+.question-card:hover {
+  border-color: #4a70a9 !important;
+  transform: translateX(4px);
+}
+
+.btn-remove-q {
+  top: -8px;
+  right: -8px;
+  background: transparent;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.25rem;
+  transition: transform 0.2s;
+}
+
+.btn-remove-q:hover {
+  transform: scale(1.1);
+}
+
+/* --- 按鈕樣式 --- */
+.btn-navy {
+  background-color: #4a70a9;
+  color: white;
+  border: none;
+}
+
+.btn-navy:hover {
+  background-color: #3a5a8a;
+  transform: translateY(-1px);
+}
+
+.btn-add-dashed {
+  color: #4a70a9;
+  border: 1.5px dashed #4a70a9;
+  background: transparent;
+  font-weight: 600;
+}
+
+.btn-add-dashed:hover {
+  background-color: rgba(74, 112, 169, 0.05);
+}
+
+/* --- 捲軸 --- */
+.question-list-area::-webkit-scrollbar {
+  width: 5px;
+}
+.question-list-area::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+/* --- Toast --- */
+.custom-toast {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2200;
+  padding: 8px 24px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  color: white;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.custom-toast.success {
+  background: #4a70a9;
+}
+.custom-toast.error {
+  background: #e74c3c;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -265,7 +265,6 @@ import "./StuSchedule.css";
 // 導入功能組件
 import StuHW from "./Modal/StuHW.vue";
 import StuExam from "./Modal/StuExam.vue";
-import StuTest from "./Modal/StuTest.vue";
 import StuDiscussion from "./Modal/StuDiscussion.vue";
 
 const auth = getAuth();

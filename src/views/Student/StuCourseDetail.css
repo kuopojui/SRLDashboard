@@ -1,151 +1,164 @@
 /* --- StuCourseDetail 全域視覺規範 --- */
 
-:root {
+.StuCourseDetail {
   --navy: #3a5a8a;
-  --navy-soft: rgba(58, 90, 138, 0.1);
+  --navy-dark: #2d456b;
+  --navy-soft: rgba(58, 90, 138, 0.08);
+  --warning-gold: #f59e0b;
+  --warning-soft: #fffbeb;
+  --danger-red: #ef4444;
+  --danger-soft: #fef2f2;
   --oatmeal: #efece3;
   --white: #ffffff;
   --text-gray: #64748b;
+  --bg-light: #f8fafc;
+  background-color: var(--bg-light);
 }
 
-.text-navy {
+/* 基礎公用類別 */
+.StuCourseDetail .text-navy {
   color: var(--navy) !important;
 }
-.bg-navy-soft {
+.StuCourseDetail .bg-soft-navy {
   background-color: var(--navy-soft) !important;
 }
-.xx-small {
+.StuCourseDetail .bg-soft-warning {
+  background-color: var(--warning-soft) !important;
+}
+.StuCourseDetail .text-warning {
+  color: var(--warning-gold) !important;
+}
+.StuCourseDetail .border-warning-subtle {
+  border: 1px solid rgba(245, 158, 11, 0.2) !important;
+}
+
+.StuCourseDetail .xx-small {
   font-size: 0.7rem;
 }
-.smaller {
+.StuCourseDetail .smaller {
   font-size: 0.85rem;
 }
 
-/* 1. 標頭裝飾 */
-.course-hero {
+/* 1. 導覽列與標頭 */
+.StuCourseDetail .navbar {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.StuCourseDetail .course-hero {
+  background: linear-gradient(180deg, #ffffff 0%, var(--bg-light) 100%);
   border-bottom: 1px solid #f1f5f9;
 }
 
-.view-indicator-badge {
-  background-color: var(--navy-soft);
-  color: var(--navy);
-  padding: 0.6rem 1.2rem;
+/* 2. 🌟 實驗前測攔截 UI */
+.StuCourseDetail .icon-box-lg {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: transform 0.3s ease;
 }
 
-/* 2. 切換標籤 (Tab Switcher) */
-.NavTabs {
+.StuCourseDetail .bg-soft-danger {
+  background-color: var(--danger-soft) !important;
+}
+.StuCourseDetail .text-danger {
+  color: var(--danger-red) !important;
+}
+
+/* 3. 切換標籤 (Tab Switcher) */
+.StuCourseDetail .NavTabs {
   border: 1px solid #eef2f7;
+  padding: 4px;
+  background-color: white;
 }
 
-.SwitchButton {
+.StuCourseDetail .SwitchButton {
   border: none;
   background: transparent;
-  padding: 12px 30px;
+  padding: 10px 25px;
   border-radius: 50px;
   font-weight: 700;
   color: var(--text-gray);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
-.SwitchButton.active {
+.StuCourseDetail .SwitchButton.active {
   background-color: var(--navy);
   color: var(--white);
-  box-shadow: 0 4px 15px rgba(58, 90, 138, 0.25);
+  box-shadow: 0 4px 15px rgba(58, 90, 138, 0.2);
 }
 
-.SwitchButton:hover:not(.active) {
-  background-color: #f8fafc;
-  color: var(--navy);
-}
-
-/* 3. 單元卡片設計 */
-.unit-card-modern {
+/* 4. 單元卡片設計 */
+.StuCourseDetail .unit-card-modern {
   background: var(--white);
-  border-radius: 24px;
+  border-radius: 20px;
   border: 1px solid #f1f5f9;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.unit-card-modern:hover {
-  transform: translateX(12px);
+.StuCourseDetail .unit-card-modern:hover {
+  transform: translateX(8px);
   border-color: var(--navy);
-  box-shadow: 0 12px 24px rgba(58, 90, 138, 0.08);
+  box-shadow: 0 10px 20px rgba(58, 90, 138, 0.05);
 }
 
-.unit-index-circle {
-  width: 48px;
-  height: 48px;
-  background: #f8fafc;
+.StuCourseDetail .unit-index-circle {
+  width: 42px;
+  height: 42px;
+  background: var(--bg-light);
   color: var(--navy);
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  border: 2px solid #eef2f7;
+  border: 1px solid #eef2f7;
   flex-shrink: 0;
 }
 
-.unit-card-modern:hover .unit-index-circle {
+.StuCourseDetail .unit-card-modern:hover .unit-index-circle {
   background: var(--navy);
   color: var(--white);
-  border-color: var(--navy);
 }
 
-.icon-arrow {
-  transition:
-    transform 0.3s ease,
-    opacity 0.3s ease;
-}
-
-.unit-card-modern:hover .icon-arrow {
-  transform: scale(1.2);
-  opacity: 1 !important;
-}
-
-/* 4. 動畫效果 */
-.view-fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* 5. 🌟 RWD 強化適配 */
+@media (max-width: 768px) {
+  .StuCourseDetail .course-hero h1 {
+    font-size: 1.5rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-/* 5. 空狀態 */
-.empty-state-card {
-  border: 2px dashed #e2e8f0;
-}
-
-/* 手機版適配 (RWD) */
-@media (max-width: 576px) {
-  .course-hero {
-    padding: 2rem 0;
-  }
-  .NavTabs {
+  .StuCourseDetail .NavTabs {
     width: 100%;
-    display: flex;
+    justify-content: center;
   }
-  .SwitchButton {
-    flex: 1;
-    padding: 10px 15px;
+
+  .StuCourseDetail .SwitchButton {
+    padding: 8px 15px;
     font-size: 0.85rem;
   }
-  .unit-card-modern {
-    padding: 1.25rem !important;
+
+  .StuCourseDetail .unit-card-modern:hover {
+    transform: none;
   }
-  .unit-index-circle {
-    width: 36px;
-    height: 36px;
-    margin-right: 1rem !important;
-  }
+}
+
+/* 動畫效果 */
+.StuCourseDetail .fade-enter-active,
+.StuCourseDetail .fade-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.StuCourseDetail .fade-enter-from,
+.StuCourseDetail .fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
