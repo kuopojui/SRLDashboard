@@ -83,14 +83,6 @@
           </div>
 
           <button
-            v-if="currentView === 'content'"
-            class="btn btn-primary px-4 rounded-pill shadow-sm"
-            @click="showAddUnitModal = true"
-          >
-            <i class="bi bi-plus-circle me-1"></i> 新增學習單元
-          </button>
-
-          <button
             class="mobile-hamburger d-lg-none ms-3"
             @click="isMobileOpen = !isMobileOpen"
           >
@@ -101,105 +93,16 @@
 
       <main class="TrContent p-4 CourseDetail">
         <div
-          v-if="currentView === 'content'"
-          class="row g-4 animate__animated animate__fadeIn"
-        >
-          <div class="col-lg-8">
-            <div
-              v-if="units.length === 0"
-              class="card border-0 shadow-sm p-5 text-center"
-            >
-              <i class="bi bi-stack display-4 text-muted mb-3"></i>
-              <p class="text-muted">
-                目前尚未建立任何單元，請點擊右上方按鈕開始。
-              </p>
-            </div>
-
-            <div v-else class="accordion shadow-sm" id="unitAccordion">
-              <div
-                v-for="(unit, index) in units"
-                :key="unit.id"
-                class="accordion-item border-0 mb-3 rounded-3 overflow-hidden"
-              >
-                <h2 class="accordion-header">
-                  <button
-                    class="accordion-button collapsed fw-bold"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    :data-bs-target="'#collapse' + index"
-                  >
-                    {{ unit.title }}
-                  </button>
-                </h2>
-                <div
-                  :id="'collapse' + index"
-                  class="accordion-collapse collapse"
-                  data-bs-parent="#unitAccordion"
-                >
-                  <div class="accordion-body bg-white">
-                    <p class="text-muted small">
-                      {{ unit.description || "暫無說明" }}
-                    </p>
-                    <div class="d-flex gap-2 mt-3">
-                      <button
-                        class="btn btn-sm btn-outline-primary"
-                        @click="manageUnitContent(unit)"
-                      >
-                        管理教材內容
-                      </button>
-                      <button
-                        class="btn btn-sm btn-outline-danger"
-                        @click="deleteUnit(unit.id)"
-                      >
-                        刪除
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-4">
-            <div class="card border-0 shadow-sm mb-4">
-              <div class="card-body">
-                <h5 class="fw-bold mb-3">課程資訊</h5>
-                <div class="text-muted small">
-                  建立日期：{{ formatDate(courseInfo.createdAt) }}
-                </div>
-              </div>
-            </div>
-            <div class="card border-0 shadow-sm">
-              <div class="card-body">
-                <h5 class="fw-bold mb-3">已加入學生 ({{ students.length }})</h5>
-                <div
-                  v-if="students.length === 0"
-                  class="text-muted small py-3 text-center"
-                >
-                  尚無學生加入
-                </div>
-                <ul class="list-group list-group-flush">
-                  <li
-                    v-for="stu in students"
-                    :key="stu.uid"
-                    class="list-group-item px-0 d-flex justify-content-between align-items-center"
-                  >
-                    <span>{{ stu.displayName || "匿名學生" }}</span>
-                    <span class="badge rounded-pill bg-light text-dark border"
-                      >未開始</span
-                    >
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
           v-if="currentView === 'dashboard'"
           class="animate__animated animate__fadeIn"
         >
           <TrDashboard :courseId="courseId" />
+        </div>
+        <div
+          v-if="currentView === 'content'"
+          class="animate__animated animate__fadeIn"
+        >
+          <TrUnit :courseId="courseId" />
         </div>
         <div
           v-if="currentView === 'settings'"
@@ -282,6 +185,7 @@ import TrDashboard from "./TrDashboard.vue";
 import TrExperiment from "./TrExperiment.vue";
 import TrAdd from "./TrAdd.vue";
 import TrScore from "./TrScore.vue";
+import TrUnit from "./TrUnit.vue";
 
 const route = useRoute();
 const router = useRouter();
