@@ -1,0 +1,140 @@
+/* --- StuUnit 彈窗專屬樣式 --- */
+
+/* 彈窗主卡片本體：移除 margin auto，由 Overlay 處理定位 */
+.unit-intro-card-modal {
+  background: white;
+  border-radius: 28px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 標頭區塊：縮減 padding 以適應彈窗高度 */
+.unit-intro-header {
+  padding: 30px 25px;
+  text-align: center;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.unit-tag {
+  display: inline-block;
+  background: var(--navy);
+  color: white;
+  padding: 4px 14px;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 0.7rem;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+/* 資源統計：改為更緊湊的網格佈局 */
+.unit-resource-overview {
+  padding: 25px;
+}
+
+.resource-stat-card {
+  background: #fcfbf8;
+  border: 1.5px solid #edf2f7;
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+  height: 100%; /* 確保同列等高 */
+}
+
+.resource-stat-card:hover {
+  border-color: var(--navy-light);
+  transform: translateY(-2px);
+}
+
+.resource-stat-card i {
+  font-size: 1.5rem; /* 稍微縮小圖示 */
+}
+
+.resource-stat-card .stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.resource-stat-card .label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.resource-stat-card .value {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+/* 側邊條裝飾 */
+.border-primary-soft {
+  border-left: 4px solid var(--navy);
+}
+.border-amber {
+  border-left: 4px solid #f59e0b;
+}
+.border-emerald {
+  border-left: 4px solid #10b981;
+}
+
+/* 注意事項區塊：優化背景感 */
+.unit-notice-section {
+  padding: 0 25px 25px;
+}
+
+.notice-box {
+  background: #f8fafc;
+  padding: 15px 20px;
+  border-radius: 14px;
+}
+
+.notice-list {
+  padding-left: 15px;
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-bottom: 0;
+}
+
+.notice-list li {
+  margin-bottom: 6px;
+}
+
+/* 底部按鈕區：改為白色背景 */
+.unit-intro-footer {
+  padding: 20px 25px 30px;
+  background: white;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* 移除不再需要的返回按鈕樣式，若彈窗頂部需要關閉按鈕，請沿用下方樣式 */
+.modal-close-icon {
+  cursor: pointer;
+  color: #94a3b8;
+  transition: 0.2s;
+}
+
+.modal-close-icon:hover {
+  color: var(--text-dark);
+  transform: rotate(90deg);
+}
+
+/* 響應式調整：彈窗在手機上不要太擠 */
+@media (max-width: 576px) {
+  .unit-resource-overview {
+    padding: 15px;
+  }
+  .resource-stat-card {
+    padding: 10px;
+  }
+}
