@@ -48,7 +48,7 @@
           </div>
 
           <p class="text-muted small mb-4">
-            在此定義各組的 SRL
+            在此定義各組的 SRL 以及排行榜設定
             權限與<b>通行碼</b>。學生輸入正確代碼後將自動分配組別。
           </p>
 
@@ -78,9 +78,26 @@
                       v-model="group.passCode"
                       type="text"
                       class="form-control form-control-sm border-0 bg-transparent p-0 xx-small fw-bold text-primary"
-                      style="width: 80px; outline: none; box-shadow: none"
+                      style="width: 60px; outline: none; box-shadow: none"
                       placeholder="如: AAA"
                     />
+                  </div>
+
+                  <div class="ms-2 d-flex align-items-center">
+                    <div class="form-check form-switch custom-srl-switch mb-0">
+                      <input
+                        class="form-check-input anonymous-switch"
+                        type="checkbox"
+                        v-model="group.features.isLeaderboardAnonymous"
+                        :id="'anon' + idx"
+                      />
+                      <label
+                        class="form-check-label xx-small fw-bold text-secondary ms-1"
+                        :for="'anon' + idx"
+                      >
+                        <i class="bi bi-incognito"></i> 匿名排行
+                      </label>
+                    </div>
                   </div>
 
                   <button
@@ -319,6 +336,10 @@ const parameterOptions = {
     title: "強制 SRL 引導流程",
     desc: "必須完成計畫與反思才能結束。",
   },
+  showActivityLog: {
+    title: "行為紀錄監控",
+    desc: "紀錄學生行為檔案",
+  },
 };
 
 // 🌟 初始化資料讀取與自動清洗
@@ -389,6 +410,7 @@ const addGroup = () => {
       monitoring: true,
       aiAdvice: true,
       reflection: true,
+      isLeaderboardAnonymous: false,
     },
   });
 };

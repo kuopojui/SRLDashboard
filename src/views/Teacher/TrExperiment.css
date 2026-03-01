@@ -94,6 +94,32 @@
   box-shadow: 0 12px 25px rgba(58, 90, 138, 0.08) !important;
 }
 
+/* 🌟 針對標題列匿名開關的微調 */
+.TrExperiment .anonymous-switch {
+  width: 2.2rem !important; /* 稍微縮小以適應標題列高度 */
+  height: 1.1rem !important;
+  cursor: pointer;
+}
+
+/* 匿名開關開啟時使用中性灰色，強調隱私感 */
+.TrExperiment .anonymous-switch:checked {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+}
+
+.TrExperiment .form-check-label.xx-small {
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 增加圖示間距與對齊 */
+.TrExperiment .bi-incognito {
+  font-size: 0.8rem;
+  vertical-align: -1px;
+}
+
 /* --- 序號徽章 (Index Badge) --- */
 .TrExperiment .group-index-tag {
   background-color: var(--navy) !important;

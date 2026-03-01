@@ -64,6 +64,50 @@
 }
 
 /* 排行榜按鈕樣式 */
+.btn-close-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background-color: #fff1f1;
+  color: #bf4646;
+  font-family: "Arial", sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  outline: none;
+  padding-top: 1px;
+  padding-left: 1px;
+}
+
+/* 讓內部的圖示或文字強制置中 */
+.btn-close-custom span,
+.btn-close-custom i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+/* 懸停效果 */
+.btn-close-custom:hover {
+  background-color: #bf4646;
+  color: #f8fafc;
+}
+
+/* 圖示大小微調 */
+.btn-close-custom i {
+  font-size: 1rem;
+  -webkit-text-stroke: 1px; /* 增加粗度 */
+}
+
 .StuDashboard-btn-rank {
   background-color: var(--navy);
   color: white;

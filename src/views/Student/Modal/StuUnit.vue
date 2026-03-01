@@ -94,31 +94,3 @@ const props = defineProps({
 // 🌟 定義通知父組件的動作
 defineEmits(["close", "confirm"]);
 </script>
-
-<style scoped>
-/* 可以在這裡微調彈窗專用的 CSS */
-.resource-stat-mini {
-  background-color: #f8fafc;
-  transition: all 0.2s ease;
-}
-.unit-tag {
-  display: inline-block;
-  background: rgba(74, 112, 169, 0.1);
-  color: #4a70a9;
-  padding: 4px 16px;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 900;
-}
-.notice-list-clean {
-  list-style: none;
-  padding-left: 0;
-}
-.notice-list-clean li::before {
-  content: "•";
-  color: #4a70a9;
-  font-weight: bold;
-  display: inline-block;
-  width: 1em;
-}
-</style>

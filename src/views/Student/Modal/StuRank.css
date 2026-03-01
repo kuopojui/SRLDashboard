@@ -1,173 +1,104 @@
-/* --- StuRank 核心視覺規範 --- */
-
+/* StuRank.css 或寫在 <style scoped> */
 .StuRank {
-  --navy: #3a5a8a;
-  --oatmeal: #efece3;
-  --gold: #b8860b;
+  background: #ffffff;
+  min-height: 400px;
 }
 
-/* 1. 導覽標籤 */
-.rank-nav-tabs {
-  background-color: var(--navy);
-  padding: 6px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(58, 90, 138, 0.15);
-}
-
-.rank-tab-btn {
-  background: transparent;
-  color: rgba(255, 255, 255, 0.65);
-  border: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 10px 20px;
+.icon-box {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 12px;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-
-.rank-tab-btn.active {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  font-weight: 800;
-  box-shadow: inset 0 -2px 0 #ffffff;
-}
-
-/* 2. 篩選卡片 */
-.filter-card {
-  background: white;
-  border-radius: 16px;
-  border: 1px solid var(--oatmeal);
-}
-
-.rank-select {
-  border-radius: 10px;
-  border: 2px solid #f1f5f9;
-  font-weight: 600;
-  color: var(--navy);
-}
-
-.rank-select:focus {
-  border-color: var(--navy);
-  box-shadow: none;
-}
-
-/* 3. 排行榜表格 */
-.rank-table-card {
-  background: white;
-  border: 1px solid var(--oatmeal);
-}
-
-.modern-rank-table {
-  table-layout: fixed; /* 🌟 關鍵：固定佈局防止推擠 */
-  width: 100%;
-}
-
-/* 欄位寬度權重設定 */
-.col-rank {
-  width: 80px;
-}
-.col-student {
-  width: auto;
-}
-.col-score {
-  width: 140px;
-}
-
-.modern-rank-table th {
-  background-color: #fcfbf7;
-  color: var(--navy);
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 18px 0;
-  border-bottom: 2px solid var(--oatmeal);
-}
-
-.modern-rank-table td {
-  padding: 16px 0;
-  border-bottom: 1px solid #f8fafc;
-}
-
-/* 4. 數值與徽章細節 */
-.rank-badge {
-  font-family: "Montserrat", sans-serif;
-  font-weight: 900;
-  font-size: 1.1rem;
-  color: #94a3b8;
-}
-
-.top-1 {
-  color: var(--gold);
-  font-size: 1.4rem;
-}
-.top-2 {
-  color: #475569;
   font-size: 1.25rem;
 }
-.top-3 {
-  color: #94a3b8;
-  font-size: 1.15rem;
-}
 
-.name-text {
-  font-weight: 700;
-  color: #1e293b;
-  max-width: 80%;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.me-tag {
-  background-color: var(--navy);
-  color: white;
-  font-size: 0.65rem;
-  padding: 2px 8px;
-  border-radius: 4px;
+/* 名次樣式 */
+.rank-number {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   font-weight: 800;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.85rem;
 }
 
-.row-me {
-  background-color: rgba(58, 90, 138, 0.03);
+.rank-number.top-1 {
+  background: #fffbeb;
+  color: #d97706;
+  border: 2px solid #fcd34d;
+}
+.rank-number.top-2 {
+  background: #f8fafc;
+  color: #475569;
+  border: 2px solid #cbd5e1;
+}
+.rank-number.top-3 {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 2px solid #fdba74;
 }
 
-.score-value {
-  font-size: 1.4rem;
-  font-weight: 900;
-  color: var(--navy);
-  font-family: "Montserrat", sans-serif;
+/* 排行項目 */
+.rank-item {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.score-unit {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #b4a28d;
+.rank-item.is-me {
+  background: #f0f7ff;
+  border: 1px solid #bae6fd;
 }
 
-/* 5. 行動端優化 (Mobile) */
-@media (max-width: 576px) {
-  .col-rank {
-    width: 60px;
-  }
-  .col-score {
-    width: 100px;
-  }
-  .score-value {
-    font-size: 1.1rem;
-  }
-  .name-text {
-    font-size: 0.9rem;
-  }
-  .rank-badge {
-    font-size: 0.9rem;
-  }
-  .top-1 {
-    font-size: 1.1rem;
-  }
+.rank-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* 輔助工具 */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+/* 頭像設計 */
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  background: var(--navy, #1a237e);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* 捲軸美化 */
+.custom-scrollbar {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+/* 動畫 */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
 }
