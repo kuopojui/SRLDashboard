@@ -179,49 +179,66 @@
   color: #e11d48;
 }
 
-/* 7. Modal 覆蓋 */
+/* --- 7. Modal 覆蓋與遮罩 --- */
 .ScheduleModalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* 半透明黑底 */
-  backdrop-filter: blur(4px); /* 背景模糊 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000; /* 確保在最上層 */
+  position: fixed !important;
+  inset: 0 !important; /* 同時設定 top, left, right, bottom 為 0 */
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  /* 🌟 確保高於側邊欄，解決 image_b1f8d6.png 被擋住的問題 */
+  z-index: 999999 !important;
 }
 
+/* --- 2. 彈窗本體 (Card) --- */
 .modal-card-custom {
-  background: white;
-  width: 100%;
-  max-width: 850px;
+  position: relative !important;
+  background: white !important;
+  width: 90% !important;
+  max-width: 850px; /* 任務彈窗最大寬度 */
   max-height: 90vh;
-  border-radius: 30px;
+  border-radius: 30px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  z-index: 1000000 !important;
 }
 
-.modal-header-custom {
-  padding: 20px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8fafc;
+/* 🌟 專屬修正：單元導引彈窗寬度限制 (針對 image_b24f4d.png) */
+.unit-intro-card {
+  max-width: 550px !important; /* 單元導引不需要太寬，視覺更精緻 */
 }
 
+/* 🌟 修正後的關閉按鈕，確保 ✕ 完美置中 */
 .close-btn {
-  background: #eee;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
   border: none;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
+.close-btn:hover {
+  transform: rotate(90deg);
+  background: #e2e8f0;
+}
+
+.custom-x-text {
+  font-size: 1.2rem;
+  color: #64748b;
+  line-height: 1;
+  margin-top: -2px; /* 視覺重心微調 */
+}
 /* 影片 */
 .video-preview-box {
   width: 100%;

@@ -23,12 +23,12 @@
 /* 懸停效果 (Hover) */
 .btn-navy-outline:hover {
   background-color: #3a5a8a !important;
-  color: #efece3 !important; /* 文字轉白色 */
-  transform: translateY(-2px); /* 輕微往上飄，增加互動感 */
-  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2); /* 增加柔和陰影 */
+  color: #efece3 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2);
 }
 
-/* 點擊效果 (Active) */
+/* 點擊效果  */
 .btn-navy-outline:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(26, 35, 126, 0.1);

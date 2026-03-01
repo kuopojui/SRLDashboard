@@ -11,9 +11,6 @@
         <div class="CoursePage-nav-item active">
           <i class="bi bi-book-half me-3"></i>我的課程
         </div>
-        <div class="CoursePage-nav-item">
-          <i class="bi bi-person-badge me-3"></i>個人學習歷程
-        </div>
       </nav>
 
       <div class="mt-auto px-3">

@@ -1,0 +1,60 @@
+.StuSrlPlan {
+  background: white;
+  border-radius: 1.25rem;
+  overflow: hidden;
+}
+
+.plan-header {
+  padding: 1.5rem;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.icon-circle {
+  width: 45px;
+  height: 45px;
+  background: #e0f2fe;
+  color: #0284c7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-right: 1rem;
+}
+
+.plan-body {
+  padding: 1.5rem;
+}
+
+.form-control-custom {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  transition: border-color 0.2s;
+  font-size: 0.9rem;
+}
+
+.form-control-custom:focus {
+  outline: none;
+  border-color: #1a237e;
+}
+
+.btn-save-plan {
+  width: 100%;
+  padding: 0.8rem;
+  background: #1a237e;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.btn-save-plan:hover {
+  background: #121858;
+  transform: translateY(-2px);
+}

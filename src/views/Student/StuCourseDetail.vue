@@ -243,4 +243,27 @@ onUnmounted(() => {
   activeListeners.forEach((path) => off(path));
   activeListeners = [];
 });
+
+// 監聽學生的組別狀態
+const userSrlStatus = ref({ groupId: null, features: {} });
+
+const watchUserGroup = (uid) => {
+  const userPath = dbRef(rtdb, `courses/${courseId}/profiles/${uid}`);
+  onValue(userPath, (snap) => {
+    const profile = snap.val();
+    if (profile?.groupId) {
+      // 取得組別後，再去抓該組開啟了哪些模組 (Planning, AI Advice 等)
+      const featPath = dbRef(
+        rtdb,
+        `courses/${courseId}/experiment/groups/${profile.groupId}`,
+      );
+      onValue(featPath, (gSnap) => {
+        userSrlStatus.value = {
+          groupId: profile.groupId,
+          features: gSnap.val()?.features || {},
+        };
+      });
+    }
+  });
+};
 </script>
