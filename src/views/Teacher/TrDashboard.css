@@ -5,6 +5,40 @@
   --navy: #3a5a8a;
 }
 
+/* 海軍藍外框按鈕樣式 */
+.btn-navy-outline {
+  /* 顏色設定 */
+  color: #3a5a8a !important;
+  background-color: transparent;
+  border: 2px solid #3a5a8a !important;
+
+  /* 字體與間距 */
+  font-size: 0.875rem;
+  transition: all 0.25s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 懸停效果 (Hover) */
+.btn-navy-outline:hover {
+  background-color: #3a5a8a !important;
+  color: #efece3 !important; /* 文字轉白色 */
+  transform: translateY(-2px); /* 輕微往上飄，增加互動感 */
+  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2); /* 增加柔和陰影 */
+}
+
+/* 點擊效果 (Active) */
+.btn-navy-outline:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(26, 35, 126, 0.1);
+}
+
+/* 確保圖示有正確間距 */
+.btn-navy-outline i {
+  font-size: 1.1rem;
+}
+
 /* --- 網格佈局：核心 RWD --- */
 .dashboard-grid {
   display: grid;
