@@ -14,35 +14,51 @@
         >
           <div class="special-badge">START</div>
           <div class="ex-unit-collapse-card mb-4 border-pretest shadow-sm">
-            <div class="unit-summary-header bg-pretest-subtle">
+            <div
+              class="group-trigger bg-pretest-subtle"
+              @click="toggleSubSection('pretest_root', 'content')"
+              style="cursor: pointer"
+            >
               <h5 class="fw-800 text-navy m-0">
-                <i class="bi bi-flag-fill me-2"></i>課程前測問卷 / 測驗
+                <i class="bi bi-flag-fill me-3"></i>課程前測問卷 / 測驗
               </h5>
+              <i
+                class="bi bi-chevron-down"
+                :class="{
+                  'rotate-180': isSubSectionOpen('pretest_root', 'content'),
+                }"
+              ></i>
             </div>
-            <div class="unit-details-content p-4">
+
+            <transition name="slide">
               <div
-                v-if="pretestExams.length > 0"
-                class="ex-resource-grid single-col"
+                v-show="isSubSectionOpen('pretest_root', 'content')"
+                class="unit-details-content p-4 border-top"
               >
                 <div
-                  v-for="e in pretestExams"
-                  :key="e.id"
-                  class="ex-item-brick pretest-accent task-card"
-                  @click="handleTaskOpen('test', e.id)"
+                  v-if="pretestExams.length > 0"
+                  class="ex-resource-grid single-col"
                 >
-                  <span class="text-truncate fw-bold">{{ e.title }}</span>
-                  <span
-                    :class="[
-                      'status-tag',
-                      isSubmitted('exams', e.id) ? 'is-done' : 'is-pending',
-                    ]"
+                  <div
+                    v-for="e in pretestExams"
+                    :key="e.id"
+                    class="ex-item-brick pretest-accent task-card mb-2"
+                    @click="handleTaskOpen('test', e.id)"
                   >
-                    {{ isSubmitted("exams", e.id) ? "已完成" : "未填寫" }}
-                  </span>
+                    <span class="text-truncate fw-bold">{{ e.title }}</span>
+                    <span
+                      :class="[
+                        'status-tag',
+                        isSubmitted('exams', e.id) ? 'is-done' : 'is-pending',
+                      ]"
+                    >
+                      {{ isSubmitted("exams", e.id) ? "已完成" : "未填寫" }}
+                    </span>
+                  </div>
                 </div>
+                <div v-else class="ex-empty-placeholder">目前無前測內容</div>
               </div>
-              <div v-else class="ex-empty-placeholder">目前無前測內容</div>
-            </div>
+            </transition>
           </div>
         </div>
 
@@ -54,7 +70,7 @@
           >
             <div class="unit-badge">UNIT {{ index + 1 }}</div>
 
-            <div class="ex-unit-collapse-card mb-4 shadow-sm">
+            <div class="ex-unit-collapse-card mb-4 shadow-sm border-0 bg-white">
               <div
                 class="unit-summary-header"
                 @click="openUnitIntro(unit, index)"
@@ -66,7 +82,9 @@
                   <div class="d-flex flex-column">
                     <h5 class="fw-800 text-navy m-0">
                       {{ unit.title }}
-                      <i class="bi bi-info-circle ms-2 small opacity-50"></i>
+                      <span class="ms-2 badge bg-soft-navy text-navy x-small"
+                        >點擊查看導引</span
+                      >
                     </h5>
                     <div class="unit-meta xx-small text-muted mt-1">
                       <i class="bi bi-calendar-check me-1"></i>截止：{{
@@ -76,132 +94,216 @@
                       }}
                     </div>
                   </div>
-                  <i class="bi bi-chevron-expand text-muted opacity-50"></i>
+                  <i
+                    class="bi bi-info-circle-fill text-primary opacity-75 fs-5"
+                  ></i>
                 </div>
               </div>
 
-              <div class="unit-details-content p-4">
-                <div class="ex-resource-grid">
-                  <div class="ex-resource-column">
-                    <h6 class="ex-label-small">
-                      <i class="bi bi-collection-play-fill me-2"></i>單元教材
-                    </h6>
-                    <div v-if="unit.materials?.length" class="ex-resource-list">
-                      <div
-                        v-for="mId in unit.materials"
-                        :key="mId"
-                        class="ex-item-brick material-row"
-                        @click="handleMaterialDownload(mId)"
-                      >
-                        <div
-                          class="d-flex align-items-center justify-content-between w-100"
-                        >
-                          <span class="text-truncate flex-grow-1 small">
-                            <i
-                              class="bi"
-                              :class="
-                                getMaterialType(mId) === 'video'
-                                  ? 'bi-play-circle-fill text-danger'
-                                  : 'bi-file-earmark-text text-primary'
-                              "
-                            ></i>
-                            {{ getMaterialTitle(mId) }}
-                          </span>
-                          <i class="bi bi-download remove-icon"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else class="ex-empty-placeholder">尚無教材</div>
-                  </div>
-
-                  <div class="ex-resource-column">
-                    <h6 class="ex-label-small">
-                      <i class="bi bi-pencil-square me-2"></i>指定功課
-                    </h6>
+              <div class="unit-details-content p-0">
+                <div class="unit-resource-accordion">
+                  <div class="resource-group">
                     <div
-                      v-if="unit.assignments?.length"
-                      class="ex-resource-list"
+                      class="group-trigger"
+                      @click="toggleSubSection(unit.id, 'materials')"
                     >
-                      <div
-                        v-for="aId in unit.assignments"
-                        :key="aId"
-                        class="ex-item-brick task-card"
-                        @click="handleTaskOpen('hw', aId)"
-                      >
-                        <span class="text-truncate small">{{
-                          getAssignmentTitle(aId)
-                        }}</span>
-                        <span
-                          :class="[
-                            'status-tag',
-                            isSubmitted('assignments', aId)
-                              ? 'is-done'
-                              : 'is-pending',
-                          ]"
-                        >
-                          {{
-                            isSubmitted("assignments", aId) ? "已繳" : "未繳"
-                          }}
-                        </span>
-                      </div>
+                      <h6 class="m-0">
+                        <i
+                          class="bi bi-collection-play-fill me-3 text-danger"
+                        ></i
+                        >單元教材
+                      </h6>
+                      <i
+                        class="bi bi-chevron-down"
+                        :class="{
+                          'rotate-180': isSubSectionOpen(unit.id, 'materials'),
+                        }"
+                      ></i>
                     </div>
-                    <div v-else class="ex-empty-placeholder">無作業</div>
-                  </div>
-
-                  <div class="ex-resource-column">
-                    <h6 class="ex-label-small">
-                      <i class="bi bi-lightning-charge-fill me-2"></i>單元測驗
-                    </h6>
-                    <div v-if="unit.exams?.length" class="ex-resource-list">
+                    <transition name="slide">
                       <div
-                        v-for="eId in unit.exams"
-                        :key="eId"
-                        class="ex-item-brick task-card"
-                        @click="handleTaskOpen('exam', eId)"
-                      >
-                        <span class="text-truncate small">{{
-                          getExamTitle(eId)
-                        }}</span>
-                        <span
-                          :class="[
-                            'status-tag',
-                            isSubmitted('exams', eId)
-                              ? 'is-done'
-                              : 'is-pending',
-                          ]"
-                        >
-                          {{ isSubmitted("exams", eId) ? "完成" : "未考" }}
-                        </span>
-                      </div>
-                    </div>
-                    <div v-else class="ex-empty-placeholder">無測驗</div>
-                  </div>
-
-                  <div class="ex-resource-column">
-                    <h6 class="ex-label-small">
-                      <i class="bi bi-chat-dots-fill me-2"></i>單元討論
-                    </h6>
-                    <div v-if="unit.forums?.length" class="ex-resource-list">
-                      <div
-                        v-for="fId in unit.forums"
-                        :key="fId"
-                        class="ex-item-brick task-card discussion-accent"
-                        @click="handleDiscussionOpen(fId)"
+                        v-show="isSubSectionOpen(unit.id, 'materials')"
+                        class="group-content p-4"
                       >
                         <div
-                          class="d-flex align-items-center justify-content-between w-100"
+                          v-if="unit.materials?.length"
+                          class="ex-resource-list"
                         >
-                          <span class="text-truncate small">
-                            <i class="bi bi-chat-left-text me-2 text-info"></i>
-                            {{ getForumTitle(fId) }}
-                          </span>
-                          <i class="bi bi-chevron-right small opacity-50"></i>
+                          <div
+                            v-for="mId in unit.materials"
+                            :key="mId"
+                            class="ex-item-brick material-row mb-2"
+                            @click="handleMaterialDownload(mId)"
+                          >
+                            <div
+                              class="d-flex align-items-center justify-content-between w-100"
+                            >
+                              <span class="text-truncate flex-grow-1">
+                                <i
+                                  class="bi"
+                                  :class="
+                                    getMaterialType(mId) === 'video'
+                                      ? 'bi-play-circle-fill text-danger'
+                                      : 'bi-file-earmark-text text-primary'
+                                  "
+                                ></i>
+                                {{ getMaterialTitle(mId) }}
+                              </span>
+                              <i class="bi bi-download ms-2"></i>
+                            </div>
+                          </div>
+                        </div>
+                        <div v-else class="ex-empty-placeholder">尚無教材</div>
+                      </div>
+                    </transition>
+                  </div>
+
+                  <div class="resource-group">
+                    <div
+                      class="group-trigger"
+                      @click="toggleSubSection(unit.id, 'forums')"
+                    >
+                      <h6 class="m-0">
+                        <i class="bi bi-chat-dots-fill me-3 text-info"></i
+                        >單元討論
+                      </h6>
+                      <i
+                        class="bi bi-chevron-down"
+                        :class="{
+                          'rotate-180': isSubSectionOpen(unit.id, 'forums'),
+                        }"
+                      ></i>
+                    </div>
+                    <transition name="slide">
+                      <div
+                        v-show="isSubSectionOpen(unit.id, 'forums')"
+                        class="group-content p-4"
+                      >
+                        <div
+                          v-if="unit.forums?.length"
+                          class="ex-resource-list"
+                        >
+                          <div
+                            v-for="fId in unit.forums"
+                            :key="fId"
+                            class="ex-item-brick task-card discussion-accent mb-2"
+                            @click="handleDiscussionOpen(fId)"
+                          >
+                            <div
+                              class="d-flex align-items-center justify-content-between w-100"
+                            >
+                              <span>{{ getForumTitle(fId) }}</span>
+                              <i class="bi bi-chevron-right opacity-50"></i>
+                            </div>
+                          </div>
+                        </div>
+                        <div v-else class="ex-empty-placeholder">
+                          無討論主題
                         </div>
                       </div>
+                    </transition>
+                  </div>
+
+                  <div class="resource-group">
+                    <div
+                      class="group-trigger"
+                      @click="toggleSubSection(unit.id, 'assignments')"
+                    >
+                      <h6 class="m-0">
+                        <i class="bi bi-pencil-square me-3 text-warning"></i
+                        >指定功課
+                      </h6>
+                      <i
+                        class="bi bi-chevron-down"
+                        :class="{
+                          'rotate-180': isSubSectionOpen(
+                            unit.id,
+                            'assignments',
+                          ),
+                        }"
+                      ></i>
                     </div>
-                    <div v-else class="ex-empty-placeholder">
-                      目前無討論主題
+                    <transition name="slide">
+                      <div
+                        v-show="isSubSectionOpen(unit.id, 'assignments')"
+                        class="group-content p-4"
+                      >
+                        <div
+                          v-if="unit.assignments?.length"
+                          class="ex-resource-list"
+                        >
+                          <div
+                            v-for="aId in unit.assignments"
+                            :key="aId"
+                            class="ex-item-brick task-card mb-2"
+                            @click="handleTaskOpen('hw', aId)"
+                          >
+                            <span>{{ getAssignmentTitle(aId) }}</span>
+                            <span
+                              :class="[
+                                'status-tag',
+                                isSubmitted('assignments', aId)
+                                  ? 'is-done'
+                                  : 'is-pending',
+                              ]"
+                            >
+                              {{
+                                isSubmitted("assignments", aId)
+                                  ? "已繳"
+                                  : "未繳"
+                              }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </transition>
+                  </div>
+
+                  <div class="resource-group">
+                    <div
+                      class="group-trigger"
+                      @click="toggleSubSection(unit.id, 'exams')"
+                    >
+                      <h6 class="m-0">
+                        <i
+                          class="bi bi-lightning-charge-fill me-3 text-warning"
+                        ></i
+                        >單元測驗
+                      </h6>
+                      <i
+                        class="bi bi-chevron-down"
+                        :class="{
+                          'rotate-180': isSubSectionOpen(unit.id, 'exams'),
+                        }"
+                      ></i>
                     </div>
+                    <transition name="slide">
+                      <div
+                        v-show="isSubSectionOpen(unit.id, 'exams')"
+                        class="group-content p-4"
+                      >
+                        <div v-if="unit.exams?.length" class="ex-resource-list">
+                          <div
+                            v-for="eId in unit.exams"
+                            :key="eId"
+                            class="ex-item-brick task-card mb-2"
+                            @click="handleTaskOpen('exam', eId)"
+                          >
+                            <span>{{ getExamTitle(eId) }}</span>
+                            <span
+                              :class="[
+                                'status-tag',
+                                isSubmitted('exams', eId)
+                                  ? 'is-done'
+                                  : 'is-pending',
+                              ]"
+                            >
+                              {{ isSubmitted("exams", eId) ? "完成" : "未考" }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </transition>
                   </div>
                 </div>
               </div>
@@ -215,38 +317,60 @@
         >
           <div class="special-badge">END</div>
           <div class="ex-unit-collapse-card border-posttest shadow-sm">
-            <div class="unit-summary-header bg-posttest-subtle">
+            <div
+              class="group-trigger bg-posttest-subtle"
+              @click="toggleSubSection('posttest_root', 'content')"
+              style="cursor: pointer"
+            >
               <h5 class="fw-800 text-posttest m-0">
-                <i class="bi bi-trophy-fill me-2"></i>課程後測 / 學習總結
+                <i class="bi bi-trophy-fill me-3"></i>課程後測 / 學習總結
               </h5>
+              <i
+                class="bi bi-chevron-down"
+                :class="{
+                  'rotate-180': isSubSectionOpen('posttest_root', 'content'),
+                }"
+              ></i>
             </div>
-            <div class="unit-details-content p-4">
+
+            <transition name="slide">
               <div
-                v-if="posttestExams.length > 0"
-                class="ex-resource-grid single-col"
+                v-show="isSubSectionOpen('posttest_root', 'content')"
+                class="unit-details-content p-4 border-top"
               >
                 <div
-                  v-for="e in posttestExams"
-                  :key="e.id"
-                  class="ex-item-brick posttest-accent task-card"
-                  @click="handleTaskOpen('test', e.id)"
+                  v-if="posttestExams.length > 0"
+                  class="ex-resource-grid single-col"
                 >
-                  <span class="text-truncate fw-bold">{{ e.title }}</span>
-                  <span
-                    :class="[
-                      'status-tag',
-                      isSubmitted('exams', e.id) ? 'is-done' : 'is-pending',
-                    ]"
+                  <div
+                    v-for="e in posttestExams"
+                    :key="e.id"
+                    class="ex-item-brick posttest-accent task-card mb-2"
+                    @click="handleTaskOpen('test', e.id)"
                   >
-                    {{ isSubmitted("exams", e.id) ? "已完成" : "未填寫" }}
-                  </span>
+                    <div
+                      class="d-flex align-items-center justify-content-between w-100"
+                    >
+                      <span class="text-truncate fw-bold">{{ e.title }}</span>
+                      <span
+                        :class="[
+                          'status-tag',
+                          isSubmitted('exams', e.id) ? 'is-done' : 'is-pending',
+                        ]"
+                      >
+                        {{ isSubmitted("exams", e.id) ? "已完成" : "未填寫" }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
+                <div v-else class="ex-empty-placeholder">目前無後測內容</div>
               </div>
-            </div>
+            </transition>
           </div>
         </div>
       </div>
     </div>
+
     <Teleport to="body">
       <transition name="fade">
         <div
@@ -278,14 +402,16 @@
                 <span class="custom-x-text">✕</span>
               </button>
             </div>
-            <component
-              :is="currentModalComponent"
-              :courseId="courseId"
-              :taskId="activeTaskId"
-              :initialAnswers="activeTaskInitialData"
-              @close="closeTaskModal"
-              @submit-success="onTaskSubmitted"
-            />
+            <div class="modal-body-custom p-0">
+              <component
+                :is="currentModalComponent"
+                :courseId="courseId"
+                :taskId="activeTaskId"
+                :initialAnswers="activeTaskInitialData"
+                @close="closeTaskModal"
+                @submit-success="onTaskSubmitted"
+              />
+            </div>
           </div>
         </div>
       </transition>
@@ -490,11 +616,40 @@ const onTaskSubmitted = () => {
   }
 };
 
+//展開
+const openSubSections = reactive({
+  pretest_root: [], // 預設開啟前測
+  posttest_root: [], // 後測預設收合
+});
+
+// 🌟 3. 切換子章節開關的函式
+const toggleSubSection = (unitId, sectionType) => {
+  if (!openSubSections[unitId]) {
+    openSubSections[unitId] = [];
+  }
+
+  const index = openSubSections[unitId].indexOf(sectionType);
+  if (index > -1) {
+    // 已開啟則移除 (收合)
+    openSubSections[unitId].splice(index, 1);
+  } else {
+    // 未開啟則加入 (展開)
+    openSubSections[unitId].push(sectionType);
+  }
+};
+
+// 🌟 4. 檢查子章節是否開啟的函式 (修正報錯的關鍵)
+const isSubSectionOpen = (unitId, sectionType) => {
+  return openSubSections[unitId]?.includes(sectionType) || false;
+};
+
 // --- 🌟 更新後的資料監聽 (補足字典與設定) ---
 const initData = () => {
+  if (!props.courseId) return;
   const coursePath = `courses/${props.courseId}`;
+  const uid = auth.currentUser?.uid;
 
-  // 1. 監聽資源字典 (解決名稱讀不到的問題)
+  // --- 1. 資源字典監聽 (教材、作業、測驗、討論) ---
   onValue(
     dbRef(rtdb, `${coursePath}/materials`),
     (s) => (materialsMap.value = s.val() || {}),
@@ -512,46 +667,68 @@ const initData = () => {
     (s) => (forumsMap.value = s.val() || {}),
   );
 
-  // 2. 🌟 更新：監聽前測與後測的詳細清單
+  // --- 2. 前測內容監聽 (experiment/test/pretest) ---
   onValue(dbRef(rtdb, `${coursePath}/experiment/test/pretest`), (snap) => {
     const data = snap.val() || {};
-    // 轉換為陣列格式供 v-for 使用
-    pretestExams.value = Object.entries(data).map(([id, val]) => ({
-      id,
-      ...val,
-    }));
+    const exams = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+    pretestExams.value = exams;
+
+    // 只要有 visible 的前測資料，就自動開啟顯示並展開
+    if (exams.some((e) => e.visible !== false)) {
+      pretestSettings.value.enabled = true;
+      if (!openSubSections["pretest_root"]) {
+        openSubSections["pretest_root"] = ["content"];
+      }
+    }
   });
+
+  // --- 3. 後測內容監聽 (experiment/test/posttest) ---
   onValue(dbRef(rtdb, `${coursePath}/experiment/test/posttest`), (snap) => {
     const data = snap.val() || {};
-    posttestExams.value = Object.entries(data).map(([id, val]) => ({
-      id,
-      ...val,
-    }));
+    const exams = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+    posttestExams.value = exams;
+
+    // 只要有後測資料，就自動開啟後測區域顯示
+    if (exams.length > 0) {
+      posttestSettings.value.enabled = true;
+    }
   });
 
-  // 3. 監聽實驗開關設定 (解決 enabled 報錯)
+  // --- 4. 實驗設定監聽 (用於 ID 檢查與開關) ---
   onValue(dbRef(rtdb, `${coursePath}/experiment/settings`), (snap) => {
     const s = snap.val() || {};
-    pretestSettings.value = s.pretest || { enabled: false };
-    posttestSettings.value = s.posttest || { enabled: false };
+    // 優先檢查 preTestId，若無則依據是否有內容決定是否啟用
+    pretestSettings.value.enabled =
+      !!s.preTestId || pretestExams.value.length > 0;
+    posttestSettings.value.enabled =
+      !!s.postTestId || posttestExams.value.length > 0;
   });
 
-  // 4. 監聽學習單元
+  // --- 5. 普通學習單元監聽 (units) ---
   onValue(dbRef(rtdb, `${coursePath}/units`), (snap) => {
-    const data = snap.val();
-    schedule.value = data
-      ? Object.entries(data).map(([id, val]) => ({ id, ...val }))
-      : [];
+    const data = snap.val() || {};
+    schedule.value = Object.entries(data).map(([id, val]) => ({ id, ...val }));
   });
 
-  const uid = auth.currentUser?.uid;
+  // --- 6. 使用者相關資料監聽 (繳交紀錄與權限) ---
   if (uid) {
-    // 5. 監聽個人繳交紀錄
-    onValue(dbRef(rtdb, `${coursePath}/submissions`), (snap) => {
-      userSubmissions.value = snap.val() || {};
+    // 🌟 修正：同時監聽一般提交與實驗性提交路徑
+    onValue(dbRef(rtdb, `${coursePath}/experiment/submissions`), (snap) => {
+      // 合併或獨立處理實驗組的繳交紀錄
+      userSubmissions.value = {
+        ...userSubmissions.value,
+        ...(snap.val() || {}),
+      };
     });
 
-    // 6. 監聽學生實驗組別與功能權限
+    onValue(dbRef(rtdb, `${coursePath}/submissions`), (snap) => {
+      userSubmissions.value = {
+        ...userSubmissions.value,
+        ...(snap.val() || {}),
+      };
+    });
+
+    // 監聽學生實驗組別功能權限
     onValue(dbRef(rtdb, `${coursePath}/profiles/${uid}`), (snap) => {
       const profile = snap.val();
       if (profile?.groupId) {

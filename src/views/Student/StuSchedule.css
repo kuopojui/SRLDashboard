@@ -272,6 +272,111 @@
   box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2);
 }
 
+/*四欄*/
+/*前測*/
+/* 🌟 補強：前測與後測觸發條背景 */
+.bg-pretest-subtle {
+  background-color: #f1f5f9 !important; /* 淺灰藍色 */
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.bg-posttest-subtle {
+  background-color: #f0fdf4 !important; /* 淺綠色 */
+  border-bottom: 1px solid #dcfce7;
+}
+
+.text-posttest {
+  color: #16a34a !important; /* 後測文字綠色 */
+}
+
+/*前後測*/
+/* 確保特殊區塊有正確的垂直間距 */
+.special-section-wrapper {
+  position: relative;
+  padding-bottom: 40px; /* 增加與 UNIT 1 的距離 */
+}
+
+/* 確保 START 徽章位置正確 */
+.pretest-section .special-badge {
+  background: #64748b; /* 灰色背景與 START 字樣 */
+}
+
+/* 確保特殊區塊有正確的垂直間距 */
+.special-section-wrapper {
+  position: relative;
+  padding-bottom: 40px; /* 增加與 UNIT 1 的距離 */
+}
+
+/* 確保 START 徽章位置正確 */
+.pretest-section .special-badge {
+  background: #64748b; /* 灰色背景與 START 字樣 */
+}
+/* 縱向大排版容器 */
+.unit-resource-accordion {
+  border-top: 1px solid #f1f5f9;
+}
+
+/* 類別觸發條 */
+.group-trigger {
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: #fff;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s;
+}
+
+.group-trigger:hover {
+  background: #f8fafc;
+}
+
+.group-trigger h6 {
+  font-size: 1.1rem; /* 標題變大 */
+  font-weight: 800;
+  color: #334155;
+  display: flex;
+  align-items: center;
+}
+
+/* 展開內容區 */
+.group-content {
+  background: #fcfcfc;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* 箭頭旋轉動畫 */
+.bi-chevron-down {
+  transition: transform 0.3s ease;
+  color: #94a3b8;
+}
+.rotate-180 {
+  transform: rotate(180deg);
+  color: #3a5a8a;
+}
+
+/* 內容滑動動畫 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease-out;
+  max-height: 1000px; /* 給予足夠高度 */
+  overflow: hidden;
+}
+.slide-enter-from,
+.slide-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* 強化 Brick 在縱向排版下的寬度 */
+.ex-item-brick {
+  width: 100%;
+  max-width: 1000px; /* 限制在大螢幕下的最大寬度 */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* RWD */
 @media (max-width: 768px) {
   .schedule-timeline {

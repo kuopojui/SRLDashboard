@@ -1,7 +1,7 @@
 <template>
   <div
     class="modal-card-custom shadow-lg animate__animated animate__zoomIn"
-    style="max-width: 550px; width: 95%"
+    style="max-width: 600px; width: 95%"
   >
     <div
       class="modal-header-custom border-bottom d-flex justify-content-between align-items-center p-3"
@@ -24,8 +24,8 @@
         </p>
       </header>
 
-      <section class="row g-3 mb-4 text-center">
-        <div class="col-4">
+      <section class="row g-2 mb-4 text-center">
+        <div class="col-3">
           <div class="resource-stat-mini p-2 rounded-3 border">
             <div class="xx-small text-muted">學習教材</div>
             <div class="fw-bold text-primary">
@@ -33,7 +33,7 @@
             </div>
           </div>
         </div>
-        <div class="col-4">
+        <div class="col-3">
           <div class="resource-stat-mini p-2 rounded-3 border">
             <div class="xx-small text-muted">指定任務</div>
             <div class="fw-bold text-warning">
@@ -41,11 +41,19 @@
             </div>
           </div>
         </div>
-        <div class="col-4">
+        <div class="col-3">
           <div class="resource-stat-mini p-2 rounded-3 border">
             <div class="xx-small text-muted">單元測驗</div>
             <div class="fw-bold text-success">
               {{ unitData?.exams?.length || 0 }}
+            </div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="resource-stat-mini p-2 rounded-3 border">
+            <div class="xx-small text-muted">討論主題</div>
+            <div class="fw-bold text-info">
+              {{ unitData?.forums?.length || 0 }}
             </div>
           </div>
         </div>
