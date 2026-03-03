@@ -1,60 +1,443 @@
-.StuSrlPlan {
-  background: white;
-  border-radius: 1.25rem;
+/* 容器基礎設定 */
+.StuSrlPlan-Combined {
+  max-width: 950px;
+  margin: 2rem auto;
+  border-radius: 20px;
   overflow: hidden;
-}
-
-.plan-header {
-  padding: 1.5rem;
-  background: #f8fafc;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.icon-circle {
-  width: 45px;
-  height: 45px;
-  background: #e0f2fe;
-  color: #0284c7;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  margin-right: 1rem;
-}
-
-.plan-body {
-  padding: 1.5rem;
-}
-
-.form-control-custom {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 0.75rem;
-  transition: border-color 0.2s;
-  font-size: 0.9rem;
-}
-
-.form-control-custom:focus {
-  outline: none;
-  border-color: #1a237e;
-}
-
-.btn-save-plan {
-  width: 100%;
-  padding: 0.8rem;
-  background: #1a237e;
-  color: white;
   border: none;
-  border-radius: 0.75rem;
-  font-weight: 700;
-  transition: all 0.2s;
+  background: #fff;
 }
 
-.btn-save-plan:hover {
-  background: #121858;
+/* Modal Header */
+.modal-header-custom {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.text-navy {
+  color: #4a70a9;
+}
+.fw-800 {
+  font-weight: 800;
+}
+
+/* 左側資訊欄 */
+.bg-light-subtle {
+  background-color: #f8fbff !important;
+}
+
+.unit-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #e9ecef;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6c757d;
+  letter-spacing: 1px;
+}
+
+/* 標竿區塊卡片 */
+.notice-box {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.notice-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.border-navy {
+  border-left-color: #4a70a9 !important;
+}
+.border-warning {
+  border-left-color: #ffc107 !important;
+}
+.border-success {
+  border-left-color: #28a745 !important;
+}
+
+/* 統計數字卡片 */
+.stat-card {
+  transition: all 0.2s ease;
+}
+
+.stat-card .fw-bold {
+  font-size: 1.25rem;
+}
+
+/* 右側表單區 */
+/* --- 1. 容器與基礎佈局 --- */
+.StuSrlPlan-Combined {
+  max-width: 950px;
+  margin: 2rem auto;
+  border-radius: 20px;
+  overflow: hidden;
+  border: none;
+  background: #fff;
+}
+
+.modal-header-custom {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.text-navy {
+  color: #4a70a9;
+}
+.fw-800 {
+  font-weight: 800;
+}
+
+/* --- 2. 左側標竿資訊區 --- */
+.bg-light-subtle {
+  background-color: #f8fbff !important;
+}
+
+.unit-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #e9ecef;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6c757d;
+  letter-spacing: 1px;
+}
+
+.notice-box {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.notice-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.border-navy {
+  border-left-color: #4a70a9 !important;
+}
+.border-warning {
+  border-left-color: #ffc107 !important;
+}
+.border-success {
+  border-left-color: #28a745 !important;
+}
+
+/* --- 3. 右側表單與輸入項 --- */
+.srl-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* 時分輸入框 UX 優化 */
+.input-group.shadow-sm {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid #eee;
+}
+
+.input-group .form-control {
+  border: none;
+  font-weight: 600;
+  color: #4a70a9;
+  text-align: center;
+}
+
+.input-group-text {
+  border: none;
+  font-weight: 700;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  font-size: 0.85rem;
+}
+
+/* 隱藏 number 箭頭 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-control:focus {
+  border-color: #4a70a9;
+  box-shadow: 0 0 0 0.25rem rgba(0, 44, 83, 0.1);
+}
+
+/* 策略按鈕樣式 */
+.active-strategy {
+  background-color: #4a70a9 !important;
+  color: #fff !important;
+  border-color: #4a70a9 !important;
+  box-shadow: 0 4px 10px rgba(0, 44, 83, 0.2);
+  transform: translateY(-1px);
+}
+
+.border-dashed {
+  border-style: dashed !important;
+  border-width: 1.5px !important;
+  border-color: #dee2e6 !important;
+  cursor: pointer;
+}
+
+.rounded-start-pill {
+  border-top-left-radius: 50px !important;
+  border-bottom-left-radius: 50px !important;
+}
+
+.rounded-end-pill {
+  border-top-right-radius: 50px !important;
+  border-bottom-right-radius: 50px !important;
+}
+
+/* 信心星星 */
+.text-light-gray {
+  color: #dee2e6;
+}
+.bi-star-fill {
+  color: #ffc107;
+}
+.bi-star-fill,
+.bi-star {
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+.bi-star-fill:hover {
+  transform: scale(1.2);
+}
+
+/* --- 4. 按鈕樣式 --- */
+.btn-navy {
+  background-color: #4a70a9;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.btn-navy:hover:not(:disabled) {
+  background-color: #4a70a9;
+  color: #f8fafc !important;
   transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 44, 83, 0.3);
+}
+
+.btn-outline-navy {
+  border: 1.5px solid #4a70a9 !important;
+  color: #4a70a9 !important;
+  background: transparent;
+  border-radius: 12px;
+}
+
+.btn-outline-navy:hover:not(:disabled) {
+  background: #f0f4f8;
+  color: #4a70a9;
+}
+
+/* --- 5. SweetAlert2 (Swal2) 層級與風格壓制 --- */
+.swal2-container {
+  z-index: 100000 !important; /* 確保在所有 Modal 之上 */
+}
+
+.swal2-backdrop-show {
+  z-index: 99999 !important;
+  backdrop-filter: blur(4px);
+}
+
+.swal2-popup {
+  z-index: 100001 !important;
+  border-radius: 20px !important;
+  font-family: inherit !important;
+}
+
+.swal2-title {
+  color: #4a70a9 !important;
+  font-weight: 800 !important;
+}
+
+.swal2-styled.swal2-confirm {
+  background-color: #4a70a9 !important;
+  border-radius: 10px !important;
+}
+
+.swal2-toast {
+  z-index: 100002 !important;
+  border-left: 5px solid #4a70a9 !important;
+}
+
+/* --- 6. RWD 響應式優化 --- */
+@media (max-width: 768px) {
+  .StuSrlPlan-Combined {
+    margin: 0;
+    border-radius: 0;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .col-md-5 {
+    border-end: none !important;
+    border-bottom: 1px solid #eee;
+  }
+
+  .d-flex.align-items-center.gap-3 {
+    flex-wrap: wrap;
+  }
+
+  .input-group {
+    max-width: 100% !important;
+  }
+
+  .col-6 {
+    width: 100%; /* 手機版按鈕堆疊 */
+  }
+}
+
+/* --- 7. 通用細節 --- */
+.xx-small {
+  font-size: 0.65rem;
+}
+.shadow-xs {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+.ScheduleModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 20, 40, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+
+  /* 🌟 核心修正：開啟捲動機制 */
+  display: block; /* 移除 flex 置中限制 */
+  overflow-y: auto; /* 當內容超過高度時開啟垂直捲動 */
+  -webkit-overflow-scrolling: touch; /* 讓 iOS 捲動更順滑 */
+  padding: 20px; /* 保持四周間距 */
+}
+
+/* 🌟 配合 Overlay 的修正，確保彈窗在電腦版依然水平置中 */
+.StuSrlPlan-Combined {
+  max-width: 950px;
+  margin: 2rem auto; /* 水平置中，且上下保留 2rem 空間 */
+  border-radius: 20px;
+  background: #fff;
+  position: relative;
+  /* 移除原本可能有的固定高度設定 */
+  height: auto;
+}
+
+/* 🌟 RWD 手機版特別處理 */
+@media (max-width: 768px) {
+  .ScheduleModalOverlay {
+    padding: 10px; /* 手機版縮小間距，爭取更多顯示空間 */
+  }
+
+  .StuSrlPlan-Combined {
+    margin: 10px auto; /* 讓彈窗上方留一點點縫隙 */
+    border-radius: 15px; /* 手機版圓角稍微調小 */
+  }
+}
+
+/*SWL2*/
+/* --- 1. 彈窗主體容器 --- */
+.swal2-popup {
+  z-index: 100001 !important;
+  border-radius: 20px !important;
+  padding: 2rem !important;
+  font-family: "Inter", "Noto Sans TC", sans-serif !important;
+  box-shadow: 0 15px 35px rgba(0, 44, 83, 0.3) !important;
+}
+
+/* --- 2. 標題與內文 --- */
+.swal2-title {
+  color: #4a70a9 !important; /* 海軍藍 */
+  font-weight: 800 !important;
+  font-size: 1.6rem !important;
+  padding-top: 10px !important;
+}
+
+.swal2-html-container {
+  color: #555 !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+  z-index: 9999;
+}
+
+.swal2-backdrop-show {
+  z-index: 99999 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(3px) !important;
+}
+
+.swal2-container {
+  z-index: 100000 !important; /* 提升到 10 萬，確保壓過 1050 */
+}
+
+/* --- 3. 按鈕區域樣式 --- */
+/* 確認按鈕 (開始/儲存) */
+.swal2-styled.swal2-confirm {
+  background-color: #4a70a9 !important; /* 海軍藍 */
+  color: white !important;
+  border-radius: 12px !important;
+  padding: 12px 30px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.swal2-styled.swal2-confirm:hover {
+  background-color: #4a70a9 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 44, 83, 0.3) !important;
+}
+
+/* 取消按鈕 */
+.swal2-styled.swal2-cancel {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 12px !important;
+  padding: 12px 30px !important;
+  font-weight: 600 !important;
+}
+
+.swal2-styled.swal2-cancel:hover {
+  background-color: #e9ecef !important;
+}
+
+/* --- 4. 圖示樣式 (Icon) --- */
+.swal2-icon.swal2-success {
+  border-color: #28a745 !important;
+  color: #28a745 !important;
+}
+
+.swal2-icon.swal2-success [class^="swal2-success-line"] {
+  background-color: #28a745 !important;
+}
+
+.swal2-icon.swal2-question {
+  border-color: #4a70a9 !important;
+  color: #4a70a9 !important;
+}
+
+/* --- 5. Toast 模式優化 (右上角小彈窗) --- */
+.swal2-toast {
+  border-radius: 12px !important;
+  padding: 12px 20px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+  border-left: 5px solid #4a70a9 !important; /* 左側海軍藍飾條 */
+  z-index: 9999 !important;
 }

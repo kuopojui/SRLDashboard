@@ -179,19 +179,63 @@
   color: #e11d48;
 }
 
-/* --- 7. Modal 覆蓋與遮罩 --- */
+/* --- 7. Modal 覆蓋與遮罩 (解決手機滑不動/鎖死問題) --- */
 .ScheduleModalOverlay {
   position: fixed !important;
-  inset: 0 !important; /* 同時設定 top, left, right, bottom 為 0 */
-  width: 100vw !important;
-  height: 100vh !important;
+  /* 🌟 使用全方位定位確保覆蓋 */
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+
+  width: 100% !important;
+  height: 100% !important;
   background: rgba(15, 23, 42, 0.75) !important;
   backdrop-filter: blur(8px) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  /* 🌟 確保高於側邊欄，解決 image_b1f8d6.png 被擋住的問題 */
-  z-index: 999999 !important;
+
+  /* 🌟 修正捲動邏輯 */
+  display: block !important;
+  overflow-y: scroll !important; /* 強制顯示捲動軌道以利偵測 */
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch; /* 解決 iOS 卡頓 */
+
+  z-index: 5000 !important;
+  padding: 1rem;
+
+  /* 🌟 防止手勢穿透 */
+  touch-action: pan-y !important;
+}
+
+/* 🌟 確保 Modal 本體不會攔截捲動 */
+.StuSrlPlan-Combined {
+  max-width: 950px;
+  margin: 1rem auto !important;
+  position: relative;
+
+  /* 🌟 關鍵：確保 pointer-events 正確 */
+  pointer-events: auto !important;
+
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+  /* 🌟 確保內容不會被切斷 */
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* 🌟 RWD 手機版特別處理 */
+@media (max-width: 768px) {
+  .ScheduleModalOverlay {
+    padding: 0.5rem;
+  }
+
+  .StuSrlPlan-Combined {
+    margin-top: 0 !important;
+    margin-bottom: 2rem !important; /* 給底部按鈕留點空間 */
+    border-radius: 12px;
+    width: 100%;
+  }
 }
 
 /* --- 2. 彈窗本體 (Card) --- */
@@ -206,7 +250,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  z-index: 1000000 !important;
+  z-index: 6000 !important;
 }
 
 /* 🌟 專屬修正：單元導引彈窗寬度限制 (針對 image_b24f4d.png) */
@@ -255,6 +299,27 @@
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+/* 🌟 影片彈窗專屬背景與比例控制 */
+.video-modal-content {
+  background-color: #0f172a !important; /* 深藍黑色背景提升電影感 */
+  min-height: 300px;
+}
+
+.video-wrapper {
+  background: #000;
+  max-width: 100%;
+}
+
+.video-wrapper video {
+  max-height: 70vh; /* 防止影片太高超出螢幕 */
+  object-fit: contain;
+}
+
+/* 讓 Modal 在影片模式時可以寬一點 */
+.modal-card-custom:has(.video-modal-content) {
+  max-width: 950px !important;
 }
 
 /* Toast */
