@@ -8,6 +8,7 @@ import StuCourse from "../views/Student/StuCourse.vue";
 import StuCourseDetail from "../views/Student/StuCourseDetail.vue";
 import PreTest from "../views/Student/PreTest.vue"; // 🌟 確保路徑指向您剛建立的檔案
 import PostTest from "../views/Student/PostTest.vue";
+import StuUnit from "../views/Student/StuUnit.vue";
 
 const routes = [
   {
@@ -48,6 +49,12 @@ const routes = [
     path: "/pretest/:courseId/:testId",
     name: "PreTest",
     component: () => import("../views/Student/PreTest.vue"),
+  },
+  {
+    path: "/studashboard/:courseId/unit/:id",
+    name: "StuUnit",
+    component: StuUnit,
+    props: true,
   },
   {
     path: "/posttest/:courseId",

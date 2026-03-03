@@ -239,10 +239,13 @@
 
 <script setup>
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import { rtdb, auth } from "../../../firebase/config";
 import { ref as dbRef, update, push } from "firebase/database";
 import "./StuSRLPlan.css";
 import Swal from "sweetalert2";
+import "../StuUnit.vue";
+import StuUnit from "../StuUnit.vue";
 
 const props = defineProps({
   courseId: String,
@@ -251,9 +254,14 @@ const props = defineProps({
   badgeText: { type: String, default: "UNIT" },
 });
 
-const emit = defineEmits(["submit-success", "close"]);
+const emit = defineEmits([
+  "submit-success",
+  "close",
+  "start-unit", // 新增這個事件，對應你 handleStartUnit 裡的呼叫
+]);
 
 const isSaving = ref(false);
+const router = useRouter();
 
 const confidenceText = computed(() => {
   const texts = ["非常焦慮", "有點擔心", "普通", "有信心", "完全沒問題"];
@@ -514,43 +522,73 @@ const handleSaveOnly = async () => {
 };
 
 // 🌟 2. 開始本單元：使用彈窗確認，強化行動承諾 (Action Commitment)
+// StuSRLPlan.vue
 const handleStartUnit = async () => {
-  // 先確認是否有填寫基本資料 (從 saveToFirebase 的驗證邏輯延伸)
+  // 1. 驗證邏輯：確保規劃完整
   if (calculatedTotalMins.value === 0 || !planData.value.targetGoal) {
     Swal.fire({
       icon: "warning",
       title: "規劃尚未完成",
-      text: "請至少設定預計時間與學習目標唷！",
+      text: "設定預計時間與目標，能幫助您更有效地監控學習進度唷！",
       confirmButtonColor: "#002c53",
     });
     return;
   }
 
-  // 彈出確認視窗，提醒學生計時即將開始
+  // 2. 彈出確認視窗
   const result = await Swal.fire({
     title: "準備好開始學習了嗎？",
-    html: `您預計投入 <b>${totalMinutesDisplay.value}</b><br>點擊確認後將同步啟動學習計時器！`,
+    html: `您預計投入 <b>${totalMinutesDisplay.value}</b><br>目標：${planData.value.targetGoal}`,
     icon: "question",
     showCancelButton: true,
     confirmButtonColor: "#002c53",
-    cancelButtonColor: "#aaa",
     confirmButtonText: "是的，開始計時！",
-    cancelButtonText: "我再想想",
     reverseButtons: true,
   });
 
   if (result.isConfirmed) {
+    // 3. 儲存至 Firebase
     const success = await saveToFirebase(true);
+
     if (success) {
-      // 顯示一個簡短的加油訊息後關閉
+      // 4. 將「標準」存入本地，供 StuUnit 頁面讀取
+      const srlSession = {
+        unitId: props.unitData.id,
+        courseId: props.courseId,
+        standards: {
+          targetGoal: planData.value.targetGoal,
+          plannedMins: calculatedTotalMins.value,
+          strategies: planData.value.strategies,
+        },
+        startTime: Date.now(),
+      };
+      localStorage.setItem(`active_srl_session`, JSON.stringify(srlSession));
+
       await Swal.fire({
         icon: "success",
-        title: "加油！",
-        text: "目標已鎖定，祝您學習順利！",
+        title: "目標已鎖定！",
+        text: "正在進入單元，祝您學習順利！",
         timer: 1500,
         showConfirmButton: false,
       });
-      emit("submit-success");
+
+      // 5. 🌟 執行跳轉 (修正 Params 以符合 router/index.js)
+      console.log("正在跳轉至單元頁面：", props.unitData.id);
+
+      router
+        .push({
+          name: "StuUnit",
+          params: {
+            courseId: props.courseId, // 🌟 必須傳入，因為路由有 :courseId
+            id: props.unitData.id, // 🌟 必須傳入，因為路由有 :id
+          },
+        })
+        .catch((err) => {
+          console.error("路由跳轉失敗：", err);
+        });
+
+      // 6. 關閉彈窗
+      emit("close");
     }
   }
 };
