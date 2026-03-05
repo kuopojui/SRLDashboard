@@ -1,463 +1,139 @@
-/* --- StuSchedule 核心樣式 --- */
-
-.StuSchedule {
-  background-color: #fcfbf7;
-  min-height: 100vh;
+/* 容器層次 */
+.StudentSchedule {
+  max-width: 850px;
+  margin: 2rem auto;
+  padding: 0 1rem;
 }
 
-.text-navy {
-  color: #3a5a8a !important;
-}
-
-/* 1. 時間軸結構 */
-.schedule-timeline {
-  display: flex;
-  flex-direction: column;
-  padding-left: 45px;
-  border-left: 2px dashed #d1d5db;
-  margin-left: 20px;
-}
-
-.unit-card-wrapper,
-.special-section-wrapper {
+/* 核心卡片設計：專業海軍藍邊框 */
+.unit-card-premium {
   position: relative;
-  padding-bottom: 50px;
-}
-
-/* 僅針對一般單元的標頭增加互動感 */
-.unit-card-wrapper .unit-summary-header {
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.unit-card-wrapper .unit-summary-header:hover {
-  background-color: rgba(74, 112, 169, 0.05); /* 淡淡的藍色背景 */
-}
-
-.unit-card-wrapper .unit-summary-header:active {
-  transform: scale(0.995); /* 點擊時的物理反饋 */
-}
-
-/* 2. 標籤徽章 (Badge) */
-.unit-badge,
-.special-badge {
-  position: absolute;
-  left: -63px;
-  top: 22px;
-  color: white;
-  padding: 6px 16px;
-  border-radius: 50px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  z-index: 10;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  white-space: nowrap;
-}
-
-.unit-badge {
-  background: #3a5a8a;
-}
-.pretest-section .special-badge {
-  background: #64748b;
-}
-.posttest-section .special-badge {
-  background: #16a34a;
-}
-
-/* 3. 卡片外觀 */
-.unit-card {
-  background: white;
-  border-radius: 28px;
-  border: 1px solid #eeede4;
+  background: #ffffff;
+  border: 1px solid rgba(0, 44, 83, 0.1) !important;
+  border-radius: 16px !important;
+  transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
   overflow: hidden;
-  transition: transform 0.3s ease;
-}
-
-.unit-card-header {
-  padding: 20px 30px;
-  background: #f8fafc;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.unit-meta {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  margin-top: 4px;
-}
-
-.unit-card-body {
-  padding: 30px;
-}
-
-/* 4. 區塊與教材 */
-.section-label {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: #3a5a8a;
-  margin-bottom: 15px;
-}
-
-.material-row {
-  background: #fcfbf7;
-  border: 1px solid #eeede4;
-  padding: 15px 20px;
-  border-radius: 18px;
-  margin-bottom: 12px;
-}
-
-.btn-download-sm {
-  background: white;
-  border: 1.5px solid #e2e8f0;
-  color: #3a5a8a;
-  padding: 5px 15px;
-  border-radius: 50px;
-  font-weight: 700;
-  font-size: 0.8rem;
-  transition: all 0.2s;
-}
-
-.btn-download-sm:hover {
-  background: #3a5a8a;
-  color: white;
-}
-
-/* 5. 任務卡片 Grid */
-.task-grid,
-.task-grid-single {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
-}
-
-.task-card {
-  background: #fff;
-  border: 1.5px solid #f1f5f9;
-  padding: 15px;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.3s;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-left: 5px solid #eee;
+  z-index: 1;
 }
 
-.task-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+/* 懸停：深度懸浮感 + 邊框強化 */
+.unit-card-premium:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0, 44, 83, 0.12) !important;
+  border-color: #002c53 !important;
 }
 
-.assignment-card {
-  border-left-color: #3a5a8a;
-}
-.exam-card {
-  border-left-color: #f59e0b;
-}
-.pretest-accent {
-  border-left-color: #64748b;
-}
-.posttest-accent {
-  border-left-color: #16a34a;
-}
-
-/* 6. 狀態標籤 */
-.status-tag {
-  font-size: 0.7rem;
-  padding: 4px 10px;
-  border-radius: 50px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-.is-done {
-  background: #e8f5e9;
-  color: #16a34a;
-}
-.is-pending {
-  background: #fff1f2;
-  color: #e11d48;
-}
-
-/* --- 7. Modal 覆蓋與遮罩 (解決手機滑不動/鎖死問題) --- */
-.ScheduleModalOverlay {
-  position: fixed !important;
-  /* 🌟 使用全方位定位確保覆蓋 */
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-
-  width: 100% !important;
-  height: 100% !important;
-  background: rgba(15, 23, 42, 0.75) !important;
-  backdrop-filter: blur(8px) !important;
-
-  /* 🌟 修正捲動邏輯 */
-  display: block !important;
-  overflow-y: scroll !important; /* 強制顯示捲動軌道以利偵測 */
-  overflow-x: hidden !important;
-  -webkit-overflow-scrolling: touch; /* 解決 iOS 卡頓 */
-
-  z-index: 5000 !important;
-  padding: 1rem;
-
-  /* 🌟 防止手勢穿透 */
-  touch-action: pan-y !important;
-}
-
-/* 🌟 確保 Modal 本體不會攔截捲動 */
-.StuSrlPlan-Combined {
-  max-width: 950px;
-  margin: 1rem auto !important;
-  position: relative;
-
-  /* 🌟 關鍵：確保 pointer-events 正確 */
-  pointer-events: auto !important;
-
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-
-  /* 🌟 確保內容不會被切斷 */
-  overflow: visible !important;
-  height: auto !important;
-}
-
-/* 🌟 RWD 手機版特別處理 */
-@media (max-width: 768px) {
-  .ScheduleModalOverlay {
-    padding: 0.5rem;
-  }
-
-  .StuSrlPlan-Combined {
-    margin-top: 0 !important;
-    margin-bottom: 2rem !important; /* 給底部按鈕留點空間 */
-    border-radius: 12px;
-    width: 100%;
-  }
-}
-
-/* --- 2. 彈窗本體 (Card) --- */
-.modal-card-custom {
-  position: relative !important;
-  background: white !important;
-  width: 90% !important;
-  max-width: 850px; /* 任務彈窗最大寬度 */
-  max-height: 90vh;
-  border-radius: 30px !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  z-index: 6000 !important;
-}
-
-/* 🌟 專屬修正：單元導引彈窗寬度限制 (針對 image_b24f4d.png) */
-.unit-intro-card {
-  max-width: 550px !important; /* 單元導引不需要太寬，視覺更精緻 */
-}
-
-/* 🌟 修正後的關閉按鈕，確保 ✕ 完美置中 */
-.close-btn {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  background: #f1f5f9;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.close-btn:hover {
-  transform: rotate(90deg);
-  background: #e2e8f0;
-}
-
-.custom-x-text {
-  font-size: 1.2rem;
-  color: #64748b;
-  line-height: 1;
-  margin-top: -2px; /* 視覺重心微調 */
-}
-/* 影片 */
-.video-preview-box {
-  width: 100%;
-  padding-top: 56.25%;
-  position: relative;
-  border-radius: 15px;
-  overflow: hidden;
-  background: #000;
-}
-.video-preview-box iframe,
-.video-preview-box video {
+/* 背景流光：點擊感的視覺反饋 */
+.unit-card-premium::before {
+  content: "";
   position: absolute;
   top: 0;
-  left: 0;
+  left: -100%;
   width: 100%;
   height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(0, 44, 83, 0.03),
+    transparent
+  );
+  transition: 0.6s;
 }
 
-/* 🌟 影片彈窗專屬背景與比例控制 */
-.video-modal-content {
-  background-color: #0f172a !important; /* 深藍黑色背景提升電影感 */
-  min-height: 300px;
+.unit-card-premium:hover::before {
+  left: 100%;
 }
 
-.video-wrapper {
-  background: #000;
-  max-width: 100%;
+/* 左側狀態指示燈 */
+.status-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  background: #e2e8f0;
+  transition: all 0.3s ease;
 }
 
-.video-wrapper video {
-  max-height: 70vh; /* 防止影片太高超出螢幕 */
-  object-fit: contain;
+.unit-card-premium:hover .status-bar {
+  width: 8px;
 }
 
-/* 讓 Modal 在影片模式時可以寬一點 */
-.modal-card-custom:has(.video-modal-content) {
-  max-width: 950px !important;
+/* 狀態顏色 */
+.is-planned .status-bar {
+  background: #198754;
+} /* 成功綠 */
+.needs-planning .status-bar {
+  background: #ffc107; /* 警告黃 */
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
 }
 
-/* Toast */
-.success-toast {
-  position: fixed;
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #16a34a;
-  color: white;
-  padding: 12px 30px;
-  border-radius: 50px;
-  font-weight: 800;
-  z-index: 3000;
-  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2);
-}
-
-/*四欄*/
-/*前測*/
-/* 🌟 補強：前測與後測觸發條背景 */
-.bg-pretest-subtle {
-  background-color: #f1f5f9 !important; /* 淺灰藍色 */
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.bg-posttest-subtle {
-  background-color: #f0fdf4 !important; /* 淺綠色 */
-  border-bottom: 1px solid #dcfce7;
-}
-
-.text-posttest {
-  color: #16a34a !important; /* 後測文字綠色 */
-}
-
-/*前後測*/
-/* 確保特殊區塊有正確的垂直間距 */
-.special-section-wrapper {
-  position: relative;
-  padding-bottom: 40px; /* 增加與 UNIT 1 的距離 */
-}
-
-/* 確保 START 徽章位置正確 */
-.pretest-section .special-badge {
-  background: #64748b; /* 灰色背景與 START 字樣 */
-}
-
-/* 確保特殊區塊有正確的垂直間距 */
-.special-section-wrapper {
-  position: relative;
-  padding-bottom: 40px; /* 增加與 UNIT 1 的距離 */
-}
-
-/* 確保 START 徽章位置正確 */
-.pretest-section .special-badge {
-  background: #64748b; /* 灰色背景與 START 字樣 */
-}
-/* 縱向大排版容器 */
-.unit-resource-accordion {
-  border-top: 1px solid #f1f5f9;
-}
-
-/* 類別觸發條 */
-.group-trigger {
-  padding: 20px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  background: #fff;
-  border-bottom: 1px solid #f1f5f9;
-  transition: all 0.2s;
-}
-
-.group-trigger:hover {
+/* 序號球：海軍藍質感 */
+.unit-index-badge {
+  width: 36px;
+  height: 36px;
   background: #f8fafc;
-}
-
-.group-trigger h6 {
-  font-size: 1.1rem; /* 標題變大 */
-  font-weight: 800;
-  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #002c53;
+  transition: all 0.3s ease;
 }
 
-/* 展開內容區 */
-.group-content {
-  background: #fcfcfc;
-  border-bottom: 1px solid #f1f5f9;
+.unit-card-premium:hover .unit-index-badge {
+  background: #002c53;
+  color: #ffffff;
+  transform: rotate(-10deg) scale(1.1);
 }
 
-/* 箭頭旋轉動畫 */
-.bi-chevron-down {
-  transition: transform 0.3s ease;
-  color: #94a3b8;
-}
-.rotate-180 {
-  transform: rotate(180deg);
-  color: #3a5a8a;
-}
-
-/* 內容滑動動畫 */
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.3s ease-out;
-  max-height: 1000px; /* 給予足夠高度 */
-  overflow: hidden;
-}
-.slide-enter-from,
-.slide-leave-to {
-  max-height: 0;
-  opacity: 0;
+/* 標籤設計：更精緻的背景色 */
+.badge-custom {
+  font-size: 0.75rem;
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-/* 強化 Brick 在縱向排版下的寬度 */
-.ex-item-brick {
-  width: 100%;
-  max-width: 1000px; /* 限制在大螢幕下的最大寬度 */
-  margin-left: auto;
-  margin-right: auto;
+/* 右側箭頭：動態平移 */
+.arrow-wrapper {
+  color: #002c53;
+  opacity: 0.3;
+  transition: all 0.3s ease;
+  transform: translateX(0);
 }
 
-/* RWD */
-@media (max-width: 768px) {
-  .schedule-timeline {
-    padding-left: 30px;
-    margin-left: 10px;
+.unit-card-premium:hover .arrow-wrapper {
+  opacity: 1;
+  transform: translateX(5px) scale(1.2);
+}
+
+/* --- Modal 遮罩層：高級玻璃擬態 --- */
+.ScheduleModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 20, 40, 0.4); /* 深藍色半透明 */
+  backdrop-filter: blur(10px); /* 模糊背景 */
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: modalIn 0.4s ease-out;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
   }
-  .unit-badge,
-  .special-badge {
-    left: -45px;
-    font-size: 0.6rem;
-    padding: 4px 10px;
-  }
-  .unit-card-body {
-    padding: 20px;
-  }
-  .task-grid {
-    grid-template-columns: 1fr;
+  to {
+    opacity: 1;
+    backdrop-filter: blur(10px);
   }
 }

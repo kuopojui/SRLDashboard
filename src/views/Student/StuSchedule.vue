@@ -19,34 +19,11 @@
             v-else-if="activeFeatures.planning"
             class="ms-2 badge bg-warning-subtle text-dark border border-warning-subtle"
           >
-            <i class="bi bi-pencil-square me-1"></i>點擊開始規劃
+            <i class="bi bi-pencil-square me-1"></i>需先完成規劃
           </span>
         </div>
 
-        <i
-          class="bi"
-          :class="
-            isOpen(unit.id)
-              ? 'bi-chevron-up text-primary'
-              : 'bi-chevron-down opacity-50'
-          "
-        ></i>
-      </div>
-
-      <div
-        v-if="isOpen(unit.id)"
-        class="p-3 bg-light border-start border-end border-bottom rounded-bottom"
-      >
-        <div v-if="unit.materials?.length">
-          <p class="small text-muted mb-1 fw-bold">教材：</p>
-          <div
-            v-for="mId in unit.materials"
-            :key="mId"
-            class="p-2 border bg-white mb-1 rounded small shadow-xs"
-          >
-            ID: {{ mId }}
-          </div>
-        </div>
+        <i class="bi bi-arrow-right-circle text-primary opacity-75"></i>
       </div>
     </div>
 
@@ -62,6 +39,7 @@
           :unitData="schedule.find((u) => u.id === activeTaskId)"
           :initialAnswers="activeTaskInitialData"
           @submit-success="onTaskSubmitted"
+          @start-unit="handleRedirectToUnit"
           @close="showActiveModal = false"
         />
       </div>
@@ -70,51 +48,60 @@
 </template>
 
 <script setup>
-import { ref, onMounted, markRaw } from "vue";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router"; // 🌟 引入路由
 import { rtdb, auth } from "../../firebase/config";
 import { ref as dbRef, onValue } from "firebase/database";
-import StuSrlPlan from "./Modal/StuSRLPlan.vue"; // 🌟 引入計畫組件
+import StuSrlPlan from "./Modal/StuSRLPlan.vue";
 import "./StuSchedule.css";
 
 const props = defineProps({ courseId: String });
+const router = useRouter(); // 🌟 宣告路由實例
 
 const schedule = ref([]);
-const unitPlans = ref({}); // 存放學生已填寫的計畫
-const activeFeatures = ref({ planning: false }); // 🌟 組別功能開關
-const openUnits = ref([]);
+const unitPlans = ref({});
+const activeFeatures = ref({ planning: false });
 
-// 彈窗控制
 const showActiveModal = ref(false);
 const activeTaskId = ref("");
 const activeTaskInitialData = ref({});
 
-// 1. 核心點擊邏輯：判斷攔截或展開
+// 🌟 核心點擊邏輯更新
 const handleUnitClick = (unit) => {
   const unitId = unit.id;
+  // 檢查是否有計畫紀錄 (確保 unitPlans.value 存在且有該 unitId 的 targetTime)
   const hasPlan = !!(unitPlans.value && unitPlans.value[unitId]?.targetTime);
 
-  // 🌟 若組別有開啟規劃功能且尚未填過，則攔截
+  // 1. 如果組別【開啟】規劃功能 且 【尚未】填寫計畫：彈出 Modal
   if (activeFeatures.value.planning && !hasPlan) {
     activeTaskId.value = unitId;
     activeTaskInitialData.value = { unitTitle: unit.title };
     showActiveModal.value = true;
-  } else {
-    toggleUnit(unitId);
+  }
+  // 2. 如果是控制組 (無規劃功能) 或 已填寫計畫：直接跳轉 StuUnit
+  else {
+    handleRedirectToUnit(unitId);
   }
 };
 
-const toggleUnit = (id) => {
-  const index = openUnits.value.indexOf(id);
-  if (index > -1) openUnits.value.splice(index, 1);
-  else openUnits.value.push(id);
+// 🌟 執行跳轉的函式
+const handleRedirectToUnit = (unitId) => {
+  console.log("執行跳轉，單元ID:", unitId);
+  router.push({
+    name: "StuUnit",
+    params: {
+      courseId: props.courseId,
+      id: unitId,
+    },
+  });
+  // 如果是從 Modal 觸發的，記得關閉
+  showActiveModal.value = false;
 };
 
-const isOpen = (id) => openUnits.value.includes(id);
-
-// 2. 計畫提交成功：關閉彈窗並自動展開單元
+// 計畫提交成功後的動作 (如果只是存檔而不直接進入)
 const onTaskSubmitted = () => {
   showActiveModal.value = false;
-  if (activeTaskId.value) toggleUnit(activeTaskId.value);
+  // 可在此加入 Swal 提示
 };
 
 onMounted(() => {
@@ -122,23 +109,19 @@ onMounted(() => {
   const uid = auth.currentUser?.uid;
   const coursePath = `courses/${props.courseId}`;
 
-  // 監聽單元清單
   onValue(dbRef(rtdb, `${coursePath}/units`), (snapshot) => {
     const data = snapshot.val() || {};
     schedule.value = Object.entries(data).map(([id, val]) => ({ id, ...val }));
   });
 
   if (uid) {
-    // 🌟 監聽學生已填寫的計畫紀錄
     onValue(dbRef(rtdb, `${coursePath}/profiles/${uid}/srl/planning`), (s) => {
       unitPlans.value = s.val() || {};
     });
 
-    // 🌟 監聽學生組別並讀取功能開關
     onValue(dbRef(rtdb, `${coursePath}/profiles/${uid}`), (snap) => {
       const profile = snap.val();
       if (profile?.groupId) {
-        // 讀取對應組別的 features 設定
         onValue(
           dbRef(
             rtdb,

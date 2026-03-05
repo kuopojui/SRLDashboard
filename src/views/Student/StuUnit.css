@@ -1,140 +1,179 @@
-/* --- StuUnit 彈窗專屬樣式 --- */
+/* 基礎變數與頁面背景 */
+:root {
+  --navy-dark: #4a70a9;
+  --navy-light: #35507d;
+  --success-green: #198754;
+  --warning-gold: #ffc107;
+  --bg-slate: #f8fafc;
+}
 
-/* 彈窗主卡片本體：移除 margin auto，由 Overlay 處理定位 */
-.unit-intro-card-modal {
+.StuUnit-Page {
+  min-height: 100vh;
+  background-color: var(--bg-slate);
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  overflow-x: hidden; /* 防止抽屜彈出時產生橫向滾動 */
+}
+
+/* --- 1. 時間校準條 (Calibration Bar) --- */
+.calibration-bar {
   background: white;
-  border-radius: 28px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 12px 0;
+  border-bottom: 2px solid #f1f5f9;
+  position: sticky;
+  top: 0;
+  z-index: 1060;
+}
+
+.progress-track {
+  height: 10px;
+  background: #eef2f7;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* 標頭區塊：縮減 padding 以適應彈窗高度 */
-.unit-intro-header {
-  padding: 30px 25px;
-  text-align: center;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  border-bottom: 1px dashed #e2e8f0;
+.progress-fill.actual {
+  height: 100%;
+  background: linear-gradient(90deg, var(--navy-dark), var(--navy-light));
+  transition: width 1s linear;
 }
 
-.unit-tag {
-  display: inline-block;
-  background: var(--navy);
+.progress-fill.over-time {
+  background: linear-gradient(90deg, var(--danger-red), #f8d7da);
+}
+
+/* --- 2. 監控導覽列 (Navbar) --- */
+.srl-monitor-navbar {
+  background: var(--navy-dark);
+  height: 75px;
   color: white;
-  padding: 4px 14px;
-  border-radius: 50px;
-  font-weight: 900;
-  font-size: 0.7rem;
-  margin-bottom: 12px;
-  letter-spacing: 0.5px;
+  position: sticky;
+  top: 46px; /* 剛好在校準條下方 */
+  z-index: 1050;
+  box-shadow: 0 4px 12px rgba(0, 44, 83, 0.1);
 }
 
-/* 資源統計：改為更緊湊的網格佈局 */
-.unit-resource-overview {
-  padding: 25px;
+/* AI 切換按鈕樣式 */
+.btn-ai-toggle {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid var(--ai-accent);
+  color: var(--ai-accent);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
 }
 
-.resource-stat-card {
-  background: #fcfbf8;
-  border: 1.5px solid #edf2f7;
-  border-radius: 16px;
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease;
-  height: 100%; /* 確保同列等高 */
+.btn-ai-toggle:hover {
+  background: var(--ai-accent);
+  color: var(--navy-dark);
 }
 
-.resource-stat-card:hover {
-  border-color: var(--navy-light);
-  transform: translateY(-2px);
-}
-
-.resource-stat-card i {
-  font-size: 1.5rem; /* 稍微縮小圖示 */
-}
-
-.resource-stat-card .stat-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.resource-stat-card .label {
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #94a3b8;
-  text-transform: uppercase;
-}
-
-.resource-stat-card .value {
-  font-size: 1rem;
-  font-weight: 900;
-  color: var(--text-dark);
-}
-
-/* 側邊條裝飾 */
-.border-primary-soft {
-  border-left: 4px solid var(--navy);
-}
-.border-amber {
-  border-left: 4px solid #f59e0b;
-}
-.border-emerald {
-  border-left: 4px solid #10b981;
-}
-
-/* 注意事項區塊：優化背景感 */
-.unit-notice-section {
-  padding: 0 25px 25px;
-}
-
-.notice-box {
-  background: #f8fafc;
-  padding: 15px 20px;
-  border-radius: 14px;
-}
-
-.notice-list {
-  padding-left: 15px;
-  color: #64748b;
-  font-size: 0.85rem;
-  margin-bottom: 0;
-}
-
-.notice-list li {
-  margin-bottom: 6px;
-}
-
-/* 底部按鈕區：改為白色背景 */
-.unit-intro-footer {
-  padding: 20px 25px 30px;
+/* --- 3. 監控抽屜 (Monitor Drawer) --- */
+.monitor-drawer {
+  position: fixed;
+  left: 0;
+  top: 121px; /* Calibration Bar + Navbar 的高度 */
+  width: 320px;
+  height: calc(100vh - 121px);
   background: white;
-  border-top: 1px solid #f1f5f9;
+  z-index: 1040;
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+  padding-bottom: 2rem;
 }
 
-/* 移除不再需要的返回按鈕樣式，若彈窗頂部需要關閉按鈕，請沿用下方樣式 */
-.modal-close-icon {
+/* 成績差距卡片 */
+.score-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.3s ease;
+}
+
+.score-val {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--navy-dark);
+}
+.score-lab {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
+}
+.top-group .score-val {
+  color: var(--navy-light);
+}
+
+/* AI 建議框樣式 */
+.ai-suggestion-box {
+  background: #f0f7ff;
+  padding: 16px;
+  border-radius: 12px;
+  border-left: 4px solid var(--navy-light);
+}
+
+/* --- 4. 內容區頁籤 (Tabs) --- */
+.nav-tabs-custom {
+  border: none;
+  gap: 8px;
+}
+
+.nav-tabs-custom .nav-link {
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: 0.3s;
   cursor: pointer;
-  color: #94a3b8;
-  transition: 0.2s;
 }
 
-.modal-close-icon:hover {
-  color: var(--text-dark);
-  transform: rotate(90deg);
+.nav-tabs-custom .nav-link.active {
+  background: var(--navy-dark);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 44, 83, 0.2);
 }
 
-/* 響應式調整：彈窗在手機上不要太擠 */
-@media (max-width: 576px) {
-  .unit-resource-overview {
-    padding: 15px;
+/* --- 5. 動畫效果 --- */
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(-100%);
+}
+
+.pulse-text {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
   }
-  .resource-stat-card {
-    padding: 10px;
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* RWD 適配調整 */
+@media (max-width: 992px) {
+  .monitor-drawer {
+    width: 100%; /* 手機版佔滿寬度 */
+    top: 0;
+    height: 100vh;
+    z-index: 2000;
   }
 }
