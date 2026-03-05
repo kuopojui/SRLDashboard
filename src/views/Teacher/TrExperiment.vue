@@ -90,6 +90,7 @@
                         type="checkbox"
                         v-model="group.features.isLeaderboardAnonymous"
                         :id="'anon' + idx"
+                        @change="saveGroups"
                       />
                       <label
                         class="form-check-label xx-small fw-bold text-secondary ms-1"
@@ -421,31 +422,44 @@ const removeGroup = (index) => {
 };
 
 // C. 儲存組別配置（包含通行碼）
+// C. 儲存組別配置（確保包含所有 SRL 階段與匿名設定）
 const saveGroups = async () => {
   loading.value = true;
   try {
     const groupData = {};
+
     experimentGroups.value.forEach((g) => {
+      // 確保 features 下的所有欄位都有預設值，防止寫入 undefined
+      const features = {
+        planning: g.features?.planning ?? false,
+        monitoring: g.features?.monitoring ?? false,
+        aiAdvice: g.features?.aiAdvice ?? false,
+        reflection: g.features?.reflection ?? false,
+        isLeaderboardAnonymous: g.features?.isLeaderboardAnonymous ?? false, // 🌟 確保寫入匿名排行榜設定
+      };
+
       // 構建上傳至 Firebase 的物件結構
       groupData[g.id] = {
-        name: g.name,
-        passCode: g.passCode || "", // 🌟 確保儲存通行碼
-        features: g.features,
+        name: g.name || "未命名組別",
+        passCode: g.passCode || "",
         aiCustomPrompt: g.aiCustomPrompt || "",
+        features: features, // 使用清理後的 features
       };
     });
 
+    // 執行寫入 (使用 set 會覆蓋該路徑下的舊資料，確保與列表同步)
     await set(dbRef(db, `courses/${courseId}/experiment/groups`), groupData);
 
     Swal.fire({
       icon: "success",
       title: "組別配置已儲存",
-      text: "學生現在可透過設定的通行碼進入對應組別",
+      text: "學生端將即時套用新的 SRL 功能與排行榜設定",
       timer: 1500,
+      showConfirmButton: false,
     });
   } catch (e) {
     console.error("儲存失敗:", e);
-    Swal.fire("錯誤", "儲存失敗，請檢查網路連線", "error");
+    Swal.fire("錯誤", "儲存失敗，請檢查網路連線或權限設定", "error");
   } finally {
     loading.value = false;
   }

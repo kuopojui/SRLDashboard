@@ -1,15 +1,32 @@
 <template>
   <div class="StuRank card border-0 shadow-sm p-4 rounded-4">
     <div class="d-flex align-items-center justify-content-between mb-4">
-      <div class="d-flex align-items-center">
-        <div class="icon-box me-3 bg-soft-primary text-primary">
-          <i class="bi bi-trophy-fill"></i>
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+          <div class="icon-box me-3 bg-soft-primary text-primary">
+            <i class="bi bi-trophy-fill"></i>
+          </div>
+          <h5 class="fw-bold mb-0 text-navy">學習積分排行榜</h5>
         </div>
-        <h5 class="fw-bold mb-0 text-navy">學習積分排行榜</h5>
+
+        <span
+          class="badge border px-3 rounded-pill xx-small transition-all"
+          :class="
+            isAnonymousMode
+              ? 'bg-primary text-white border-primary'
+              : 'bg-light text-muted'
+          "
+        >
+          <i
+            :class="
+              isAnonymousMode
+                ? 'bi bi-incognito me-1'
+                : 'bi bi-person-check me-1'
+            "
+          ></i>
+          {{ isAnonymousMode ? "匿名模式已開啟" : "實名模式" }}
+        </span>
       </div>
-      <span class="badge bg-light text-muted border px-3 rounded-pill xx-small">
-        {{ isAnonymousMode ? "匿名模式已開啟" : "實名模式" }}
-      </span>
     </div>
 
     <div class="rank-list custom-scrollbar">
@@ -101,41 +118,68 @@ const sortedRank = computed(() => {
   return [...students.value].sort((a, b) => (b.score || 0) - (a.score || 0));
 });
 
-// 3. 監聽 Firebase 資料
 onMounted(() => {
   const user = auth.currentUser;
-  if (!user) return;
+  // 增加安全檢查，確保有課程 ID 與使用者
+  if (!user || !props.courseId) {
+    console.error("缺少 courseId 或使用者未登入");
+    return;
+  }
 
-  // A. 先取得自己的組別與該組的匿名設定
-  onValue(
-    dbRef(rtdb, `courses/${props.courseId}/profiles/${user.uid}`),
-    (profileSnap) => {
-      const myProfile = profileSnap.val();
-      if (myProfile && myProfile.groupId) {
-        // B. 監聽組別的匿名開關
-        onValue(
-          dbRef(
-            rtdb,
-            `courses/${props.courseId}/experiment/groups/${myProfile.groupId}/features/isLeaderboardAnonymous`,
-          ),
-          (anonSnap) => {
-            isAnonymousMode.value = anonSnap.val() || false;
-          },
-        );
-
-        // C. 抓取同組所有同學資料
-        const groupQuery = query(
-          dbRef(rtdb, `courses/${props.courseId}/profiles`),
-          orderByChild("groupId"),
-          equalTo(myProfile.groupId),
-        );
-
-        onValue(groupQuery, (snapshot) => {
-          const data = snapshot.val();
-          students.value = data ? Object.values(data) : [];
-        });
-      }
-    },
+  // A. 取得個人檔案以確認組別 (groupId)
+  const myProfileRef = dbRef(
+    rtdb,
+    `courses/${props.courseId}/profiles/${user.uid}`,
   );
+
+  onValue(myProfileRef, (profileSnap) => {
+    const myProfile = profileSnap.val();
+
+    // 檢查是否有 groupId (對應 JSON 中的 1772465854980 等 ID)
+    if (myProfile && myProfile.groupId) {
+      const gid = myProfile.groupId;
+      console.log(`[系統] 偵測到使用者組別: ${gid}`);
+
+      // B. 監聽該組別的匿名開關
+      // 路徑對應: courses/{id}/experiment/groups/{gid}/features/isLeaderboardAnonymous
+      const anonymousRef = dbRef(
+        rtdb,
+        `courses/${props.courseId}/experiment/groups/${gid}/features/isLeaderboardAnonymous`,
+      );
+
+      onValue(anonymousRef, (anonSnap) => {
+        // 🌟 強化判定：確保不管是布林值 true 還是字串 "true" 都能正確驅動
+        const rawVal = anonSnap.val();
+        isAnonymousMode.value = rawVal === true || rawVal === "true";
+
+        console.log(
+          `[實驗設定] 匿名模式即時狀態: ${isAnonymousMode.value} (原始值: ${rawVal})`,
+        );
+      });
+
+      // C. 抓取同組所有同學資料
+      const profilesRef = dbRef(rtdb, `courses/${props.courseId}/profiles`);
+      const groupQuery = query(
+        profilesRef,
+        orderByChild("groupId"),
+        equalTo(gid),
+      );
+
+      onValue(groupQuery, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          // 將物件轉為陣列，補入 uid 用於 getDisplayName 的本人判定
+          students.value = Object.entries(data).map(([uid, val]) => ({
+            uid: uid,
+            ...val,
+          }));
+        } else {
+          students.value = [];
+        }
+      });
+    } else {
+      console.warn("該使用者尚未分配組別，無法判斷匿名模式");
+    }
+  });
 });
 </script>

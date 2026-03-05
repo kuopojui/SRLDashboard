@@ -84,7 +84,7 @@
             <button class="btn-close-custom" @click="handleCloseRank">✕</button>
           </div>
           <div class="StuDashboard-modal-body p-4">
-            <StuRank />
+            <StuRank :course-id="props.courseId" />
           </div>
         </div>
       </div>
