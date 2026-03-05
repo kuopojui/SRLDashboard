@@ -160,10 +160,29 @@
               <div
                 class="ai-suggestion p-3 border-start border-4 border-primary bg-light rounded-end shadow-xs"
               >
-                <p class="small mb-2 text-navy fw-bold">
-                  <i class="bi bi-robot me-1"></i> {{ aiAdvice }}
-                </p>
-                <div class="form-check small">
+                <div v-if="isAiLoading" class="text-center py-2">
+                  <div
+                    class="spinner-border spinner-border-sm text-primary me-2"
+                  ></div>
+                  <span class="small text-muted italic">教練正在思考中...</span>
+                </div>
+
+                <div v-else>
+                  <p class="small mb-2 text-navy fw-bold leading-relaxed">
+                    <i class="bi bi-robot me-1 text-primary"></i>
+                    {{ aiAdviceText }}
+                  </p>
+
+                  <button
+                    @click="generateTestAdvice"
+                    class="btn btn-sm btn-outline-primary border-0 px-2 py-0 mb-2"
+                    style="font-size: 10px"
+                  >
+                    <i class="bi bi-arrow-clockwise"></i> 重新產生建議
+                  </button>
+                </div>
+
+                <div class="form-check small mt-1">
                   <input
                     class="form-check-input pointer"
                     type="checkbox"
@@ -195,6 +214,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
+import { askOpenAI } from "../../../services/aiService";
 
 // 🌟 明確定義 Props
 const props = defineProps({
@@ -220,6 +240,10 @@ const attribution = ref(null);
 const strategyScore = ref(0);
 const acceptAdvice = ref(false);
 
+// 🌟 AI 回覆相關狀態
+const aiAdviceText = ref("正在載入 AI 學習建議...");
+const isAiLoading = ref(false);
+
 const attributionOptions = [
   { val: "difficulty", label: "內容難度較高" },
   { val: "distraction", label: "外部環境干擾" },
@@ -244,5 +268,32 @@ const handleConfirm = () => {
     plannedMins: props.plannedMins,
     timeGap: props.actualMins - props.plannedMins,
   });
+};
+
+const generateTestAdvice = async () => {
+  isAiLoading.value = true;
+  aiAdviceText.value = "AI 正在分析您的學習歷程...";
+
+  try {
+    // 組合要給 AI 的訊息
+    const systemMsg =
+      props.teacherPrompt || "你是一位引導學生進行自我調節學習的教練。";
+    const studentMsg = `
+      單元：${props.srlSession?.unitTitle || "當前單元"}
+      計畫時間：${props.plannedMins} 分鐘
+      實際時間：${props.actualMins} 分鐘
+      使用策略：${props.srlSession?.standards?.strategies?.join("、") || "自主調整"}
+      請針對我的時間預估準確度與策略使用給予一段 100 字內的學習建議。
+    `;
+
+    // 🚀 正式呼叫 API
+    const result = await askOpenAI(systemMsg, studentMsg);
+    aiAdviceText.value = result;
+  } catch (error) {
+    aiAdviceText.value =
+      "目前無法連線至 AI 服務，請確認 .env 設定與 API 額度。";
+  } finally {
+    isAiLoading.value = false;
+  }
 };
 </script>
