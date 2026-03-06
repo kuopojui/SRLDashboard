@@ -51,7 +51,7 @@ const routes = [
     component: () => import("../views/Student/PreTest.vue"),
   },
   {
-    path: "/studashboard/:courseId/unit/:id",
+    path: "/studashboard/:courseId/unit/:id/:userId",
     name: "StuUnit",
     component: StuUnit,
     props: true,

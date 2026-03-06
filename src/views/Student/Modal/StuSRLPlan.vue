@@ -525,7 +525,7 @@ const handleSaveOnly = async () => {
 // StuSRLPlan.vue
 const handleStartUnit = async () => {
   // 1. 驗證邏輯：確保規劃完整
-  if (calculatedTotalMins.value === 0 || !planData.value.targetGoal) {
+  if (calculatedTotalMins.value === 0 || !planData.value.targetGoal.trim()) {
     Swal.fire({
       icon: "warning",
       title: "規劃尚未完成",
@@ -535,7 +535,18 @@ const handleStartUnit = async () => {
     return;
   }
 
-  // 2. 彈出確認視窗
+  // 2. 獲取 UID 防呆：確保跳轉不會因為缺少 userId 而崩潰
+  const currentUid = auth.currentUser?.uid;
+  if (!currentUid) {
+    Swal.fire({
+      icon: "error",
+      title: "身份驗證失敗",
+      text: "請重新登入後再試。",
+    });
+    return;
+  }
+
+  // 3. 彈出確認視窗，強化學生的行動承諾
   const result = await Swal.fire({
     title: "準備好開始學習了嗎？",
     html: `您預計投入 <b>${totalMinutesDisplay.value}</b><br>目標：${planData.value.targetGoal}`,
@@ -547,11 +558,11 @@ const handleStartUnit = async () => {
   });
 
   if (result.isConfirmed) {
-    // 3. 儲存至 Firebase
+    // 4. 儲存至 Firebase
     const success = await saveToFirebase(true);
 
     if (success) {
-      // 4. 將「標準」存入本地，供 StuUnit 頁面讀取
+      // 5. 將「標準」存入本地，供 StuUnit 頁面作為自我觀察的對照基準
       const srlSession = {
         unitId: props.unitData.id,
         courseId: props.courseId,
@@ -572,22 +583,26 @@ const handleStartUnit = async () => {
         showConfirmButton: false,
       });
 
-      // 5. 🌟 執行跳轉 (修正 Params 以符合 router/index.js)
-      console.log("正在跳轉至單元頁面：", props.unitData.id);
+      // 6. 🌟 執行跳轉 (補齊 userId 以符合 router/index.js)
+      console.log("🚀 正確帶參數跳轉：", {
+        unitId: props.unitData.id,
+        userId: currentUid,
+      });
 
       router
         .push({
           name: "StuUnit",
           params: {
-            courseId: props.courseId, // 🌟 必須傳入，因為路由有 :courseId
-            id: props.unitData.id, // 🌟 必須傳入，因為路由有 :id
+            courseId: props.courseId,
+            id: props.unitData.id,
+            userId: currentUid, // 🌟 補上這行，解決 Missing required param 報錯
           },
         })
         .catch((err) => {
           console.error("路由跳轉失敗：", err);
         });
 
-      // 6. 關閉彈窗
+      // 7. 關閉彈窗
       emit("close");
     }
   }
