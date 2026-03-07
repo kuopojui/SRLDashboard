@@ -1,9 +1,5 @@
-/* ============================================================
-   EX-STYLE 極致精密管理系統 - 最終整合置中版
-   核心：解決左右對齊偏差，強化視覺重心，新增空白狀態與分配控制
-   ============================================================ */
-
-:root {
+/* --- 0. 變數定義 (Scoped to .TrUnit) --- */
+.TrUnit {
   --navy: #4a70a9;
   --navy-light: #f0f4f9;
   --brick-red: #bf4646;
@@ -14,35 +10,35 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- 1. 核心容器：強制置中與佈局隔離 --- */
-.ex-form-container {
+/* --- 1. 核心容器 --- */
+.TrUnit.ex-form-container {
   padding: 2.5rem 1rem;
   background-color: var(--bg-beige);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center; /* 🌟 確保所有子元素向中靠攏 */
+  align-items: center;
 }
 
-.TrUnit-layout-container {
+.TrUnit .TrUnit-layout-container {
   width: 100%;
-  max-width: 1120px; /* 🌟 黃金比例寬度，防止在大螢幕過度拉伸 */
+  max-width: 1120px;
   margin: 0 auto;
 }
 
-/* --- 2. 標頭兩端對齊：解決標題與按鈕跑位 --- */
-.TrUnit-header-bar,
-.ex-library-header {
+/* --- 2. 標頭兩端對齊 --- */
+.TrUnit .TrUnit-header-bar,
+.TrUnit .ex-library-header {
   display: flex !important;
-  justify-content: space-between !important; /* 🌟 標題推至左邊，功能鍵推至右邊 */
+  justify-content: space-between !important;
   align-items: center !important;
   width: 100%;
   margin-bottom: 2rem;
   padding: 0 5px;
 }
 
-/* --- 3. 空白狀態提示 (Empty State) --- */
-.ex-empty-unit-placeholder {
+/* --- 3. 空白狀態提示 --- */
+.TrUnit .ex-empty-unit-placeholder {
   background: #ffffff;
   border: 2px dashed #d1d5db;
   border-radius: 24px;
@@ -53,31 +49,31 @@
   width: 100%;
 }
 
-.ex-empty-unit-placeholder i {
+.TrUnit .ex-empty-unit-placeholder i {
   font-size: 4rem;
   color: #e2e8f0;
   display: block;
 }
 
-.ex-empty-unit-placeholder h4 {
+.TrUnit .ex-empty-unit-placeholder h4 {
   color: #475569;
   font-weight: 800;
   margin-bottom: 0.5rem;
 }
 
-.ex-empty-unit-placeholder p {
+.TrUnit .ex-empty-unit-placeholder p {
   font-size: 0.95rem;
   max-width: 300px;
   margin: 0 auto;
 }
 
-/* --- 4. 單元大綱：摺疊精密控制 --- */
-.ex-unit-scroll {
+/* --- 4. 單元大綱 --- */
+.TrUnit .ex-unit-scroll {
   width: 100%;
   margin-bottom: 3.5rem;
 }
 
-.ex-unit-collapse-card {
+.TrUnit .ex-unit-collapse-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
@@ -87,21 +83,21 @@
   margin-bottom: 1.25rem;
 }
 
-.unit-summary-header {
+.TrUnit .unit-summary-header {
   padding: 16px 24px;
   background: #ffffff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-left: 6px solid var(--navy); /* 🌟 品牌權威色標示 */
+  border-left: 6px solid var(--navy);
 }
 
-.unit-summary-header:hover {
+.TrUnit .unit-summary-header:hover {
   background: var(--navy-light);
 }
 
-.ex-badge {
+.TrUnit .ex-badge {
   background: var(--navy);
   color: #ffffff;
   font-size: 0.7rem;
@@ -111,7 +107,7 @@
   box-shadow: 0 3px 6px rgba(74, 112, 169, 0.15);
 }
 
-.ex-input-clean {
+.TrUnit .ex-input-clean {
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -124,31 +120,31 @@
   transition: 0.2s;
 }
 
-.ex-input-clean:focus {
+.TrUnit .ex-input-clean:focus {
   border-bottom-color: var(--navy);
   background: rgba(74, 112, 169, 0.03);
 }
 
-.unit-stats .badge {
+.TrUnit .unit-stats .badge {
   font-size: 0.75rem;
   font-weight: 700;
   padding: 5px 12px;
 }
 
 /* --- 5. TSSGs 四維度網格佈局 --- */
-.unit-details-content {
+.TrUnit .unit-details-content {
   background: #fdfdfd;
   border-top: 1px solid #f1f5f9;
   padding: 25px;
 }
 
-.ex-resource-grid {
+.TrUnit .ex-resource-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 15px;
 }
 
-.ex-resource-column {
+.TrUnit .ex-resource-column {
   background: #f8fafc;
   padding: 15px;
   border-radius: 14px;
@@ -157,7 +153,7 @@
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.ex-label-small {
+.TrUnit .ex-label-small {
   font-weight: 800;
   font-size: 0.8rem;
   color: var(--navy);
@@ -168,7 +164,7 @@
   text-transform: uppercase;
 }
 
-.ex-item-brick {
+.TrUnit .ex-item-brick {
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -181,17 +177,17 @@
   transition: var(--transition);
 }
 
-.remove-icon {
+.TrUnit .remove-icon {
   color: var(--text-muted);
   cursor: pointer;
   transition: 0.2s;
 }
 
-.remove-icon:hover {
+.TrUnit .remove-icon:hover {
   color: var(--brick-red);
 }
 
-.ex-empty-placeholder {
+.TrUnit .ex-empty-placeholder {
   border: 1px dashed #cbd5e1;
   padding: 10px;
   border-radius: 8px;
@@ -201,8 +197,8 @@
   font-style: italic;
 }
 
-/* --- 6. 資源分配庫與選取器：精密平衡 --- */
-.ex-mode-selector {
+/* --- 6. 資源分配庫與選取器 --- */
+.TrUnit .ex-mode-selector {
   display: flex;
   background: rgba(74, 112, 169, 0.08);
   padding: 4px;
@@ -210,7 +206,7 @@
   min-width: 340px;
 }
 
-.ex-mode-option {
+.TrUnit .ex-mode-option {
   flex: 1;
   text-align: center;
   padding: 8px 0;
@@ -222,19 +218,19 @@
   transition: var(--transition);
 }
 
-.ex-mode-option.active {
+.TrUnit .ex-mode-option.active {
   background: #ffffff;
   box-shadow: 0 4px 10px rgba(74, 112, 169, 0.15);
 }
 
-.ex-library-grid {
+.TrUnit .ex-library-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.5rem;
   width: 100%;
 }
 
-.ex-library-item-card {
+.TrUnit .ex-library-item-card {
   background: #ffffff;
   border: 2px dashed #b2c2d8 !important;
   border-radius: 20px;
@@ -246,18 +242,17 @@
   min-height: 160px;
 }
 
-.ex-library-item-card:hover {
+.TrUnit .ex-library-item-card:hover {
   border-style: solid !important;
   border-color: var(--navy) !important;
   transform: translateY(-5px);
 }
 
-/* 分配控制組組件 (Input Group) */
-.unit-assign-controls {
+.TrUnit .unit-assign-controls {
   margin-top: auto;
 }
 
-.unit-select-box {
+.TrUnit .unit-select-box {
   background-color: var(--navy-light) !important;
   border: 1.5px solid #d1d5db !important;
   border-right: none !important;
@@ -267,7 +262,7 @@
   color: var(--navy) !important;
 }
 
-.ex-btn-confirm-assign {
+.TrUnit .ex-btn-confirm-assign {
   background-color: var(--navy) !important;
   color: white !important;
   border: 1.5px solid var(--navy) !important;
@@ -278,19 +273,8 @@
   transition: var(--transition);
 }
 
-.ex-btn-confirm-assign:hover:not(:disabled) {
-  background-color: #3a5a8a !important;
-  border-color: #3a5a8a !important;
-}
-
-.ex-btn-confirm-assign:disabled {
-  background-color: #cbd5e1 !important;
-  border-color: #cbd5e1 !important;
-  cursor: not-allowed;
-}
-
-/* --- 7. 工業按鈕與分割線 --- */
-.btn-delete-brick {
+/* --- 7. 按鈕與分割線 --- */
+.TrUnit .btn-delete-brick {
   width: 32px;
   height: 32px;
   display: flex;
@@ -303,13 +287,7 @@
   cursor: pointer;
 }
 
-.btn-delete-brick:hover {
-  background: var(--brick-red) !important;
-  color: #ffffff !important;
-  transform: scale(1.1);
-}
-
-.ex-btn-primary {
+.TrUnit .ex-btn-primary {
   background: var(--navy);
   color: white;
   border: none;
@@ -320,58 +298,20 @@
   transition: var(--transition);
 }
 
-.ex-btn-primary:hover {
-  background: #3a5a8a;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(74, 112, 169, 0.4);
-}
-
-.ex-divider {
+.TrUnit .ex-divider {
   border-top: 2px solid #e2e8f0;
   opacity: 0.3;
 }
 
 /* --- 📱 RWD 響應式佈局 --- */
 @media (max-width: 992px) {
-  .ex-resource-grid {
+  .TrUnit .ex-resource-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .ex-library-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 1.5rem;
-  }
-  .ex-mode-selector {
-    width: 100%;
-    min-width: unset;
   }
 }
 
 @media (max-width: 768px) {
-  .ex-resource-grid {
+  .TrUnit .ex-resource-grid {
     grid-template-columns: 1fr;
   }
-  .unit-summary-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  .unit-summary-header .d-flex {
-    width: 100%;
-    justify-content: space-between;
-  }
-  .TrUnit-header-bar {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 1.5rem;
-  }
-}
-
-/* 捲軸精密化 */
-.ex-unit-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.ex-unit-scroll::-webkit-scrollbar-thumb {
-  background: var(--navy);
-  border-radius: 10px;
 }

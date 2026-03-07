@@ -1,5 +1,5 @@
 <template>
-  <div class="ex-modal-overlay" @click.self="$emit('close')">
+  <div class="MaterialCreate ex-modal-overlay" @click.self="$emit('close')">
     <div class="ex-modal-content material-theme">
       <div class="ex-modal-header">
         <h3><i class="bi bi-cloud-arrow-up"></i>上傳新教材</h3>
@@ -67,7 +67,7 @@ import {
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
-import "./create.css";
+import "./MaterialCreate.css";
 
 const props = defineProps({ courseId: String });
 const emit = defineEmits(["close"]);
@@ -109,10 +109,3 @@ const onUpload = async () => {
   }
 };
 </script>
-
-<style scoped>
-.material-theme {
-  --theme-color: #16a34a;
-  --theme-soft: rgba(22, 163, 74, 0.1);
-}
-</style>

@@ -1,0 +1,152 @@
+/* DiscussionCreate.css - 討論區專用：品牌配色與對齊邏輯 */
+
+.DiscussionCreate {
+  --navy: #4a70a9;
+  --bg-beige: #efece3;
+  --brick-red: #bf4646;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.DiscussionCreate.ex-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 41, 59, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.DiscussionCreate .ex-modal-content {
+  background-color: var(--bg-beige);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.DiscussionCreate .ex-modal-header {
+  padding: 16px 24px;
+  background-color: var(--navy);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 🌟 紅色 X 關閉鈕  */
+.DiscussionCreate .btn-close {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: var(--brick-red) !important;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.DiscussionCreate .btn-close:hover {
+  transform: rotate(90deg);
+}
+.DiscussionCreate .btn-close::before {
+  content: "×";
+}
+
+.DiscussionCreate .ex-form-container {
+  padding: 32px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.DiscussionCreate .ex-label {
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  display: block;
+}
+
+.DiscussionCreate .ex-input,
+.DiscussionCreate .ex-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  background: white;
+  transition: var(--transition);
+  font-size: 1rem;
+}
+
+.DiscussionCreate .ex-input:focus,
+.DiscussionCreate .ex-textarea:focus {
+  border-color: var(--navy);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.1);
+}
+
+/* 🌟 討論區特有設定網格 */
+.DiscussionCreate .setting-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+.DiscussionCreate .toggle-box {
+  background: white;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  height: 50px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.DiscussionCreate .ex-modal-footer {
+  padding: 24px 32px;
+  background: var(--bg-beige);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.DiscussionCreate .ex-btn-primary {
+  background: var(--navy);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+}
+.DiscussionCreate .ex-btn-secondary {
+  background: white;
+  color: var(--navy);
+  padding: 12px 30px;
+  border-radius: 50px;
+  border: 1px solid #d1d5db;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .DiscussionCreate .setting-grid {
+    grid-template-columns: 1fr;
+  }
+  .DiscussionCreate .ex-modal-content {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}

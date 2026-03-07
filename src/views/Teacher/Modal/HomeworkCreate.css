@@ -1,0 +1,375 @@
+/* HomeworkCreate.css - 強迫症對齊與米藍配色 */
+
+.HomeworkCreate {
+  --navy: #4a70a9;
+  --navy-light: #f0f4f9;
+  --bg-beige: #efece3;
+  --brick-red: #bf4646;
+  --text-dark: #1e293b;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 1. 遮罩與容器 */
+.HomeworkCreate.ex-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.HomeworkCreate .ex-modal-content {
+  background-color: var(--bg-beige);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+/* 2. 標題與紅色 X */
+.HomeworkCreate .ex-modal-header {
+  padding: 16px 24px;
+  background-color: var(--navy);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.HomeworkCreate .btn-close {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: var(--brick-red) !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.HomeworkCreate .btn-close:hover {
+  background: rgba(191, 70, 70, 0.1);
+  border-radius: 50%;
+}
+
+.HomeworkCreate .btn-close::before {
+  content: "×";
+}
+
+/* 3. 表單容器與捲軸 */
+.HomeworkCreate .ex-form-container {
+  padding: 24px 32px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.HomeworkCreate .ex-form-container::-webkit-scrollbar {
+  width: 6px;
+}
+.HomeworkCreate .ex-form-container::-webkit-scrollbar-thumb {
+  background: var(--navy);
+  border-radius: 10px;
+}
+
+/* 4. 欄位樣式與強迫症對齊 */
+.HomeworkCreate .ex-label {
+  display: block;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.HomeworkCreate .ex-input,
+.HomeworkCreate .ex-textarea,
+.HomeworkCreate .ex-select {
+  width: 100% !important;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border: 2px solid #e8e2d8;
+  border-radius: 12px;
+  font-size: 1rem;
+  background-color: #ffffff;
+  transition: var(--transition);
+}
+
+.HomeworkCreate .ex-input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.1);
+}
+
+/* 5. 題目卡片與參考答案區 */
+.HomeworkCreate .ex-question-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.HomeworkCreate .ex-answer-setup {
+  background-color: rgba(74, 112, 169, 0.05); /* 🌟 輕微藍色背景區分 */
+  border: 1px dashed var(--navy);
+  margin-top: 10px;
+}
+
+/* 🌟 選項對齊核心 */
+.HomeworkCreate .form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0;
+  cursor: pointer;
+  border: 2px solid #cbd5e1;
+}
+
+.HomeworkCreate .form-check-input:checked {
+  background-color: var(--navy);
+  border-color: var(--navy);
+}
+
+/* 6. 底部按鈕完全置中 */
+.HomeworkCreate .ex-modal-footer {
+  padding: 24px 32px;
+  background-color: var(--bg-beige);
+  border-top: 1px solid rgba(74, 112, 169, 0.1);
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.HomeworkCreate .ex-btn-primary,
+.HomeworkCreate .ex-btn-secondary {
+  flex: 0 1 150px;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.HomeworkCreate .ex-btn-primary {
+  background-color: var(--navy);
+  color: white;
+  border: none;
+}
+
+.HomeworkCreate .ex-btn-secondary {
+  background-color: #ffffff;
+  color: var(--navy);
+  border: 1px solid #d1d5db;
+}
+
+/* 7. RWD 手機端調整 */
+@media (max-width: 640px) {
+  .HomeworkCreate .ex-modal-content {
+    border-radius: 20px 20px 0 0;
+    max-height: 95vh;
+  }
+} /* HomeworkCreate.css - 強迫症對齊與米藍配色 */
+
+.HomeworkCreate {
+  --navy: #4a70a9;
+  --navy-light: #f0f4f9;
+  --bg-beige: #efece3;
+  --brick-red: #bf4646;
+  --text-dark: #1e293b;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 1. 遮罩與容器 */
+.HomeworkCreate.ex-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.HomeworkCreate .ex-modal-content {
+  background-color: var(--bg-beige);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+/* 2. 標題與紅色 X */
+.HomeworkCreate .ex-modal-header {
+  padding: 16px 24px;
+  background-color: var(--navy);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.HomeworkCreate .btn-close {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: var(--brick-red) !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  transition: var(--transition);
+}
+
+.HomeworkCreate .btn-close:hover {
+  transform: rotate(90deg);
+  background: rgba(191, 70, 70, 0.1);
+  border-radius: 50%;
+}
+
+.HomeworkCreate .btn-close::before {
+  content: "×";
+}
+
+/* 3. 表單容器與捲軸 */
+.HomeworkCreate .ex-form-container {
+  padding: 24px 32px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.HomeworkCreate .ex-form-container::-webkit-scrollbar {
+  width: 6px;
+}
+.HomeworkCreate .ex-form-container::-webkit-scrollbar-thumb {
+  background: var(--navy);
+  border-radius: 10px;
+}
+
+/* 4. 欄位樣式與強迫症對齊 */
+.HomeworkCreate .ex-label {
+  display: block;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.HomeworkCreate .ex-input,
+.HomeworkCreate .ex-textarea,
+.HomeworkCreate .ex-select {
+  width: 100% !important;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border: 2px solid #e8e2d8;
+  border-radius: 12px;
+  font-size: 1rem;
+  background-color: #ffffff;
+  transition: var(--transition);
+}
+
+.HomeworkCreate .ex-input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.1);
+}
+
+/* 5. 題目卡片與參考答案區 */
+.HomeworkCreate .ex-question-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.HomeworkCreate .ex-answer-setup {
+  background-color: rgba(74, 112, 169, 0.05); /* 🌟 輕微藍色背景區分 */
+  border: 1px dashed var(--navy);
+  margin-top: 10px;
+}
+
+/* 🌟 選項對齊核心 */
+.HomeworkCreate .form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0;
+  cursor: pointer;
+  border: 2px solid #cbd5e1;
+}
+
+.HomeworkCreate .form-check-input:checked {
+  background-color: var(--navy);
+  border-color: var(--navy);
+}
+
+/* 6. 底部按鈕完全置中 */
+.HomeworkCreate .ex-modal-footer {
+  padding: 24px 32px;
+  background-color: var(--bg-beige);
+  border-top: 1px solid rgba(74, 112, 169, 0.1);
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.HomeworkCreate .ex-btn-primary,
+.HomeworkCreate .ex-btn-secondary {
+  flex: 0 1 150px;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.HomeworkCreate .ex-btn-primary {
+  background-color: var(--navy);
+  color: white;
+  border: none;
+}
+
+.HomeworkCreate .ex-btn-secondary {
+  background-color: #ffffff;
+  color: var(--navy);
+  border: 1px solid #d1d5db;
+}
+
+/* 7. RWD 手機端調整 */
+@media (max-width: 640px) {
+  .HomeworkCreate .ex-modal-content {
+    border-radius: 20px 20px 0 0;
+    max-height: 95vh;
+  }
+}

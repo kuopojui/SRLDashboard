@@ -1,0 +1,227 @@
+/* Create.css - 品牌米藍配色 & 強迫症隔離版 */
+
+.MaterialCreate {
+  /* 🌟 引入您提供的品牌變數 */
+  --navy: #4a70a9;
+  --navy-light: #f0f4f9;
+  --text-dark: #1e293b;
+  --bg-beige: #efece3;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 1. 遮罩層 */
+.MaterialCreate.ex-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 41, 59, 0.7); /* 深色磨砂感 */
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+/* 2. 彈窗內容容器 */
+.MaterialCreate .ex-modal-content {
+  background-color: var(--bg-beige); /* 🌟 使用品牌米色背景 */
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3. 標題區：核心海軍藍 */
+.MaterialCreate .ex-modal-header {
+  padding: 18px 24px;
+  background-color: var(--navy); /* 🌟 使用品牌藍色 */
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.MaterialCreate .ex-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: 0.5px;
+}
+
+/* Create.css - 強迫症紅色 X 關閉鈕設計 */
+
+.MaterialCreate .btn-close {
+  background: transparent;
+  border: none;
+  /* 🌟 調整大小與顏色，使用品牌磚紅色 */
+  font-size: 2rem;
+  color: #bf4646 !important; /* 強制執行紅色 */
+  opacity: 0.9;
+  cursor: pointer;
+
+  /* 🌟 精準對齊與佈局控制 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  line-height: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* */
+  outline: none;
+}
+
+/* 🌟 強迫症動畫：懸浮時輕微旋轉並加深顏色 */
+.MaterialCreate .btn-close:hover {
+  opacity: 1;
+  color: #a33b3b !important;
+  transform: rotate(90deg); /* 旋轉 90 度增加動態感 */
+  background-color: rgba(191, 70, 70, 0.1); /* 淡淡的紅底圓圈 */
+  border-radius: 50%;
+}
+
+/* 🌟 物理生成 X：確保即使 HTML 標籤內為空也能顯示 */
+.MaterialCreate .btn-close::before {
+  content: "×"; /* 物理叉號字元 */
+  font-family: Arial, sans-serif;
+  font-weight: 300;
+}
+
+/* 移除先前可能干擾的濾鏡 */
+.MaterialCreate .btn-close {
+  filter: none !important;
+}
+
+/* 4. 表單容器 */
+.MaterialCreate .ex-form-container {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* 緊湊且一致的間距 */
+  background-color: var(--bg-beige);
+}
+
+.MaterialCreate .mb-4,
+.MaterialCreate .mb-2 {
+  margin-bottom: 0 !important;
+  width: 100%;
+}
+
+.MaterialCreate .ex-label {
+  display: block;
+  font-weight: 800;
+  color: var(--navy); /* 🌟 標籤改為品牌藍色提升一致性 */
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+/* 🌟 強迫症修正：所有元件邊界絕對對齊 */
+.MaterialCreate .ex-input,
+.MaterialCreate .ex-textarea,
+.MaterialCreate input[type="file"].ex-input {
+  width: 100% !important;
+  display: block;
+  box-sizing: border-box; /* 確保 padding 不撐破寬度 */
+  padding: 12px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: var(--text-dark);
+  transition: var(--transition);
+}
+
+/* 檔案上傳框特化 */
+.MaterialCreate #file-upload-input {
+  background-color: var(--navy-light);
+  border-style: dashed;
+  cursor: pointer;
+}
+
+.MaterialCreate .ex-input:focus,
+.MaterialCreate .ex-textarea:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.1);
+}
+
+/* 5. 底部按鈕區：從 flex-end 改為 center 達成強迫症對齊 */
+.MaterialCreate .ex-modal-footer {
+  padding: 24px 32px;
+  background-color: var(--bg-beige) !important;
+  border-top: 1px solid rgba(74, 112, 169, 0.1);
+  display: flex;
+  justify-content: center; /* 🌟 關鍵：將按鈕推向中央 */
+  gap: 16px; /* 增加按鈕間距，讓構圖更寬鬆大氣 */
+}
+
+/* 調整按鈕寬度一致，達成完美的視覺平衡 */
+.MaterialCreate .ex-btn-primary,
+.MaterialCreate .ex-btn-secondary {
+  flex: 0 1 150px; /* 🌟 讓兩個按鈕傾向於擁有相同的寬度 (最大 150px) */
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.MaterialCreate .ex-btn-primary {
+  background-color: var(--navy);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 50px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(74, 112, 169, 0.2);
+  transition: var(--transition);
+}
+
+.MaterialCreate .ex-btn-secondary {
+  background-color: #ffffff;
+  color: var(--text-muted);
+  border: 1px solid #d1d5db;
+  padding: 12px 28px; /* 統一 Padding */
+  border-radius: 50px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+/* 6. RWD 響應式 */
+@media (max-width: 640px) {
+  .MaterialCreate.ex-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .MaterialCreate .ex-modal-content {
+    border-radius: 20px 20px 0 0;
+    max-width: 100vw;
+  }
+  .MaterialCreate .ex-modal-footer {
+    flex-direction: column-reverse;
+  }
+}
