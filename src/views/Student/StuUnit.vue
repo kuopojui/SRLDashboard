@@ -250,16 +250,17 @@
     </Transition>
 
     <main class="container-fluid py-4 main-content">
-      <div class="row g-4">
+      <div class="row g-4 justify-content-center">
         <div class="col-lg-2 unit-sidebar-rwd">
           <div class="sidebar-sticky-wrapper">
-            <div class="sidebar-tabs-container border shadow-sm">
+            <div
+              class="sidebar-tabs-container border shadow-sm rounded-4 overflow-hidden bg-white"
+            >
               <p
                 class="text-uppercase small fw-bold text-muted mb-lg-3 d-none d-lg-block px-3 pt-3"
               >
                 單元任務
               </p>
-
               <ul class="nav flex-lg-column flex-row custom-nav-scroll">
                 <li v-for="tab in tabs" :key="tab.id" class="nav-item">
                   <a
@@ -278,39 +279,272 @@
 
         <div
           :class="[
-            showMonitor ? 'col-lg-7' : 'col-lg-7',
+            activeFeatures.monitoring ? 'col-lg-7' : 'col-lg-9',
             'col-md-8',
-            'flex-grow-1',
           ]"
         >
           <div
-            class="card content-card border-0 shadow-sm min-vh-70 rounded-4 overflow-hidden"
+            class="card content-card border-0 shadow-sm min-vh-70 rounded-4 overflow-hidden bg-white"
           >
             <div class="card-body p-4">
               <div class="tab-content-wrapper">
-                <div v-if="activeTab === 'material'" class="教材內容">
-                  <div class="placeholder-content py-5 text-center">
-                    <i
-                      class="bi bi-play-btn-fill display-1 text-primary opacity-25"
-                    ></i>
-                    <h4 class="mt-4 fw-bold">正在載入數位教材...</h4>
-                    <p class="text-muted">單元識別碼: {{ id }}</p>
+                <div v-if="activeTab === 'material'" class="material-view">
+                  <div v-if="isContentLoading" class="py-5 text-center">
+                    <div class="spinner-border text-primary mb-2"></div>
+                    <p class="text-muted">正在準備單元教材...</p>
+                  </div>
+
+                  <div v-else-if="unitContent" class="material-active-area">
+                    <div
+                      v-if="unitContent.fileUrl?.includes('.mp4')"
+                      class="video-section mb-4"
+                    >
+                      <div
+                        class="video-container shadow-sm rounded-4 overflow-hidden bg-black"
+                      >
+                        <video
+                          ref="videoPlayerRef"
+                          controls
+                          controlsList="nodownload"
+                          class="w-100"
+                          style="max-height: 55vh"
+                          :src="unitContent.fileUrl"
+                          @timeupdate="handleVideoProgress"
+                        ></video>
+                      </div>
+                      <div
+                        class="p-3 border border-top-0 rounded-bottom-4 d-flex justify-content-between align-items-center"
+                      >
+                        <h6 class="fw-bold mb-0 text-navy">
+                          {{ unitContent.title }}
+                        </h6>
+                        <span
+                          class="badge bg-primary-subtle text-primary border border-primary-subtle"
+                        >
+                          已觀看：{{ traceData.videoMins.toFixed(1) }} min
+                        </span>
+                      </div>
+                    </div>
+
+                    <div v-else class="document-section mb-4">
+                      <div
+                        class="card border shadow-sm rounded-4 overflow-hidden"
+                      >
+                        <div
+                          class="card-header bg-navy text-white p-3 d-flex justify-content-between align-items-center"
+                        >
+                          <span class="fw-bold small"
+                            ><i class="bi bi-file-earmark-text me-2"></i
+                            >{{ unitContent.title }}</span
+                          >
+                          <span
+                            class="badge bg-info-subtle text-info border border-info-subtle"
+                          >
+                            閱讀計時：{{ traceData.readingMins.toFixed(1) }} min
+                          </span>
+                        </div>
+                        <div
+                          class="card-body p-0 bg-light"
+                          style="height: 55vh"
+                        >
+                          <iframe
+                            v-if="
+                              unitContent.fileUrl
+                                ?.toLowerCase()
+                                .includes('.pdf')
+                            "
+                            :src="unitContent.fileUrl"
+                            width="100%"
+                            height="100%"
+                            frameborder="0"
+                          ></iframe>
+                          <div
+                            v-else
+                            class="d-flex flex-column align-items-center justify-content-center h-100 text-muted italic text-center p-4"
+                          >
+                            <i
+                              class="bi bi-file-earmark-arrow-down display-3 opacity-25 mb-3"
+                            ></i>
+                            <p class="small">
+                              非 PDF 文件，請點擊下方清單切換或下載
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="material-list-section">
+                      <label class="section-label-v2 mb-2">單元教材清單</label>
+                      <div class="list-group rounded-3 border-0 shadow-sm">
+                        <button
+                          v-for="(mat, mIdx) in unitMaterials"
+                          :key="mIdx"
+                          class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-light"
+                          :class="{
+                            'active bg-navy-light text-navy fw-bold':
+                              unitContent.fileUrl === mat.fileUrl,
+                          }"
+                          @click="switchMaterial(mat)"
+                        >
+                          <div class="d-flex align-items-center small">
+                            <i
+                              :class="
+                                mat.fileUrl?.includes('.mp4')
+                                  ? 'bi bi-play-circle-fill me-3'
+                                  : 'bi bi-file-earmark-text me-3'
+                              "
+                            ></i>
+                            <span>{{ mat.title }}</span>
+                          </div>
+                          <i
+                            v-if="unitContent.fileUrl === mat.fileUrl"
+                            class="bi bi-check-circle-fill text-primary"
+                          ></i>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div v-else-if="activeTab === 'quiz'" class="測驗內容">
-                  <div class="quiz-container p-4 text-center">
-                    <i class="bi bi-patch-question display-4 text-success"></i>
-                    <h5 class="mt-3">單元自我檢測</h5>
-                    <p class="text-muted">完成測驗以檢核學習成效</p>
-                    <button class="btn btn-primary rounded-pill px-4">
-                      開始測驗
-                    </button>
-                  </div>
-                </div>
+                <div class="tab-content-wrapper">
+                  <div
+                    v-if="activeTab === 'material'"
+                    class="material-view"
+                  ></div>
 
-                <div v-else class="其他內容 p-5 text-center italic">
-                  正在讀取 {{ activeTabName }} 數據...
+                  <div v-else-if="activeTab === 'quiz'" class="quiz-view">
+                    <h5 class="fw-bold text-navy mb-4">
+                      <i class="bi bi-card-checklist me-2"></i>單元測驗任務
+                    </h5>
+                    <div
+                      v-if="unitExams.length"
+                      class="list-group list-group-flush gap-3"
+                    >
+                      <div
+                        v-for="ex in unitExams"
+                        :key="ex.id"
+                        class="card border rounded-4 p-3 shadow-sm hover-lift bg-white"
+                      >
+                        <div
+                          class="d-flex justify-content-between align-items-center"
+                        >
+                          <div>
+                            <h6 class="fw-bold mb-1">{{ ex.title }}</h6>
+                            <small class="text-muted"
+                              >時長：{{ ex.duration }} 分鐘 | 總分：{{
+                                ex.totalScore
+                              }}</small
+                            >
+                          </div>
+                          <button
+                            @click="startExam(ex.id)"
+                            class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm"
+                          >
+                            進入測驗
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      v-else
+                      class="text-center py-5 bg-light rounded-4 border-dashed"
+                    >
+                      <p class="text-muted mb-0 italic small">
+                        本單元目前尚無關聯測驗
+                      </p>
+                    </div>
+                  </div>
+
+                  <div v-else-if="activeTab === 'hw'" class="hw-view">
+                    <h5 class="fw-bold text-navy mb-4">
+                      <i class="bi bi-file-earmark-arrow-up me-2"></i
+                      >功課提交列表
+                    </h5>
+                    <div
+                      v-if="unitAssignments.length"
+                      class="list-group list-group-flush gap-3"
+                    >
+                      <div
+                        v-for="hw in unitAssignments"
+                        :key="hw.id"
+                        class="card border rounded-4 p-3 shadow-sm bg-white"
+                      >
+                        <div
+                          class="d-flex justify-content-between align-items-center"
+                        >
+                          <div>
+                            <h6 class="fw-bold mb-1">{{ hw.title }}</h6>
+                            <small class="text-muted"
+                              >截止日期：{{ hw.deadline || "未設定" }}</small
+                            >
+                          </div>
+                          <button
+                            @click="startHw(hw.id)"
+                            class="btn btn-navy btn-sm rounded-pill px-4 shadow-sm"
+                          >
+                            提交功課
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      v-else
+                      class="text-center py-5 bg-light rounded-4 border-dashed"
+                    >
+                      <p class="text-muted mb-0 italic small">
+                        本單元目前尚無功課任務
+                      </p>
+                    </div>
+                  </div>
+
+                  <div v-else-if="activeTab === 'discuss'" class="discuss-view">
+                    <div
+                      class="d-flex justify-content-between align-items-center mb-4"
+                    >
+                      <h5 class="fw-bold text-navy mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>單元討論區
+                      </h5>
+                      <button
+                        @click="openCreateDiscussion"
+                        class="btn btn-outline-navy btn-sm rounded-pill px-3 shadow-sm"
+                      >
+                        + 發起話題
+                      </button>
+                    </div>
+                    <div v-if="unitForums.length" class="list-group gap-3">
+                      <div
+                        v-for="dis in unitForums"
+                        :key="dis.id"
+                        class="card border shadow-sm p-3 rounded-4 bg-white"
+                      >
+                        <div
+                          class="d-flex justify-content-between align-items-center"
+                        >
+                          <div class="text-truncate" style="max-width: 70%">
+                            <h6 class="fw-bold mb-1">{{ dis.title }}</h6>
+                            <small class="text-muted">{{
+                              dis.description
+                            }}</small>
+                          </div>
+                          <button
+                            @click="enterDiscussion(dis.id)"
+                            class="btn btn-light btn-sm rounded-pill px-3 border"
+                          >
+                            參與討論
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="text-center py-5">
+                      <img
+                        src="https://img.icons8.com/bubbles/80/null/chat.png"
+                        class="mb-2 opacity-75"
+                      />
+                      <p class="text-muted small italic">
+                        成為第一個在本單元發起討論的人吧！
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -322,60 +556,127 @@
           class="col-lg-3 col-md-4"
         >
           <div class="sticky-top sidebar-sticky-wrapper">
-            <div class="card toolbox-card border-0 shadow-sm mb-4 rounded-4">
+            <div
+              class="card toolbox-card border-0 shadow-sm mb-4 rounded-4 bg-white"
+            >
               <div class="card-body">
                 <h6 class="fw-bold text-navy mb-3">
                   <i class="bi bi-lightbulb-fill text-warning me-2"></i>規劃策略
                 </h6>
                 <div class="d-flex flex-wrap gap-2">
                   <span
-                    v-for="s in srlSession?.strategies"
+                    v-for="s in srlSession.strategies"
                     :key="s"
-                    class="badge-strategy-sidebar"
+                    class="badge-strategy-sidebar small"
+                    >{{ s }}</span
                   >
-                    {{ s }}
-                  </span>
                 </div>
               </div>
             </div>
-
-            <div class="card note-card border-0 shadow-sm rounded-4">
+            <div class="card note-card border-0 shadow-sm rounded-4 bg-white">
               <div class="card-body">
                 <h6 class="fw-bold text-navy mb-3">
                   <i class="bi bi-pencil-square me-2 text-primary"></i>學習筆記
                 </h6>
                 <textarea
-                  class="form-control mb-3 border-light bg-light"
-                  rows="10"
-                  placeholder="這張投影片的重點是..."
+                  class="form-control mb-3 border-light bg-light small"
+                  rows="8"
+                  placeholder="輸入您的思考..."
                 ></textarea>
-                <button class="btn btn-navy w-100 rounded-pill shadow-sm">
-                  儲存紀錄
+                <button
+                  class="btn btn-navy btn-sm w-100 rounded-pill shadow-sm py-2"
+                >
+                  儲存筆記紀錄
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <StuSRLEval
-        v-if="showEvalModal"
-        :isOpen="showEvalModal"
-        :plannedMins="srlSession?.targetTime || 0"
-        :actualMins="Math.floor(elapsedTime / 60)"
-        @close="showEvalModal = false"
-        @confirm="onEvalConfirm"
-      />
     </main>
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div
+          v-if="showExamModal"
+          class="modal-overlay-srl"
+          @click.self="handleModalClose('exam')"
+        >
+          <div class="srl-modal-container shadow-2xl">
+            <StuExamModal
+              :isOpen="showExamModal"
+              :courseId="courseId"
+              :unitId="id"
+              :examId="activeTaskId"
+              @close="handleModalClose('exam')"
+            />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition name="modal-fade">
+        <div
+          v-if="showHwModal"
+          class="modal-overlay-srl"
+          @click.self="handleModalClose('hw')"
+        >
+          <div class="srl-modal-container shadow-2xl">
+            <StuHwModal
+              :isOpen="showHwModal"
+              :courseId="courseId"
+              :unitId="id"
+              :hwId="activeTaskId"
+              @close="handleModalClose('hw')"
+            />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition name="modal-fade">
+        <div
+          v-if="showDiscussModal"
+          class="modal-overlay-srl"
+          @click.self="handleModalClose('discuss')"
+        >
+          <div class="srl-modal-container shadow-2xl">
+            <StuDiscussModal
+              :isOpen="showDiscussModal"
+              :courseId="courseId"
+              :unitId="id"
+              :disId="activeTaskId"
+              @close="handleModalClose('discuss')"
+            />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition name="modal-fade">
+        <div
+          v-if="showEvalModal"
+          class="modal-overlay-srl"
+          @click.self="showEvalModal = false"
+        >
+          <div
+            class="srl-modal-container"
+            style="max-width: 600px; height: auto"
+          >
+            <StuSRLEval
+              :isOpen="showEvalModal"
+              :plannedMins="srlSession?.targetTime || 0"
+              :actualMins="Math.floor(elapsedTime / 60)"
+              @close="showEvalModal = false"
+              @confirm="onEvalConfirm"
+            />
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
-
-// 🌟 匯入 RTDB 實例與其專用函式
 import { rtdb } from "../../firebase/config";
 import {
   ref as dbRef,
@@ -384,44 +685,47 @@ import {
   update,
   serverTimestamp,
 } from "firebase/database";
-
 import "./StuUnit.css";
 import StuSRLEval from "./Modal/StuSRLEval.vue";
+import StuExamModal from "./Modal/StuExam.vue";
+import StuHwModal from "./Modal/StuHW.vue";
+import StuDiscussModal from "./Modal/StuDiscussion.vue";
 
-// --- Props & Router ---
-const props = defineProps({
-  courseId: String,
-  id: String, // 單元 ID
-  userId: String,
-});
+const props = defineProps({ courseId: String, id: String, userId: String });
 const router = useRouter();
 
-// --- 1. 基礎 UI 狀態 ---
+// --- 1. UI 狀態控制 ---
 const showMonitor = ref(false);
 const showEvalModal = ref(false);
 const activeTab = ref("material");
 const unitTitle = ref("正在載入...");
 const isMonitorLoading = ref(false);
+const isContentLoading = ref(false);
 const lastUpdateTime = ref("");
 
-// --- 2. 實驗組功能開關 (由資料庫控制) ---
-const features = ref({
-  monitoring: false, // 決定儀表板按鈕與頂部計時器
-  aiAdvice: false, // 決定監控抽屜內的 AI 建議區
+// --- 2. 實驗組功能開關 ---
+const activeFeatures = reactive({
+  planning: false,
+  monitoring: false,
+  aiAdvice: false,
+  reflection: false,
+  isLeaderboardAnonymous: false,
 });
 
-// --- 3. SRL 會話與計時器 ---
-const srlSession = ref({
-  targetTime: 0,
-  strategies: [],
-  targetGoal: "",
-});
+// --- 3. 教材專區與計時變數 ---
+const videoPlayerRef = ref(null);
+const unitMaterials = ref([]);
+const unitContent = ref(null);
+const lastTrackTime = ref(0);
+let readingTimer = null; // 🌟 新增：閱讀計時器變數
+
+// --- 4. SRL 會話與監控數據 ---
+const srlSession = ref(null);
 const elapsedTime = ref(0);
 let timerInterval = null;
 
-// --- 4. 實時監控數據 ---
 const currentScore = ref(0);
-const topAverage = ref(85); // 預設值
+const topAverage = ref(85);
 const aiStrategies = ref([]);
 const traceData = ref({
   videoMins: 0,
@@ -429,158 +733,79 @@ const traceData = ref({
   errorCount: 0,
 });
 
-const activeFeatures = ref({
-  planning: false,
-  monitoring: false,
-  aiAdvice: false,
-  reflection: false,
-});
-
 // --- 5. 計算屬性 ---
-
-/**
- * 🌟 核心修正：讓 hasMonitorFeature 映射到實驗組的監控開關
- * 此屬性用於控制 Header 的儀表板按鈕、計時器以及監控抽屜的顯示
- */
-const hasMonitorFeature = computed(() => {
-  return features.value?.monitoring === true;
-});
-
-/**
- * 🌟 AI 策略開關：用於監控抽屜內的 AI 建議區塊
- */
-const hasAiAdviceFeature = computed(() => {
-  return features.value?.aiAdvice === true;
-});
-
-/**
- * 判斷是否有 SRL 計畫數據且開啟監控
- * 用於顯示頂部背景進度條
- */
-const hasSrlData = computed(() => {
-  return hasMonitorFeature.value && srlSession.value?.targetTime > 0;
-});
-
-const activeTabName = computed(() => {
-  const tab = tabs.find((t) => t.id === activeTab.value);
-  return tab ? tab.label : "";
-});
-
-/**
- * 格式化計時顯示 (MM:SS)
- */
+const hasMonitorFeature = computed(() => activeFeatures.monitoring);
 const formattedTime = computed(() => {
   const m = Math.floor(elapsedTime.value / 60);
   const s = elapsedTime.value % 60;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 });
-
-/**
- * 計算當前進度百分比
- * 依據 srlSession.value.targetTime (預計分鐘) 轉換為秒數計算
- */
 const actualProgressPercent = computed(() => {
-  // 避免除以 0，預設至少 1 分鐘
   const planned = (srlSession.value?.targetTime || 1) * 60;
   return Math.min((elapsedTime.value / planned) * 100, 100);
 });
-
-/**
- * 判斷是否超時
- */
 const isOverTime = computed(() => {
   const plannedSecs = (srlSession.value?.targetTime || 0) * 60;
   return plannedSecs > 0 && elapsedTime.value > plannedSecs;
 });
+const activeTabName = computed(
+  () => tabs.find((t) => t.id === activeTab.value)?.label || "",
+);
+const scoreGap = computed(
+  () => (topAverage.value || 0) - (currentScore.value || 0),
+);
 
-/**
- * 計算分差 (領先群平均 - 個人目前得分)
- */
-const scoreGap = computed(() => {
-  return (topAverage.value || 0) - (currentScore.value || 0);
-});
+// --- 6. 事件處理與計時邏輯 ---
 
-// 導覽標籤設定
-const tabs = [
-  { id: "material", label: "課程教材", icon: "bi bi-book" },
-  { id: "quiz", label: "單元測驗", icon: "bi bi-card-checklist" },
-  { id: "hw", label: "功課提交", icon: "bi bi-file-earmark-arrow-up" },
-  { id: "discuss", label: "討論區", icon: "bi bi-chat-dots" },
-];
+// 切換教材
+const switchMaterial = (mat) => {
+  unitContent.value = mat;
+  lastTrackTime.value = 0;
+  manageReadingTimer(); // 切換時判斷是否啟動閱讀計時
+};
 
-// --- 6. 核心功能：讀取實驗分組與 SRL 設定 ---
-const initSrlEnvironment = async () => {
-  const courseId = props.courseId?.trim();
-  const unitId = props.id?.trim();
-  const userId = props.userId?.trim();
-
-  if (!courseId || !unitId || !userId) {
-    console.error("❌ 初始化中斷：參數不全", { courseId, unitId, userId });
-    return;
+// 影音計時邏輯
+const handleVideoProgress = () => {
+  if (!videoPlayerRef.value) return;
+  const current = videoPlayerRef.value.currentTime;
+  const delta = current - lastTrackTime.value;
+  if (delta > 0 && delta < 2) {
+    const addedMins = delta / 60;
+    traceData.value.videoMins += addedMins;
+    if (Math.floor(current) % 10 === 0) {
+      update(dbRef(rtdb, `student_traces/${props.userId}_${props.id}`), {
+        videoMins: traceData.value.videoMins,
+        lastActive: serverTimestamp(),
+      });
+    }
   }
+  lastTrackTime.value = current;
+};
 
-  try {
-    // 1. 獲取 Profile (內含組別 ID 與 SRL 計畫資料)
-    const profilePath = `courses/${courseId}/profiles/${userId}`;
-    const profileSnap = await get(dbRef(rtdb, profilePath));
+// 🌟 閱讀計時邏輯：監控 PDF/文件停留時間
+const manageReadingTimer = () => {
+  if (readingTimer) clearInterval(readingTimer);
 
-    if (!profileSnap.exists()) {
-      console.error("❌ 找不到 Profile 紀錄:", profilePath);
-      return;
-    }
-
-    const profile = profileSnap.val();
-    const gid = profile.groupId;
-    console.log("📡 偵查到學生組別 ID:", gid);
-
-    // 2. 核心修正：讀取實驗組功能開關
-    if (gid) {
-      const featurePath = `courses/${courseId}/experiment/groups/${gid}/features`;
-      const featureSnap = await get(dbRef(rtdb, featurePath));
-
-      if (featureSnap.exists()) {
-        const featData = featureSnap.val();
-        activeFeatures.value = {
-          aiAdvice: !!featData.aiAdvice,
-          monitoring: !!featData.monitoring,
-          planning: !!featData.planning,
-          reflection: !!featData.reflection,
-          isLeaderboardAnonymous: !!featData.isLeaderboardAnonymous,
-        };
-        console.log("🧪 實驗組功能載入成功:", activeFeatures.value);
+  // 條件：在教材 Tab 且目前選中的教材「不是」影片
+  if (
+    activeTab.value === "material" &&
+    unitContent.value &&
+    !unitContent.value.fileUrl?.includes(".mp4")
+  ) {
+    console.log("📖 啟動閱讀計時...");
+    readingTimer = setInterval(() => {
+      traceData.value.readingMins += 1 / 60;
+      if (Math.floor(traceData.value.readingMins * 60) % 30 === 0) {
+        update(dbRef(rtdb, `student_traces/${props.userId}_${props.id}`), {
+          readingMins: traceData.value.readingMins,
+          lastActive: serverTimestamp(),
+        });
       }
-    }
-
-    // 3. 讀取個人單元計畫數據 (獲取 targetTime 與 strategies)
-    const planData = profile.srl?.planning?.[unitId];
-    if (planData) {
-      srlSession.value = planData;
-      console.log("✅ 成功吸到計畫數據:", srlSession.value);
-    } else {
-      console.warn("❌ 找不到單元計畫:", `srl/planning/${unitId}`);
-      srlSession.value = null;
-    }
-
-    // 🌟 修正點 1：從單元原始數據路徑抓取標題
-    // 根據 JSON，標題存放在 courses/[courseId]/units/[unitId]/title
-    const unitSnap = await get(
-      dbRef(rtdb, `courses/${courseId}/units/${unitId}`),
-    );
-    if (unitSnap.exists()) {
-      unitTitle.value = unitSnap.val().title || "未命名單元";
-      console.log("✅ 成功讀取單元標題:", unitTitle.value);
-    }
-
-    // 🌟 修正點 2：計時器啟動邏輯優化
-    // 只要有監控權限，不論有無計畫都應顯示計時器以記錄學習時長
-    if (activeFeatures.value.monitoring) {
-      console.log("⏱️ 偵測到監控權限，啟動計時器...");
-      startTimer();
-    }
-  } catch (error) {
-    console.error("🔥 偵查過程失敗:", error);
+    }, 1000);
   }
 };
+
+// --- 7. 核心初始化 ---
 const startTimer = () => {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
@@ -588,79 +813,179 @@ const startTimer = () => {
   }, 1000);
 };
 
-// --- 7. 監控儀表板數據 ---
-const fetchMonitorData = async () => {
-  if (!features.value.monitoring) return;
-  isMonitorLoading.value = true;
+// 🌟 確保在 script setup 中已宣告這些 ref
+const unitExams = ref([]);
+const unitAssignments = ref([]);
+const unitForums = ref([]);
+
+const initSrlEnvironment = async () => {
+  if (!props.courseId || !props.id || !props.userId) return;
+  const coursePath = `courses/${props.courseId}`;
 
   try {
-    // ✅ 領先群基準 (暫定路徑，可依需求調整)
-    // 假設放在 courses/{courseId}/units/{unitId}/stats
-    const statsPath = dbRef(
-      rtdb,
-      `courses/${props.courseId}/units/${props.id}/stats`,
+    isContentLoading.value = true;
+
+    // 1. 讀取學生 Profile 與實驗分組功能
+    const profileSnap = await get(
+      dbRef(rtdb, `${coursePath}/profiles/${props.userId}`),
     );
-    const statsSnap = await get(statsPath);
-    if (statsSnap.exists()) {
-      topAverage.value = statsSnap.val().topAverage || 85;
-    }
-
-    // ✅ 實時監聽個人軌跡 (路徑依您的日誌結構調整)
-    // 這裡示範從 student_traces 讀取
-    const tracePath = dbRef(rtdb, `student_traces/${props.userId}_${props.id}`);
-    onValue(tracePath, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        currentScore.value = data.currentScore || 0;
-        traceData.value = data;
+    if (profileSnap.exists()) {
+      const profile = profileSnap.val();
+      if (profile.groupId) {
+        const featSnap = await get(
+          dbRef(
+            rtdb,
+            `${coursePath}/experiment/groups/${profile.groupId}/features`,
+          ),
+        );
+        if (featSnap.exists()) Object.assign(activeFeatures, featSnap.val());
       }
-      lastUpdateTime.value = new Date().toLocaleTimeString();
-    });
-
-    // ✅ 讀取 AI 建議 (僅當功能開啟時)
-    if (features.value.aiAdvice) {
-      // 這裡可串接您的 AI API 或從 DB 讀取預設建議
-      aiStrategies.value = [
-        "嘗試將目前的重點畫成心智圖",
-        "針對錯誤題目重新閱讀教材",
-      ];
+      srlSession.value = profile.srl?.planning?.[props.id] || null;
     }
+
+    // 2. 讀取單元主資料 (內含各項任務 ID 陣列)
+    const unitSnap = await get(dbRef(rtdb, `${coursePath}/units/${props.id}`));
+    if (unitSnap.exists()) {
+      const uData = unitSnap.val();
+      unitTitle.value = uData.title || "未命名單元";
+
+      // 3. 同步抓取所有關聯教材 (Materials)
+      if (uData.materials && uData.materials.length > 0) {
+        const snaps = await Promise.all(
+          uData.materials.map((id) =>
+            get(dbRef(rtdb, `${coursePath}/materials/${id}`)),
+          ),
+        );
+        unitMaterials.value = snaps
+          .filter((s) => s.exists())
+          .map((s) => ({ id: s.key, ...s.val() }));
+        unitContent.value =
+          unitMaterials.value.find((m) => m.fileUrl?.includes(".mp4")) ||
+          unitMaterials.value[0];
+      }
+
+      // 4. 同步抓取所有關聯測驗 (Exams)
+      if (uData.exams && uData.exams.length > 0) {
+        const snaps = await Promise.all(
+          uData.exams.map((id) =>
+            get(dbRef(rtdb, `${coursePath}/exams/${id}`)),
+          ),
+        );
+        unitExams.value = snaps
+          .filter((s) => s.exists())
+          .map((s) => ({ id: s.key, ...s.val() }));
+      }
+
+      // 5. 同步抓取所有關聯功課 (Assignments)
+      if (uData.assignments && uData.assignments.length > 0) {
+        const snaps = await Promise.all(
+          uData.assignments.map((id) =>
+            get(dbRef(rtdb, `${coursePath}/assignments/${id}`)),
+          ),
+        );
+        unitAssignments.value = snaps
+          .filter((s) => s.exists())
+          .map((s) => ({ id: s.key, ...s.val() }));
+      }
+
+      // 6. 同步抓取所有關聯討論話題 (Forums/Discussions)
+      if (uData.forums && uData.forums.length > 0) {
+        const snaps = await Promise.all(
+          uData.forums.map((id) =>
+            get(dbRef(rtdb, `${coursePath}/discussions/${id}`)),
+          ),
+        );
+        unitForums.value = snaps
+          .filter((s) => s.exists())
+          .map((s) => ({ id: s.key, ...s.val() }));
+      }
+    }
+
+    if (activeFeatures.monitoring) startTimer();
+    manageReadingTimer();
   } catch (error) {
-    console.error("讀取監控數據失敗:", error);
+    console.error("🔥 載入單元環境失敗:", error);
+  } finally {
+    isContentLoading.value = false;
+  }
+};
+
+const fetchMonitorData = async () => {
+  if (!activeFeatures.monitoring) return;
+  isMonitorLoading.value = true;
+  try {
+    const statsSnap = await get(
+      dbRef(rtdb, `courses/${props.courseId}/units/${props.id}/stats`),
+    );
+    if (statsSnap.exists()) topAverage.value = statsSnap.val().topAverage || 85;
+    onValue(
+      dbRef(rtdb, `student_traces/${props.userId}_${props.id}`),
+      (snapshot) => {
+        const data = snapshot.val();
+        if (data) traceData.value = data;
+        lastUpdateTime.value = new Date().toLocaleTimeString();
+      },
+    );
   } finally {
     isMonitorLoading.value = false;
   }
 };
 
-// --- 8. 事件處理 ---
+// 🌟 修正：加入消失的標籤選項
+const tabs = [
+  { id: "material", label: "課程教材", icon: "bi bi-book" },
+  { id: "quiz", label: "單元檢測", icon: "bi bi-card-checklist" },
+  { id: "hw", label: "功課提交", icon: "bi bi-file-earmark-arrow-up" },
+  { id: "discuss", label: "討論區", icon: "bi bi-chat-dots" },
+];
+
+onMounted(initSrlEnvironment);
+onUnmounted(() => {
+  if (timerInterval) clearInterval(timerInterval);
+  if (readingTimer) clearInterval(readingTimer);
+});
+
+// 監聽 Tab 切換以重新啟動閱讀計時
+watch(activeTab, manageReadingTimer);
+
 const goBack = () =>
   router.push({
     name: "StuCourseDetail",
     params: { courseId: props.courseId },
   });
-
 const handleFinish = async () => {
   const result = await Swal.fire({
-    title: "完成本次學習？",
-    text: "建議在離開前進行最後的自我反思。",
+    title: "完成學習？",
+    text: "建議進行最後的反思。",
     icon: "question",
     showCancelButton: true,
     confirmButtonColor: "#4a70a9",
     confirmButtonText: "開始反思",
-    cancelButtonText: "繼續學習",
   });
   if (result.isConfirmed) showEvalModal.value = true;
 };
 
-onMounted(() => {
-  initSrlEnvironment();
-});
+// --- 🌟 新增各個功能的彈窗控制狀態 ---
+const showExamModal = ref(false);
+const showHwModal = ref(false);
+const showDiscussModal = ref(false);
 
-onUnmounted(() => {
-  if (timerInterval) clearInterval(timerInterval);
-});
+// 存放當前選中的任務 ID
+const activeTaskId = ref(null);
 
-watch(showMonitor, (newVal) => {
-  if (newVal) fetchMonitorData();
-});
+// --- 🌟 更新處理函數：改為開啟彈窗 ---
+const startExam = (examId) => {
+  activeTaskId.value = examId;
+  showExamModal.value = true;
+};
+
+const startHw = (hwId) => {
+  activeTaskId.value = hwId;
+  showHwModal.value = true;
+};
+
+const enterDiscussion = (disId) => {
+  activeTaskId.value = disId;
+  showDiscussModal.value = true;
+};
 </script>

@@ -485,3 +485,42 @@
     max-width: 45px !important; /* 再縮小一點 */
   }
 }
+
+/* 彈窗全屏遮罩：磨砂玻璃效果 */
+.modal-overlay-srl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(6px); /* 讓背景模糊但可感知 */
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* 彈窗內容容器：非滿版設計 */
+.srl-modal-container {
+  background: white;
+  width: 100%;
+  max-width: 960px; /* 限制寬度維持卡片質感 */
+  max-height: 90vh;
+  border-radius: 28px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: modalScaleIn 0.3s ease-out;
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
