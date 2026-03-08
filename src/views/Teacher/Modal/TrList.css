@@ -1,75 +1,200 @@
-/* TrList.css */
+/* TrList.css - 全寬度垂直列表模式 */
+
+:root {
+  --navy-dark: #1e1b4b;
+  --navy-light: #4a70a9;
+  --indigo-soft: #f1f5f9;
+  --border-color: #e2e8f0;
+}
 
 .TrList-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(8px);
   z-index: 1050;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 }
 
+/* 讓 Modal 更寬以容納橫向資訊 */
 .TrList-card {
-  width: 95%;
-  max-width: 1100px;
+  width: 95vw;
+  max-width: 1200px;
   background: #ffffff;
   border-radius: 1.5rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  max-height: 90vh;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-/* Header 區域 */
 .TrList-header {
   padding: 1.5rem 2rem;
   background: #fff;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.TrList-icon-box {
-  width: 48px;
-  height: 48px;
-  background: #eef2ff;
-  color: #1e1b4b;
+.TrList-body {
+  padding: 2rem;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+/* 🌟 組別區塊：改為垂直堆疊的長條 */
+.TrList-group-section {
+  margin-bottom: 2.5rem;
+}
+
+.group-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: #fff;
+  border-left: 5px solid var(--navy-dark);
+  border-radius: 4px 12px 12px 4px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.group-banner h5 {
+  margin: 0;
+  font-weight: 800;
+  color: var(--navy-dark);
+}
+
+/* 🌟 學生列表容器：改為垂直方向 */
+.TrList-list-container {
+  display: flex;
+  flex-direction: column; /* 強制垂直排列 */
+  gap: 8px;
+  min-height: 50px;
+}
+
+/* 🌟 學生行：橫向貫穿長條 */
+.TrList-student-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1.5rem;
   border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.TrList-student-row:hover:not(.row-locked) {
+  border-color: var(--navy-light);
+  transform: translateX(4px); /* 滑過時向右微動，增加回饋感 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 左側：頭像與姓名學號 */
+.student-main-info {
+  display: flex;
+  align-items: center;
+  flex: 1; /* 佔據左側空間 */
+}
+
+.handle-icon {
+  color: #cbd5e1;
+  cursor: grab;
+  font-size: 1.2rem;
+  margin-right: 15px;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  background: var(--indigo-soft);
+  color: var(--navy-light);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-weight: bold;
+  margin-right: 15px;
 }
 
-.TrList-title {
-  font-weight: 800;
-  color: #1e293b;
-  margin: 0;
+.name-box {
+  display: flex;
+  flex-direction: column;
 }
 
-.TrList-badge-count {
+.name-box .name {
+  font-weight: 700;
+  color: var(--navy-dark);
+  font-size: 1rem;
+}
+
+.name-box .student-id {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* 中間：狀態標籤 (可選) */
+.student-status-tags {
+  display: flex;
+  gap: 10px;
+  margin: 0 20px;
+}
+
+.tag-outline {
   font-size: 0.75rem;
-  background: #f8fafc;
-  padding: 2px 10px;
-  border-radius: 50px;
-  border: 1px solid #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  color: #94a3b8;
 }
 
-/* 鎖定按鈕樣式 */
+/* 右側：功能按鈕 */
+.student-row-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-row-action {
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+}
+
+.btn-row-action.logs {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.btn-row-action.ai {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.btn-row-action:hover {
+  filter: brightness(0.95);
+}
+
+/* 鎖定按鈕與 Pulse 動畫 */
 .TrList-lock-btn {
   border: 1px solid #cbd5e1;
   background: #fff;
   font-size: 0.75rem;
   font-weight: bold;
-  padding: 4px 12px;
+  padding: 6px 16px;
   border-radius: 50px;
-  transition: all 0.3s;
-  cursor: pointer;
+  transition: 0.3s;
 }
 
 .TrList-lock-btn.is-unlocked {
@@ -79,127 +204,20 @@
   animation: pulse 2s infinite;
 }
 
-/* 🌟 ✕ 符號絕對置中設計 */
-.TrList-close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  background-color: #fff1f1;
-  color: #bf4646;
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  font-weight: bold;
-  line-height: 1;
-  padding: 0;
-  padding-top: 2px; /* 視覺重心修正 */
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.TrList-close-btn:hover {
-  background-color: #bf4646;
-  color: #fff;
-  transform: scale(1.1);
-}
-
-/* Body 內容區 */
-.TrList-body {
+/* 空狀態提示 */
+.empty-list-hint {
   padding: 2rem;
-  max-height: 75vh;
-  overflow-y: auto;
-  background: #fdfdfd;
-}
-
-.TrList-group-zone {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 1rem;
-  padding: 1.25rem;
-  height: 100%;
-  transition: background 0.3s;
-}
-
-.TrList-group-zone.is-locked {
-  background: #f8fafc;
-}
-
-.TrList-group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.TrList-passcode {
-  font-size: 0.7rem;
-  font-weight: bold;
-  color: #6366f1;
-}
-
-/* 學生項目 */
-.TrList-drag-area {
-  min-height: 80px;
-}
-
-.TrList-student-item {
-  background: #fff;
-  border: 1px solid #f1f5f9;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-}
-
-.TrList-id-text {
-  font-size: 0.65rem;
-  color: #94a3b8;
-}
-
-/* 按鈕群組 */
-.TrList-btn-group {
-  display: flex;
-  gap: 8px;
-  margin-top: 0.75rem;
-}
-
-.TrList-btn-group button {
-  flex: 1;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 5px;
-  transition: opacity 0.2s;
-}
-
-.btn-action-log {
-  background: #e0f2fe;
-  color: #0369a1;
-}
-.btn-ai-log {
-  background: #f3e8ff;
-  color: #6b21a8;
-}
-.TrList-btn-group button:hover {
-  opacity: 0.8;
-}
-
-.TrList-empty {
   text-align: center;
-  font-size: 0.7rem;
-  color: #cbd5e1;
-  border: 1px dashed #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 2rem 0;
+  color: #94a3b8;
+  background: #fff;
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  font-style: italic;
 }
 
 /* 捲軸美化 */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;

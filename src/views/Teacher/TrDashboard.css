@@ -1,131 +1,656 @@
-/* --- TrDashboard 基礎變數與 RWD --- */
-.TrDashboard {
-  background-color: #f5f2e9;
-  min-height: 100vh;
+/* --- 1. 核心配色與變數 --- */
+:root {
   --navy: #3a5a8a;
+  --oatmeal: #f5f2e9;
+  --oatmeal-dark: #eeede4;
+  --white: #ffffff;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 海軍藍外框按鈕樣式 */
-.btn-navy-outline {
-  /* 顏色設定 */
-  color: #3a5a8a !important;
-  background-color: transparent;
-  border: 2px solid #3a5a8a !important;
-
-  /* 字體與間距 */
-  font-size: 0.875rem;
-  transition: all 0.25s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* --- 2. 基礎佈局 --- */
+.TrDashboard {
+  background-color: var(--oatmeal);
+  min-height: 100vh;
+  padding: 2rem;
 }
 
-/* 懸停效果 (Hover) */
-.btn-navy-outline:hover {
-  background-color: #3a5a8a !important;
-  color: #efece3 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2);
+.stats-full-width,
+.ai-analysis-full-width {
+  width: 100%;
 }
 
-/* 點擊效果  */
-.btn-navy-outline:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(26, 35, 126, 0.1);
-}
-
-/* 確保圖示有正確間距 */
-.btn-navy-outline i {
-  font-size: 1.1rem;
-}
-
-/* --- 網格佈局：核心 RWD --- */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 預設雙欄 */
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
-/* 當螢幕小於 992px (平板/手機) 時轉為單欄 */
 @media (max-width: 992px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
 }
 
-/* --- 卡片視覺 (8px 圓角) --- */
+/* --- 3. 卡片視覺：嚴格維持 8px 圓角 --- */
 .stats-card,
 .chart-card {
-  background: #ffffff;
+  background-color: #ffffff !important;
   border-radius: 8px !important;
-  border: 1px solid rgba(58, 90, 138, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(58, 90, 138, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+  transition: var(--transition);
+  overflow: hidden;
 }
 
-.chart-header {
-  border-left: 5px solid var(--navy);
-  padding-left: 12px;
-  font-weight: 700;
+/* --- 4. 頂部快捷按鈕 (btn-quick-kanban) 質感設計 --- */
+.stats-action-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 2px solid var(--oatmeal-dark) !important;
+  background-color: rgba(58, 90, 138, 0.02);
+  min-width: 180px;
 }
 
-.chart-container {
-  height: 250px;
-  position: relative;
+/* --- 快捷按鈕主體  --- */
+.btn-quick-kanban {
+  background-color: #4a70a9;
+  border: 2px solid var(--oatmeal-dark);
+  color: #efece3;
+  width: 140px;
+  height: 48px;
+  border-radius: 50px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 8px;
+  padding: 0 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* --- 分組管理彈窗 (Kanban) --- */
+.btn-quick-kanban:hover {
+  background-color: #4a70a9 !important;
+  color: #efece3 !important;
+  border-color: var(--oatmeal-dark) !important;
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 12px 25px rgba(58, 90, 138, 0.25);
+}
+
+.btn-quick-kanban i {
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.btn-quick-kanban:hover i {
+  animation: iconBounce 0.6s ease-in-out infinite;
+}
+
+.btn-quick-kanban .button-label {
+  /* 🌟 文字 1rem 且完美置中 */
+  font-size: 1rem;
+  font-weight: bold;
+  color: #efece3;
+  margin: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 定義 Icon 跳動動畫 */
+@keyframes iconBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* --- 5. 🌟 分組管理彈窗 (Modal) 最終整合新版 --- */
+
+/* 1. 全域背景遮罩：動態光暈 + 毛玻璃 */
+.modal-overlay-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* 🌟 進化版毛玻璃 */
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(15, 23, 42, 0.8); /* 深邃色調，讓米色 Modal 更跳脫 */
+  overflow: hidden;
+}
+
+/* 🌟 製造現代感的動態彩色光暈 */
+.modal-overlay-custom::before,
+.modal-overlay-custom::after {
+  content: "";
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  filter: blur(140px);
+  z-index: -1;
+  opacity: 0.3;
+  animation: glowOrbit 18s infinite linear;
+}
+
+.modal-overlay-custom::before {
+  background: radial-gradient(circle, #3a5a8a 0%, transparent 70%);
+  top: -20%;
+  left: -10%;
+}
+
+.modal-overlay-custom::after {
+  background: radial-gradient(circle, #8a3a8a 0%, transparent 70%);
+  bottom: -20%;
+  right: -10%;
+  animation-direction: reverse;
+}
+
+@keyframes glowOrbit {
+  0% {
+    transform: rotate(0deg) translate(50px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translate(50px) rotate(-360deg);
+  }
+}
+
+/* 2. 彈窗主體：實體感米色設計 (不透明) */
 .kanban-modal {
-  background: #efece3;
-  width: 90vw;
-  max-width: 1100px;
-  height: 80vh;
-  border-radius: 16px;
+  background: var(--oatmeal); /* 核心米色 */
+  width: 94%;
+  max-width: 1250px;
+  height: 85vh;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 50px 100px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15); /* 極細亮邊 */
+  animation: modalPop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.kanban-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-/* 學生卡片 (縱向排列) */
-.student-card {
-  width: 100%;
-  background: #fff;
-  margin-bottom: 10px;
-  padding: 15px;
+/* 3. 標頭：藍底米色字 (絕對置中校正) */
+.modal-header-custom {
+  background-color: #efece3;
+  padding: 1.25rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--oatmeal-dark);
+}
+
+.header-title {
+  color: #4a70a9;
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  line-height: 1;
+  transform: translateY(-1px); /* 🌟 視覺修正：文字不偏下 */
+}
+
+/* 4. 長橢圓互動區 */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* 狀態按鈕：長橢圓 */
+.btn-status-pill {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 50px;
+  background: #4a70a9;
+  border: 1.5px solid var(--oatmeal);
+  color: #efece3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-status-pill.unlocked {
+  background: #198754;
+  border-color: #198754;
+  color: #efece3;
+  font-size: bold;
+}
+
+/* 搜尋框：絲滑延伸動畫 */
+.search-box-custom {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
   border-radius: 8px;
-  border-left: 6px solid var(--navy);
+}
+
+.search-box-custom input {
+  background: rgba(245, 242, 233, 0.1);
+  border: 1.5px solid rgba(245, 242, 233, 0.2);
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 10px 15px 10px 45px;
+  width: 240px;
+  font-size: 0.95rem;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  outline: none;
+}
+
+.search-box-custom input:focus {
+  background: var(--oatmeal);
+  color: var(--navy);
+  width: 320px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+/* --- 5. 彈窗主體與縱向佈局核心 --- */
+.kanban-modal {
+  display: flex;
+  flex-direction: column;
+  height: 85vh;
+  max-height: calc(100vh - 40px);
+  background: var(--oatmeal);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+}
+
+/* 核心容器：改為縱向捲動 */
+.kanban-wrapper {
+  display: block !important; /* 🌟 核心：移除橫向排列 */
+  flex: 1;
+  width: 100%;
+  padding: 2rem;
+  background-color: #efece3;
+  overflow-y: auto !important; /* 🌟 改為縱向捲動 */
+  overflow-x: hidden !important;
+  scroll-behavior: smooth;
+}
+
+/* 🌟 欄位容器：滿寬橫條設計 */
+.kanban-column {
+  width: 100%; /* 🌟 核心：寬度撐滿 */
+  margin-bottom: 2rem; /* 每個組別之間的間距 */
+  background: #ffffff;
+  border-radius: 16px; /* 稍微增加圓角讓線條更柔和 */
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--oatmeal-dark);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.kanban-column:hover {
+  transform: translateY(-2px); /* 輕微懸浮感 */
+}
+
+/* --- 6. 標頭與內部區域設計 --- */
+.column-header {
+  flex: 0 0 auto;
+  padding: 1.25rem 2rem;
+  background: var(--navy);
+  color: var(--oatmeal);
+  font-weight: 800;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* 按鈕樣式 */
-.btn-quick-kanban {
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: transform 0.2s;
+/* --- 1. 名單區域：修正為垂直堆疊 --- */
+.drag-area {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column; /* 🌟 關鍵：強制由上而下排列 */
+  gap: 12px; /* 卡片之間的垂直間距 */
+  min-height: 120px;
+  background: #fafafa;
+  /* 取消 wrap，因為 column 模式下不需要換行 */
 }
 
-.btn-quick-kanban:hover {
-  transform: scale(1.05);
+/* --- 2. 學生卡片：佔滿整行且內部橫向排列 --- */
+.student-card {
+  /* 🌟 修正：取消 calc(33%)，改為 100% 寬度 */
+  width: 100%;
+
+  background: #ffffff;
+  padding: 14px 20px; /* 稍微縮減上下間距，讓列表更緊湊 */
+  border-radius: 12px;
+  border: 1px solid var(--oatmeal-dark);
+  border-left: 8px solid var(--navy);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+
+  cursor: grab;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+
+  /* 🌟 佈局修正：卡片內部改為「橫向」，讓姓名與學號左右並排 */
+  display: flex;
+  flex-direction: row; /* 姓名在左，學號在右 */
+  justify-content: space-between;
+  align-items: center; /* 垂直居中對齊 */
+  gap: 15px;
 }
 
-/* 遮罩 */
-.modal-overlay-custom {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
-  z-index: 1050;
+/* 針對學號的樣式微調 */
+.student-card .id {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-family: monospace; /* 學號用等寬字體更整齊 */
+}
+
+/* 懸浮效果：改為向右微移，更符合「清單」的互動感 */
+.student-card:hover:not(.locked) {
+  transform: translateX(5px); /* 🌟 懸浮時往右滑動 5px */
+  box-shadow: 0 8px 20px rgba(58, 90, 138, 0.1);
+  border-left-width: 12px;
+  background-color: #fcfcfc;
+}
+/* 學生資訊區域 */
+.student-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 2px;
+}
+
+.student-id {
+  font-size: 0.85rem;
+  color: #888;
+  font-family: "Monaco", monospace;
+  margin-bottom: 4px;
+}
+
+/* --- 下載按鈕區域：底部膠囊設計 --- */
+.student-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto; /* 將按鈕推到底部 */
+  padding-top: 12px;
+  border-top: 1px solid rgba(58, 90, 138, 0.08); /* 細緻分割線 */
+}
+
+.btn-action-pill {
+  flex: 1;
+  height: 34px;
+  border-radius: 50px; /* 膠囊形狀 */
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-action-pill i {
+  font-size: 0.9rem;
+}
+
+.btn-action-pill span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 綠色風格：操作紀錄 */
+.btn-action-pill.logs {
+  color: #16a34a;
+}
+.btn-action-pill.logs:hover {
+  background: #f0fdf4;
+  border-color: #22c55e;
+  box-shadow: 0 4px 8px rgba(34, 197, 94, 0.1);
+}
+
+/* 紫色風格：AI 對話 */
+.btn-action-pill.ai-chat {
+  color: #7c3aed;
+}
+.btn-action-pill.ai-chat:hover {
+  background: #f5f3ff;
+  border-color: #8b5cf6;
+  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.1);
+}
+
+/* --- RWD 微調 --- */
+@media (max-width: 992px) {
+  .student-card {
+    flex: 1 1 calc(50% - 15px);
+  }
+}
+
+@media (max-width: 576px) {
+  .student-card {
+    flex: 1 1 100%;
+    padding: 16px;
+  }
+  .btn-action-pill span {
+    display: none; /* 手機版隱藏文字，僅顯示圖示節省空間 */
+  }
+  .btn-action-pill {
+    padding: 0;
+  }
+}
+/* --- 7. 裝飾與捲軸美化 --- */
+.modal-footer-hint {
+  background-color: #efece3;
+  color: #4a70a9;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+/* 捲軸美化 */
+.kanban-wrapper::-webkit-scrollbar {
+  width: 10px;
+}
+
+.kanban-wrapper::-webkit-scrollbar-thumb {
+  background: var(--navy);
+  border-radius: 10px;
+  border: 3px solid #efece3;
+}
+
+.kanban-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --- 6. 其他圖表與 AI 區塊 --- */
+.chart-header {
+  font-weight: 800;
+  color: var(--navy);
+  border-left: 6px solid var(--navy);
+  padding-left: 15px;
+  margin-bottom: 1rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+.chart-container.pie-wrapper {
+  height: 320px;
+}
+
+.ai-analysis-box {
+  background: var(--oatmeal-dark);
+  border-radius: 8px; /* 維持 8px */
+  padding: 1.5rem;
+  min-height: 150px;
+  border: 1px dashed rgba(58, 90, 138, 0.2);
+  white-space: pre-wrap;
+  line-height: 1.8;
+}
+
+/* --- 7. 動畫與美化 --- */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+}
+
+/* 捲軸美化 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--navy);
+  border-radius: 10px;
+}
+.kanban-wrapper::-webkit-scrollbar-track {
+  background: var(--oatmeal-dark);
+}
+/* --- SweetAlert2 全域質感統一 --- */
+
+.swal2-popup {
+  border-radius: 24px !important; /* 稍微增加圓角感，對應 Modal */
+  font-family: inherit;
+  border: 1px solid var(--oatmeal-dark);
+  background-color: #ffffff !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2) !important;
+}
+
+.swal2-title {
+  font-weight: 800 !important;
+  color: var(--navy) !important;
+  padding-top: 1.5rem !important;
+}
+
+.swal2-html-container {
+  color: #555 !important;
+  font-weight: 500;
+}
+
+/* 🌟 確認按鈕：長橢圓 Navy 風格 */
+.swal2-confirm {
+  background-color: var(--navy) !important;
+  border-radius: 50px !important;
+  padding: 12px 30px !important;
+  font-weight: 700 !important;
+  transition: all 0.3s ease !important;
+}
+
+.swal2-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(58, 90, 138, 0.3);
+}
+
+/* 🌟 取消按鈕：優雅的灰色/透明風格 */
+.swal2-cancel {
+  background-color: transparent !important;
+  color: #888 !important;
+  border-radius: 50px !important;
+  font-weight: 600 !important;
+  border: 1px solid #ddd !important;
+}
+
+/* 🌟 輸入框樣式：對應你的搜尋框風格 */
+.swal2-input {
+  border-radius: 12px !important;
+  border: 2px solid var(--oatmeal-dark) !important;
+  box-shadow: none !important;
+  transition: border-color 0.3s ease;
+  font-size: 1rem !important;
+}
+
+.swal2-input:focus {
+  border-color: var(--navy) !important;
+}
+
+/* 🌟 Toast 專用樣式微調 (如果是右上方的小提醒) */
+.swal2-toast {
+  border-radius: 12px !important;
+  border-left: 6px solid var(--navy) !important; /* 加入側邊色條 */
+  padding: 0.8rem 1rem !important;
+}
+
+/* --- 5.2 關閉按鈕：紅色 X 質感設計 --- */
+
+.btn-close-custom {
+  background: #bf4646; /* 極淡的紅色底 */
+  border: none;
+  color: #efece3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%; /* 圓形按鈕 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: auto;
+  outline: none;
+}
+
+/* 內部的 X 文字設計 */
+.close-icon {
+  color: #dc3545; /* 標準紅色 */
+  font-size: 1.1rem;
+  font-weight: 900; /* 讓 X 看起來更紮實 */
+  font-family: Arial, sans-serif; /* 確保 X 號字體工整 */
+  transition: transform 0.3s ease;
+}
+
+/* 滑鼠懸停效果 */
+.btn-close-custom:hover {
+  background: #dc3545; /* 背景變全紅 */
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+  transform: rotate(90deg); /* 旋轉 90 度增加動態感 */
+}
+
+.btn-close-custom:hover .close-icon {
+  color: #ffffff; /* 懸停時 X 變白色 */
+}
+
+/* 點擊時的縮小反饋 */
+.btn-close-custom:active {
+  transform: rotate(90deg) scale(0.9);
 }

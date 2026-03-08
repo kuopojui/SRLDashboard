@@ -1,108 +1,95 @@
 <template>
   <div class="TrList-overlay" @click.self="$emit('close')">
-    <div class="TrList-card shadow-lg">
-      <div class="TrList-header">
-        <div class="d-flex align-items-center">
-          <div class="TrList-icon-box me-3">
-            <i class="bi bi-person-lines-fill"></i>
+    <div class="kanban-modal shadow-lg wide-modal">
+      <div class="modal-header-custom">
+        <h5 class="header-title">
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+          <span>實驗分組管理</span>
+        </h5>
+
+        <div class="header-actions">
+          <button
+            :class="['btn-status-pill', isLocked ? 'locked' : 'unlocked']"
+            @click="isLocked = !isLocked"
+          >
+            <span class="label-text">{{
+              isLocked ? "🔒 點擊切換模式" : "🔓 編輯中"
+            }}</span>
+          </button>
+
+          <div class="search-box-custom">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="搜尋姓名..."
+            />
           </div>
-          <div>
-            <h4 class="TrList-title">實驗組別與學生管理</h4>
-            <div class="d-flex align-items-center mt-1">
-              <span class="TrList-badge-count"
-                >共 {{ students.length }} 人</span
-              >
-              <button
-                @click="isLocked = !isLocked"
-                class="TrList-lock-btn"
-                :class="{ 'is-unlocked': !isLocked }"
-              >
-                <i
-                  :class="isLocked ? 'bi bi-lock-fill' : 'bi bi-unlock-fill'"
-                ></i>
-                {{ isLocked ? "點擊解鎖拖曳" : "拖曳模式已開啟" }}
-              </button>
-            </div>
-          </div>
+
+          <button class="btn-close-custom" @click="$emit('close')">
+            <i class="bi bi-x-lg"></i>
+          </button>
         </div>
-        <button class="TrList-close-btn" @click="$emit('close')">✕</button>
       </div>
 
-      <div class="TrList-body custom-scrollbar">
-        <div class="row g-4">
-          <div
-            v-for="group in groupedStudents"
-            :key="group.id"
-            class="col-md-6 col-lg-4"
-          >
-            <div class="TrList-group-zone" :class="{ 'is-locked': isLocked }">
-              <div class="TrList-group-header">
-                <h6>
-                  {{ group.name }} <small>({{ group.members.length }})</small>
-                </h6>
-                <span v-if="group.id !== 'unassigned'" class="TrList-passcode">
-                  代碼: {{ group.passCode }}
-                </span>
-              </div>
-
-              <draggable
-                v-model="group.members"
-                group="students"
-                item-key="uid"
-                :disabled="isLocked"
-                class="TrList-drag-area"
-                :component-data="{
-                  tag: 'div',
-                  type: 'transition-group',
-                  name: !isLocked ? 'flip-list' : null,
-                }"
-                @change="(evt) => handleMove(evt, group.id)"
-              >
-                <template #item="{ element }">
-                  <div class="TrList-student-item">
-                    <div
-                      class="d-flex justify-content-between align-items-center"
-                    >
-                      <div class="d-flex align-items-center">
-                        <i
-                          v-if="!isLocked"
-                          class="bi bi-grid-3x3-gap-fill me-2 text-muted move-handle"
-                        ></i>
-                        <span class="fw-bold text-navy">{{
-                          element.displayName
-                        }}</span>
-                      </div>
-                      <span class="TrList-id-text text-muted small">
-                        {{ element.studentId || "無學號" }}
-                      </span>
-                    </div>
-
-                    <div class="TrList-btn-group mt-3">
-                      <button
-                        @click.stop="downloadLog(element, 'action')"
-                        class="btn-action-log"
-                        title="下載學生操作歷程 CSV"
-                      >
-                        <i class="bi bi-activity me-1"></i> 操作紀錄
-                      </button>
-                      <button
-                        @click.stop="downloadLog(element, 'ai')"
-                        class="btn-ai-log"
-                        title="下載 AI 生成對話紀錄 JSON"
-                      >
-                        <i class="bi bi-chat-dots me-1"></i> AI 生成
-                      </button>
-                    </div>
-                  </div>
-                </template>
-              </draggable>
-
-              <div v-if="group.members.length === 0" class="TrList-empty">
-                暫無學生
-              </div>
-            </div>
+      <div class="kanban-wrapper custom-scrollbar">
+        <div
+          v-for="group in localGroupedData"
+          :key="group.id"
+          class="kanban-column"
+        >
+          <div class="column-header">
+            <span class="title-text">{{ group.name }}</span>
+            <span class="count-badge">{{ group.members.length }}</span>
           </div>
+
+          <draggable
+            v-model="group.members"
+            group="students"
+            item-key="uid"
+            class="drag-area"
+            :disabled="isLocked"
+            ghost-class="sortable-ghost"
+            @change="(e) => handleMove(e, group.id)"
+          >
+            <template #item="{ element }">
+              <div
+                v-show="isMatchSearch(element)"
+                class="student-card"
+                :class="{ locked: isLocked }"
+              >
+                <div class="student-info-main">
+                  <div class="student-name">
+                    {{ element.realName || element.displayName || "未命名" }}
+                  </div>
+                  <div class="student-id">
+                    {{ element.studentId || "無學號" }}
+                  </div>
+                </div>
+
+                <div class="student-actions">
+                  <button
+                    class="btn-action-pill logs"
+                    @click.stop="downloadLog(element, 'action')"
+                  >
+                    <i class="bi bi-file-earmark-arrow-down"></i>
+                    <span>操作紀錄</span>
+                  </button>
+                  <button
+                    class="btn-action-pill ai-chat"
+                    @click.stop="downloadLog(element, 'ai')"
+                  >
+                    <i class="bi bi-robot"></i>
+                    <span>AI 對話</span>
+                  </button>
+                </div>
+              </div>
+            </template>
+          </draggable>
         </div>
+      </div>
+
+      <div class="modal-footer-hint">
+        {{ isLocked ? "需切換模式後方可拖曳" : "拖曳學生卡片進行分組管理" }}
       </div>
     </div>
   </div>
@@ -120,19 +107,30 @@ const props = defineProps({
   groups: Array,
 });
 
-const isLocked = ref(true);
-const students = ref([]);
+const emit = defineEmits(["close"]);
 
-// 🌟 核心改動：將 groupedStudents 改為普通的 ref，以利 draggable 直接操作
+const isLocked = ref(true);
+const searchQuery = ref("");
+const students = ref([]);
 const localGroupedData = ref([]);
 
-// 監聽原始資料，當 Firebase 有變動或 props 更新時，重新構建本地結構
+// 🌟 修正 1：搜尋過濾邏輯
+const isMatchSearch = (s) => {
+  const q = searchQuery.value.toLowerCase();
+  if (!q) return true;
+  return (
+    (s.realName || s.displayName || "").toLowerCase().includes(q) ||
+    (s.studentId || "").includes(q)
+  );
+};
+
+// 🌟 修正 2：監聽 props 與學生資料，構建拖曳用的 localGroupedData
 watch(
   [students, () => props.groups],
   () => {
     const list = [
       { id: "unassigned", name: "未分組學生", members: [], passCode: "" },
-      ...props.groups.map((g) => ({ ...g, members: [] })),
+      ...(props.groups || []).map((g) => ({ ...g, members: [] })),
     ];
 
     students.value.forEach((s) => {
@@ -145,36 +143,36 @@ watch(
   { immediate: true, deep: true },
 );
 
-// 下載紀錄邏輯 (CSV / JSON)
+// 🌟 修正 3：下載邏輯 (路徑需檢查)
 const downloadLog = async (student, type) => {
-  const path = type === "action" ? `logs` : `ai_history`;
-  const snap = await get(
-    dbRef(rtdb, `courses/${props.courseId}/${path}/${student.uid}`),
-  );
+  // 注意：確保 Firebase 路徑與您的資料庫結構一致
+  const path =
+    type === "action"
+      ? `logs/operations/${student.uid}`
+      : `logs/aiChat/${student.uid}`;
+  const snap = await get(dbRef(rtdb, `courses/${props.courseId}/${path}`));
 
   if (!snap.exists()) return alert("尚無紀錄");
-
   const data = snap.val();
-  let blob, filename;
 
+  let blob, filename;
   if (type === "action") {
-    // 加上 BOM \ufeff 解決 Excel 中文亂碼
     const csv =
-      "時間,類別,內容\n" +
+      "\ufeff時間,類別,內容\n" +
       Object.values(data)
-        .sort((a, b) => b.timestamp - a.timestamp)
+        .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
         .map(
           (l) =>
-            `${new Date(l.timestamp).toLocaleString()},${l.typeLabel || "動作"},${l.content}`,
+            `${new Date(l.timestamp || l.time).toLocaleString()},${l.action || "動作"},${l.content || l.typeLabel || ""}`,
         )
         .join("\n");
-    blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
-    filename = `${student.displayName}_操作紀錄.csv`;
+    blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    filename = `${student.realName || student.displayName}_操作紀錄.csv`;
   } else {
     blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     });
-    filename = `${student.displayName}_AI對話.json`;
+    filename = `${student.realName || student.displayName}_AI對話.json`;
   }
 
   const link = document.createElement("a");
@@ -184,20 +182,15 @@ const downloadLog = async (student, type) => {
   URL.revokeObjectURL(link.href);
 };
 
-// 🌟 完整拖曳處理邏輯
+// 🌟 修正 4：更新 Firebase 中的 groupId
 const handleMove = (evt, newGroupId) => {
-  // 只有當元素「被加入」新組別時才觸發資料庫更新
   if (evt.added) {
     const student = evt.added.element;
     const gid = newGroupId === "unassigned" ? null : newGroupId;
 
-    // 立即同步回 Firebase
     update(dbRef(rtdb, `courses/${props.courseId}/profiles/${student.uid}`), {
       groupId: gid,
-    }).catch((err) => {
-      console.error("分組更新失敗:", err);
-      alert("儲存失敗，請檢查網路連線");
-    });
+    }).catch((err) => console.error("分組更新失敗:", err));
   }
 };
 
