@@ -1,0 +1,115 @@
+/* StuHW.css */
+:root {
+  --hw-navy: #4a70a9;
+  --hw-bg: #efece3;
+}
+
+.StuHW {
+  background-color: var(--hw-bg);
+  height: 100%;
+}
+
+.StuHW .intro-card {
+  background: white !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(74, 112, 169, 0.1);
+}
+
+/* 側邊欄與網格系統 */
+.StuHW .answer-sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+}
+
+.StuHW .answer-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.StuHW .answer-status-box {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.StuHW .answer-status-box.active {
+  border-color: var(--hw-navy);
+  background: rgba(74, 112, 169, 0.05);
+  color: var(--hw-navy);
+}
+
+.StuHW .answer-status-box.completed {
+  background: var(--hw-navy);
+  color: white;
+  border-color: var(--hw-navy);
+}
+
+/* 題目作答區 */
+.StuHW .question-workspace {
+  background: white;
+  margin: 1.5rem;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* 選項與文本域 */
+.StuHW .option-pill {
+  display: flex;
+  align-items: center;
+  padding: 1.25rem;
+  border: 2px solid #f1f5f9;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.StuHW .option-pill:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.StuHW .option-pill.selected {
+  background: rgba(74, 112, 169, 0.05);
+  border-color: var(--hw-navy);
+}
+
+.StuHW .option-marker {
+  width: 32px;
+  height: 32px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  font-weight: bold;
+  color: #64748b;
+}
+
+.selected .option-marker {
+  background: var(--hw-navy);
+  color: white;
+}
+
+/* RWD 適配 */
+@media (max-width: 767.98px) {
+  .StuHW .answer-sidebar {
+    display: none !important;
+  }
+  .StuHW .question-workspace {
+    margin: 0;
+    border-radius: 0;
+  }
+  .StuHW .q-content {
+    padding: 1.5rem !important;
+  }
+}

@@ -624,7 +624,7 @@
               :isOpen="showHwModal"
               :courseId="courseId"
               :unitId="id"
-              :hwId="activeTaskId"
+              :taskId="activeTaskId"
               @close="handleModalClose('hw')"
             />
           </div>
@@ -655,10 +655,7 @@
           class="modal-overlay-srl"
           @click.self="showEvalModal = false"
         >
-          <div
-            class="srl-modal-container"
-            style="max-width: 600px; height: auto"
-          >
+          <div class="srl-modal-container shadow-2xl reflection-content-layer">
             <StuSRLEval
               :isOpen="showEvalModal"
               :plannedMins="srlSession?.targetTime || 0"
@@ -987,5 +984,73 @@ const startHw = (hwId) => {
 const enterDiscussion = (disId) => {
   activeTaskId.value = disId;
   showDiscussModal.value = true;
+};
+
+// StuUnit.vue 中的 script setup 區塊
+const handleModalClose = async (type) => {
+  // 1. 關閉所有彈窗狀態
+  showExamModal.value = false;
+  showHwModal.value = false;
+  showDiscussModal.value = false;
+
+  // 2. 清空當前任務 ID
+  activeTaskId.value = null;
+
+  // 3. 核心：如果是測驗或功課，重新抓取數據以更新儀表板
+  if (type === "exam" || type === "hw") {
+    await fetchMonitorData();
+  }
+};
+
+// 🌟 更新：處理反思問卷提交並執行正確的路由跳轉
+/**
+ * 處理反思問卷提交 (SRL Stage 4: Self-Reflection)
+ * 功能：存檔反思數據 -> 標記結案 -> 顯示成功回饋 -> 跳轉回課程詳情頁
+ */
+const onEvalConfirm = async (evalData) => {
+  console.log("🌟 接收到 SRL 反思數據:", evalData);
+
+  try {
+    // 1. 確保數據儲存路徑符合 userId_unitId 格式
+    const tracePath = `student_traces/${props.userId}_${props.id}`;
+
+    // 2. 執行 Firebase 原子更新
+    await update(dbRef(rtdb, tracePath), {
+      reflection: evalData,
+      isFinished: true, // 重要：標記單元完成
+      completedAt: serverTimestamp(), // 記錄伺服器完成時間
+      totalElapsedTimeMins: Math.floor(elapsedTime.value / 60),
+      lastActive: serverTimestamp(),
+    });
+
+    // 3. 關閉當前彈窗
+    showEvalModal.value = false;
+
+    // 4. 顯示高品質反饋動畫
+    await Swal.fire({
+      title: "學習任務全數達成！",
+      text: "你的反思將轉化為下一次進步的動力。正在帶您返回課程詳情...",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false,
+      position: "center",
+      backdrop: `rgba(74, 112, 169, 0.2)`,
+    });
+
+    // 5. 🌟 關鍵修正：執行導航跳轉 (回到 StuCourseDetail)
+    // 根據您的路由表，StuCourseDetail 需要傳遞 courseId 參數
+    router.push({
+      name: "StuCourseDetail",
+      params: { courseId: props.courseId },
+    });
+  } catch (error) {
+    console.error("🔥 SRL 反思提交失敗:", error);
+    Swal.fire({
+      title: "存檔異常",
+      text: "暫時無法連接資料庫，請稍後再試一次。",
+      icon: "error",
+      confirmButtonColor: "#4a70a9",
+    });
+  }
 };
 </script>

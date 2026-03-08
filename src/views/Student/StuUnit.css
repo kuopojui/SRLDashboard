@@ -486,41 +486,86 @@
   }
 }
 
-/* 彈窗全屏遮罩：磨砂玻璃效果 */
+/* --- 1. 彈窗全屏遮罩 (保持原有的優異毛玻璃效果) --- */
 .modal-overlay-srl {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(6px); /* 讓背景模糊但可感知 */
-  z-index: 2000;
+  backdrop-filter: blur(8px);
+  /* 🌟 核心：確保遮罩層級高於頁面所有內容 */
+  z-index: 5000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
 }
 
-/* 彈窗內容容器：非滿版設計 */
+/* --- 2. 彈窗內容容器 (修正內容被遮罩模糊的問題) --- */
 .srl-modal-container {
-  background: white;
+  /* 🌟 核心：確保不透明白色背景，防止內容跟隨背景一起模糊 */
+  background: #ffffff !important;
   width: 100%;
-  max-width: 960px; /* 限制寬度維持卡片質感 */
-  max-height: 90vh;
+  max-width: 960px;
+  height: 90vh;
   border-radius: 28px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+  /* 🌟 佈局核心：轉為 Flex 模式 */
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  animation: modalScaleIn 0.3s ease-out;
+
+  /* 🌟 強制建立新的堆疊上下文，確保內容跳出遮罩影響範圍 */
+  position: relative;
+  z-index: 5001 !important;
+  transform: translateZ(0); /* 啟動 GPU 加速解決渲染殘影 Bug */
+
+  animation: modalScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes modalScaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
+/* --- 3. 內容與捲動優化 --- */
+
+/* 標題與頁首：固定高度 */
+.srl-modal-container header,
+.srl-modal-container .modal-header-srl {
+  flex-shrink: 0;
+  background: white;
+  z-index: 10;
+}
+
+/* 🌟 內容主體：自動填滿並開啟捲動 */
+/* 針對反思模組，加入通配符確保內容區塊能捲動 */
+.srl-modal-container .q-content,
+.srl-modal-container .modal-body-srl,
+.srl-modal-container > div:not(header):not(footer) {
+  flex: 1 1 auto;
+  overflow-y: auto !important;
+  padding: 2.5rem;
+  background: white;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 底部操作列：固定高度，永不消失 */
+.srl-modal-container footer,
+.srl-modal-container .modal-footer-srl {
+  flex-shrink: 0;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 1.25rem 2rem;
+  z-index: 10;
+}
+
+/* 📱 手機版佈局修正 */
+@media (max-width: 768px) {
+  .modal-overlay-srl {
+    padding: 0;
   }
-  to {
-    opacity: 1;
-    transform: scale(1);
+  .srl-modal-container {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
   }
 }

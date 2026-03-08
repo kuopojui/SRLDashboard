@@ -1,0 +1,166 @@
+/* StuExam.css */
+:root {
+  --exam-navy: #4a70a9;
+  --exam-bg: #efece3;
+  --exam-white: #ffffff;
+}
+
+.StuExam {
+  background-color: var(--exam-bg);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* --- 測驗開始前頁面 --- */
+.StuExam .prepare-info {
+  background: white;
+  padding: 2rem;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.StuExam .bg-navy-soft {
+  background-color: rgba(74, 112, 169, 0.1);
+}
+
+/* --- 測驗主容器 --- */
+.StuExam .hw-main-container {
+  border-radius: 0;
+  background-color: var(--exam-bg) !important;
+}
+
+/* --- 側邊欄 RWD --- */
+.StuExam .answer-sidebar {
+  width: 260px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 767.98px) {
+  .StuExam .answer-sidebar {
+    display: none !important; /* 手機版隱藏側邊欄，改用頂部狀態條 */
+  }
+}
+
+/* --- 答案格子 --- */
+.StuExam .answer-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.StuExam .answer-status-box {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+
+.StuExam .answer-status-box.active {
+  border-color: var(--exam-navy);
+  color: var(--exam-navy);
+  background: var(--bg-navy-soft);
+  box-shadow: inset 0 0 0 1px var(--exam-navy);
+}
+
+.StuExam .answer-status-box.completed {
+  background-color: var(--exam-navy);
+  color: white;
+  border-color: var(--exam-navy);
+}
+
+/* --- 作答區域 --- */
+.StuExam .question-workspace {
+  background: white;
+  margin: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 767.98px) {
+  .StuExam .question-workspace {
+    margin: 0;
+    border-radius: 0;
+  }
+}
+
+.StuExam .q-content {
+  padding: 2.5rem !important;
+}
+
+/* --- 選項樣式 --- */
+.StuExam .option-item {
+  border: 2px solid #f1f5f9 !important;
+  border-radius: 16px !important;
+  padding: 1.25rem !important;
+  cursor: pointer;
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.StuExam .option-item:hover {
+  border-color: #cbd5e1 !important;
+  background-color: #f8fafc;
+}
+
+.StuExam .option-item.active-option {
+  border-color: var(--exam-navy) !important;
+  background-color: rgba(74, 112, 169, 0.05) !important;
+}
+
+.StuExam .option-label {
+  width: 36px;
+  height: 36px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #64748b;
+  transition: 0.2s;
+}
+
+.active-option .option-label {
+  background: var(--exam-navy);
+  color: white;
+}
+
+/* --- 底部控制欄 --- */
+.StuExam footer {
+  background: #f8fafc;
+  border-radius: 0 0 20px 20px;
+}
+
+/* 🌟 確保彈窗容器具備彈性高度並允許內部捲動 */
+.srl-modal-container {
+  display: flex;
+  flex-direction: column;
+  height: 90vh; /* 限制高度在螢幕內 */
+  background: white;
+  border-radius: 24px;
+  overflow: hidden; /* 核心：隱藏外溢，由內部 Body 處理捲動 */
+}
+
+/* 🌟 確保題目區域自動填滿剩餘空間並可捲動 */
+.StuExam .q-content {
+  flex: 1; /* 佔滿剩餘空間 */
+  overflow-y: auto; /* 🌟 核心：內容過多時顯示捲動條 */
+  padding: 2rem !important;
+  -webkit-overflow-scrolling: touch; /* 優化手機滑動 */
+}
+
+/* 🌟 底部固定欄位 */
+.StuExam footer {
+  flex-shrink: 0; /* 🌟 核心：禁止縮小，確保按鈕永遠可見 */
+  background: #f8fafc;
+  padding: 1.25rem;
+  border-top: 1px solid #e2e8f0;
+}

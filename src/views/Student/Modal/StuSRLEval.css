@@ -1,53 +1,83 @@
-/* 星等動態效果 */
-.transition-star {
-  transition:
-    transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    color 0.2s;
-}
-.transition-star:hover {
-  transform: scale(1.3);
-}
-.scale-up {
-  transform: scale(1.1);
+/* 🌟 核心佈局：確保填滿父組件提供的白框 */
+.StuEval-Internal {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* 防止外框出現雙捲軸 */
 }
 
-/* 校準圓環 */
+.Eval-Header {
+  background: #4a70a9; /* 與主題藍一致 */
+}
+
+/* 內容區捲動美化 */
+.Eval-Body::-webkit-scrollbar {
+  width: 6px;
+}
+.Eval-Body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* 時間圓圈圖表樣式 */
 .time-circle {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  border: 5px solid #e2e8f0;
-  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  background: white;
+  border: 4px solid #e2e8f0;
 }
 .time-circle.planned {
-  border-color: #002c53;
-  color: #002c53;
-}
-.time-circle.actual.is-over {
-  border-color: #dc3545;
-  color: #dc3545;
+  border-color: #4a70a9;
+  color: #4a70a9;
 }
 .time-circle.actual.is-perfect {
-  border-color: #198754;
-  color: #198754;
+  border-color: #48bb78;
+  color: #48bb78;
+}
+.time-circle.actual.is-over {
+  border-color: #f56565;
+  color: #f56565;
+}
+.time-circle .num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.time-circle .unit {
+  font-size: 0.6rem;
+  margin-top: 2px;
 }
 
-.pulse-danger {
-  animation: pulse-red 2s infinite;
+/* 歸因按鈕樣式 */
+.btn-attribution {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+.btn-attribution.active {
+  background: #4a70a9;
+  color: white;
+  border-color: #4a70a9;
 }
 
-@keyframes pulse-red {
-  0% {
-    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
-  }
+/* 提交按鈕專屬樣式 */
+.btn-navy-confirm {
+  background-color: #4a70a9;
+  color: white;
+  border: none;
+  font-weight: 600;
+  padding: 12px 30px;
+  transition: 0.3s;
+}
+.btn-navy-confirm:hover:not(:disabled) {
+  background-color: #385a8a;
+  transform: translateY(-2px);
 }

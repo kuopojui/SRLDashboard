@@ -1,0 +1,172 @@
+/* StuDiscuss.css */
+:root {
+  --dis-navy: #4a70a9;
+  --dis-bg: #efece3;
+}
+
+.StuDiscuss {
+  background-color: var(--dis-bg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 討論主題卡片 */
+.StuDiscuss .topic-header-card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid var(--dis-navy);
+}
+
+/* 留言列表區域 */
+.StuDiscuss .chat-container {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.StuDiscuss .message-bubble {
+  max-width: 85%;
+  padding: 1rem;
+  border-radius: 18px;
+  position: relative;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.StuDiscuss .message-bubble.is-me {
+  align-self: flex-end;
+  background: var(--dis-navy);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.StuDiscuss .message-bubble:not(.is-me) {
+  align-self: flex-start;
+  background: white;
+  color: #2d3748;
+  border-bottom-left-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 底部輸入欄位 */
+.StuDiscuss .input-area {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.StuDiscuss .chat-input {
+  border-radius: 25px;
+  padding: 10px 20px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  transition: 0.2s;
+}
+
+.StuDiscuss .chat-input:focus {
+  background: white;
+  border-color: var(--dis-navy);
+  box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
+}
+
+/* RWD 適配 */
+@media (max-width: 767.98px) {
+  .StuDiscuss .topic-header-card {
+    margin: 10px;
+    border-radius: 12px;
+  }
+  .StuDiscuss .message-bubble {
+    /* StuDiscuss.css */
+    :root {
+      --dis-navy: #4a70a9;
+      --dis-bg: #efece3;
+    }
+
+    .StuDiscuss {
+      background-color: var(--dis-bg);
+      height: 100%;
+    }
+
+    /* 主題導引卡片 */
+    .StuDiscuss .topic-intro-card {
+      background: white;
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border-left: 5px solid var(--dis-navy);
+      margin-bottom: 1.5rem;
+    }
+
+    /* 訊息流區域 */
+    .StuDiscuss .chat-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      padding: 1rem;
+    }
+
+    .StuDiscuss .message-item {
+      max-width: 85%;
+      padding: 1rem;
+      border-radius: 18px;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .StuDiscuss .message-item.is-me {
+      align-self: flex-end;
+      background: var(--dis-navy);
+      color: white;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 12px rgba(74, 112, 169, 0.2);
+    }
+
+    .StuDiscuss .message-item.is-other {
+      align-self: flex-start;
+      background: white;
+      color: #2d3748;
+      border-bottom-left-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* 輸入控制列 */
+    .StuDiscuss .chat-footer {
+      background: white;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .StuDiscuss .input-pill {
+      border-radius: 30px;
+      padding: 10px 20px;
+      background: #f8fafc;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .StuDiscuss .input-pill:focus {
+      background: white;
+      border-color: var(--dis-navy);
+      box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.1);
+      outline: none;
+    }
+
+    /* RWD 手機版優化 */
+    @media (max-width: 767.98px) {
+      .StuDiscuss .message-item {
+        max-width: 95%;
+      }
+      .StuDiscuss .chat-stream {
+        padding: 0.5rem;
+      }
+    }
+    max-width: 95%;
+  }
+}
