@@ -1,0 +1,77 @@
+/* TrTest.css */
+.TrTest.score-view-container {
+  padding: 1.5rem;
+  background: #f8f9fa;
+}
+
+.TrTest .score-list-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.TrTest .ex-modal-overlay {
+  background: rgba(26, 42, 64, 0.6);
+  backdrop-filter: blur(4px);
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.TrTest .ex-modal-content {
+  background: white;
+  border-radius: 1.25rem;
+  width: 90%;
+  max-width: 850px;
+  max-height: 85vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.TrTest .ex-modal-header {
+  background: #1a2a40;
+  color: white;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.TrTest .badge-post {
+  background: #e2e3ff;
+  color: #4433ff;
+}
+.TrTest .badge-done {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+.TrTest .badge-pending {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.TrTest .quick-score-box input {
+  width: 70px;
+  border: 2px solid #e9ecef;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.TrTest .btn-view-content {
+  border: 1px solid #4a70a9;
+  color: #4a70a9;
+  background: white;
+}
+.TrTest .btn-view-content:hover:not(:disabled) {
+  background: #4a70a9;
+  color: white;
+}

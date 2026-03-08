@@ -1,0 +1,178 @@
+/* TrHWScore.css - 整合老師端評分介面樣式 */
+
+.TrHW.score-view-container {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  min-height: 80vh;
+}
+
+.TrHW .text-navy {
+  color: #1a2a40; /* 主題海軍藍 */
+}
+
+/* 功課項目卡片 */
+.TrHW .score-list-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.TrHW .score-list-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 42, 64, 0.08);
+}
+
+/* 彈窗樣式整合 */
+.TrHW .ex-modal-overlay {
+  background: rgba(26, 42, 64, 0.6);
+  backdrop-filter: blur(4px); /* 毛玻璃效果增加高級感 */
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.TrHW .ex-modal-content {
+  background: white;
+  border-radius: 1.25rem;
+  width: 90%;
+  max-width: 850px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.TrHW .ex-modal-header {
+  background: #1a2a40;
+  color: white;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.TrHW .ex-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* 表格專屬樣式 */
+.TrHW .ex-table-wrapper {
+  overflow-y: auto;
+  padding: 0;
+}
+
+.TrHW .ex-score-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.TrHW .ex-score-table th {
+  background: #f1f4f8;
+  color: #495057;
+  font-weight: 600;
+  padding: 1rem;
+  font-size: 0.85rem;
+  position: sticky; /* 標題固定 */
+  top: 0;
+  z-index: 10;
+}
+
+.TrHW .ex-score-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+/* 學生資訊與狀態 */
+.TrHW .stu-info .name {
+  font-weight: 600;
+  color: #1a2a40 !important;
+  display: block;
+}
+
+.TrHW .status-pill {
+  padding: 0.35rem 0.8rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.TrHW .badge-done {
+  background: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.TrHW .badge-pending {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+/* 分數輸入框優化 */
+.TrHW .quick-score-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.TrHW .quick-score-box input {
+  width: 65px;
+  border: 2px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 0.3rem;
+  text-align: center;
+  font-weight: bold;
+  color: #4a70a9;
+  transition: all 0.2s;
+}
+
+.TrHW .quick-score-box input:focus {
+  outline: none;
+  border-color: #4a70a9;
+  background: #f0f4f9;
+}
+
+/* 作業類型標籤 */
+.TrHW .badge-pre {
+  background: #e9ecef;
+  color: #495057;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+/* 內容預覽按鈕樣式 */
+.TrHW .btn-view-content {
+  border: 1px solid #4a70a9;
+  color: #4a70a9;
+  background: white;
+  transition: all 0.2s;
+}
+
+.TrHW .btn-view-content:hover:not(:disabled) {
+  background: #4a70a9;
+  color: white;
+}
+
+.TrHW .btn-view-content:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #dee2e6;
+  color: #6c757d;
+}
