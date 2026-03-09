@@ -1,34 +1,29 @@
 <template>
-  <div class="CoursePage d-flex min-vh-100">
-    <aside class="CoursePage-sidebar d-none d-lg-flex flex-column py-4 shadow">
-      <div class="sidebar-brand px-4 mb-5">
-        <h5 class="fw-bold text-white mb-0">
+  <div class="CoursePage d-flex min-vh-100" style="background-color: #efece3">
+    <aside
+      class="sidebar d-lg-flex flex-column py-4 shadow"
+      :class="{ 'sidebar-open': sidebarOpen, 'd-none': !sidebarOpen }"
+    >
+      <div class="sidebar-brand px-4 mb-5 text-white">
+        <h5 class="fw-bold mb-0">
           <i class="bi bi-shield-check me-2"></i>課程管理中心
         </h5>
       </div>
 
       <nav class="flex-grow-1 px-2">
-        <div class="CoursePage-nav-item active">
+        <div class="nav-item active">
           <i class="bi bi-grid-fill me-3"></i>我的課程
         </div>
-        <div
-          class="CoursePage-nav-item"
-          @click="handleOpenProfile"
-          style="cursor: pointer"
-        >
+        <div class="nav-item" @click="handleOpenProfile">
           <i class="bi bi-person-circle me-3"></i>帳號設定
         </div>
       </nav>
 
-      <TrProfile
-        v-if="showProfileModal"
-        :student="teacherData"
-        :courseId="'system_admin'"
-        @close="showProfileModal = false"
-      />
-
       <div class="mt-auto px-3">
-        <button class="btn btn-logout w-100 rounded-pill" @click="handleLogout">
+        <button
+          class="btn btn-logout-outline w-100 rounded-pill"
+          @click="handleLogout"
+        >
           <i class="bi bi-box-arrow-left me-2"></i>登出系統
         </button>
       </div>
@@ -38,24 +33,24 @@
       <header class="mobile-header d-lg-none p-3 shadow-sm text-white">
         <div class="d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold">課程管理中心</h6>
-          <button class="hamburger-btn" @click="toggleSidebar">
-            <span class="hamburger-line"></span>
+          <button class="btn text-white p-0" @click="toggleSidebar">
+            <i class="bi bi-list fs-2"></i>
           </button>
         </div>
       </header>
 
       <section class="container-fluid px-4 pt-4 pb-2">
         <div
-          class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4"
+          class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4"
         >
           <div>
             <h2 class="fw-bold text-dark mb-1">所有單元課程</h2>
             <p class="text-muted small mb-0">
-              歡迎回來，您目前管理 {{ filteredCourses.length }} 門課程
+              您目前管理 {{ filteredCourses.length }} 門課程
             </p>
           </div>
           <button
-            class="btn btn-navy shadow-sm rounded-pill px-4 py-2"
+            class="btn btn-primary-custom shadow-sm rounded-pill px-4 py-2"
             @click="showModal = true"
           >
             <i class="bi bi-plus-lg me-2"></i>新建課程單元
@@ -63,66 +58,63 @@
         </div>
       </section>
 
-      <section class="course-scroll-area container-fluid px-4 pb-5">
-        <div class="row g-4">
+      <section class="container-fluid px-4 pb-5">
+        <div class="row g-4 justify-content-start">
           <div
             class="col-12 col-md-6 col-xl-4"
             v-for="course in filteredCourses"
             :key="course.id"
+            style="max-width: 380px"
           >
             <div
-              class="course-card shadow-sm border-0 bg-white p-3 rounded-4"
+              class="course-card shadow-sm border-0 p-3 rounded-4 bg-white position-relative"
               @click="goToCourse(course)"
             >
+              <button
+                v-if="course.creatorId === auth.currentUser?.uid"
+                type="button"
+                class="btn-close-red position-absolute top-0 end-0 m-2 fs-5"
+                @click.stop="deleteCourse(course.id)"
+              >
+                ✕
+              </button>
+
               <div class="d-flex align-items-center gap-3 mb-3">
                 <div class="avatar-circle-navy">
                   {{ course.title?.substring(0, 1) || "?" }}
                 </div>
-                <div class="flex-grow-1">
+                <div class="flex-grow-1 overflow-hidden pe-3">
                   <h5 class="fw-bold text-navy mb-0 text-truncate">
                     {{ course.title }}
                   </h5>
-                  <div class="xx-small text-muted">
-                    課程 ID: {{ course.id?.substring(0, 8) }}
+                  <div class="xx-small text-muted text-truncate">
+                    ID: {{ course.id?.substring(0, 8) }}
                   </div>
                 </div>
               </div>
 
-              <div class="text-line-clamp text-secondary small mb-3">
+              <p class="text-secondary small mb-3 description-text">
                 {{
                   course.description ||
                   "點擊進入查看數據看板、任務繳交及單元開放進度。"
                 }}
-              </div>
+              </p>
 
               <div
                 class="d-flex justify-content-between align-items-center border-top pt-3"
               >
-                <div class="invite-badge">
-                  <small>邀請碼</small>
-                  <span class="font-monospace fw-bold text-primary">{{
-                    course.joinCode
-                  }}</span>
+                <div class="invite-badge p-2 px-3 rounded-3">
+                  <small class="d-block text-muted" style="font-size: 10px"
+                    >邀請碼</small
+                  >
+                  <span class="font-monospace fw-bold text-navy fs-6">
+                    {{ course.joinCode }}
+                  </span>
                 </div>
-                <div
-                  v-if="course.creatorId === auth.currentUser?.uid"
-                  class="status-indicator-done"
-                >
-                  <i class="bi bi-check2-circle me-1"></i>管理中
+                <div class="text-navy opacity-50">
+                  <i class="bi bi-chevron-right"></i>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div
-            v-if="filteredCourses.length === 0"
-            class="col-12 text-center py-5 mt-5"
-          >
-            <div class="opacity-50">
-              <i class="bi bi-journal-x display-1"></i>
-              <p class="mt-3 fs-5">
-                目前沒有任何課程，點擊「新建課程」開始吧！
-              </p>
             </div>
           </div>
         </div>
@@ -131,43 +123,50 @@
 
     <div
       v-if="showModal"
-      class="modal-overlay d-flex align-items-center justify-content-center fixed-top w-100 h-100"
-      style="z-index: 2000"
+      class="CoursePage modal-overlay d-flex align-items-center justify-content-center"
     >
       <div
         class="modal-content-custom bg-white p-4 rounded-4 shadow-lg animate__animated animate__zoomIn"
-        style="width: 90%; max-width: 500px"
       >
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="fw-bold mb-0 text-navy">建立新課程單元</h5>
-          <button class="btn-close" @click="showModal = false"></button>
+          <button
+            type="button"
+            class="btn-close-red p-0 border-0 fs-4"
+            @click="showModal = false"
+          >
+            ✕
+          </button>
         </div>
+
         <div class="mb-3">
           <label class="small fw-bold text-muted mb-2">課程名稱</label>
           <input
             v-model="form.title"
-            class="form-control border-0 bg-light-soft py-2"
+            class="form-control custom-input"
             placeholder="輸入單元名稱..."
           />
         </div>
+
         <div class="mb-4">
           <label class="small fw-bold text-muted mb-2">課程描述</label>
           <textarea
             v-model="form.description"
-            class="form-control border-0 bg-light-soft"
+            class="form-control custom-input"
             rows="3"
-            placeholder="簡短介紹此單元的學習目標..."
+            placeholder="簡短描述單元內容..."
           ></textarea>
         </div>
+
         <div class="d-flex gap-2">
           <button
-            class="btn btn-light flex-grow-1 rounded-pill"
+            class="btn btn-light-custom flex-grow-1 rounded-pill"
             @click="showModal = false"
           >
             取消
           </button>
           <button
-            class="btn btn-navy flex-grow-1 rounded-pill fw-bold"
+            class="btn btn-primary-custom flex-grow-1 rounded-pill fw-bold"
             @click="createCourse"
           >
             確認建立
@@ -175,6 +174,13 @@
         </div>
       </div>
     </div>
+
+    <TrProfile
+      v-if="showProfileModal"
+      :student="teacherData"
+      courseId="system_admin"
+      @close="showProfileModal = false"
+    />
   </div>
 </template>
 
@@ -331,5 +337,38 @@ const handleLogout = async () => {
 // 5. 行動端側邊欄切換
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
+};
+
+//刪除課程
+/* --- 刪除課程邏輯 --- */
+const deleteCourse = async (courseId) => {
+  const result = await Swal.fire({
+    title: "確定要刪除此課程？",
+    text: "刪除後所有學生數據與教材將無法復原！",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#BF4646", // 主要紅色
+    cancelButtonColor: "#4a70a9", // 主要深藍
+    confirmButtonText: "確定刪除",
+    cancelButtonText: "取消",
+    reverseButtons: true,
+  });
+
+  if (result.isConfirmed) {
+    try {
+      // 🌟 執行 Firebase 刪除動作 (courses/{id})
+      const { remove } = await import("firebase/database");
+      await remove(dbRef(rtdb, `courses/${courseId}`));
+
+      Swal.fire({
+        icon: "success",
+        title: "已刪除",
+        timer: 1000,
+        showConfirmButton: false,
+      });
+    } catch (e) {
+      Swal.fire("錯誤", "無法刪除課程，請稍後再試", "error");
+    }
+  }
 };
 </script>
