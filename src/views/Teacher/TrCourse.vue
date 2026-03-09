@@ -11,10 +11,21 @@
         <div class="CoursePage-nav-item active">
           <i class="bi bi-grid-fill me-3"></i>我的課程
         </div>
-        <div class="CoursePage-nav-item" @click="showProfileModal = true">
+        <div
+          class="CoursePage-nav-item"
+          @click="handleOpenProfile"
+          style="cursor: pointer"
+        >
           <i class="bi bi-person-circle me-3"></i>帳號設定
         </div>
       </nav>
+
+      <TrProfile
+        v-if="showProfileModal"
+        :student="teacherData"
+        :courseId="'system_admin'"
+        @close="showProfileModal = false"
+      />
 
       <div class="mt-auto px-3">
         <button class="btn btn-logout w-100 rounded-pill" @click="handleLogout">
@@ -169,86 +180,138 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { ref as dbRef, push, set, onValue } from "firebase/database";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, rtdb } from "../../firebase/config";
 import { useRouter } from "vue-router";
+import { auth, rtdb } from "../../firebase/config";
+// 🌟 匯入必要的 Firebase 方法
+import {
+  ref as dbRef,
+  push,
+  set,
+  onValue,
+  serverTimestamp,
+} from "firebase/database";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import Swal from "sweetalert2";
+
+// 🌟 匯入 Modal 組件
+import TrProfile from "./Modal/TrProfile.vue";
 import "./TrCourse.css";
 
-// 如果檔案已建立，取消下方註解
-// import TrProfile from "./TrProfile.vue";
-
 const router = useRouter();
+
+// --- 狀態定義 ---
+const courses = ref([]);
 const showModal = ref(false);
 const showProfileModal = ref(false);
-const courses = ref([]);
+const sidebarOpen = ref(false);
 
 const form = ref({
   title: "",
   description: "",
-  visibility: "public",
 });
 
-/* --- 計算屬性：簡化邏輯，直接顯示抓取的課程 --- */
+// --- 計算屬性 ---
+// 確保 filteredCourses 始終回傳陣列，避免 HTML 中的 .length 報錯
 const filteredCourses = computed(() => {
-  return courses.value;
+  return courses.value || [];
 });
 
+// 準備給 TrProfile 的教師資料
+const teacherData = computed(() => ({
+  uid: auth.currentUser?.uid,
+  displayName: auth.currentUser?.displayName || "管理者",
+  email: auth.currentUser?.email,
+}));
+
+// --- 生命週期與數據監聽 ---
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
-    if (!user) router.replace("/login");
-  });
-
-  // 監聽 Firebase 數據
-  onValue(dbRef(rtdb, "courses"), (snap) => {
-    const data = snap.val();
-    courses.value = data
-      ? Object.entries(data).map(([id, val]) => ({ id, ...val }))
-      : [];
+    if (!user) {
+      router.replace("/login");
+    } else {
+      // 監聽所有課程數據
+      const coursesPath = dbRef(rtdb, "courses");
+      onValue(coursesPath, (snap) => {
+        const data = snap.val();
+        if (data) {
+          // 將物件格式轉為陣列供 v-for 使用
+          courses.value = Object.entries(data).map(([id, val]) => ({
+            id,
+            ...val,
+          }));
+        } else {
+          courses.value = [];
+        }
+      });
+    }
   });
 });
 
+// --- 行為方法 ---
+
+// 1. 開啟帳號設定並紀錄鉅細靡遺 Log
+const handleOpenProfile = async () => {
+  showProfileModal.value = true;
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+
+  try {
+    // 紀錄教師點擊行為，支援後續教學調節分析
+    const logPath = `system_logs/${uid}`;
+    await push(dbRef(rtdb, logPath), {
+      action: "開啟教師帳號設定",
+      timestamp: serverTimestamp(),
+      details: { page: "TrCourse" },
+    });
+  } catch (e) {
+    console.error("Log 紀錄失敗:", e);
+  }
+};
+
+// 2. 建立新課程單元
 const createCourse = async () => {
   if (!form.value.title.trim()) {
     return Swal.fire("提醒", "請填寫課程名稱", "warning");
   }
 
+  // 生成隨機 6 位邀請碼
   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
   const newRef = push(dbRef(rtdb, "courses"));
 
   try {
     await set(newRef, {
+      id: newRef.key,
       title: form.value.title,
       description: form.value.description || "",
-      id: newRef.key,
       creatorId: auth.currentUser.uid,
       joinCode: code,
-      createdAt: Date.now(),
-      subject: "General", // 預設值以維持數據結構一致
+      createdAt: serverTimestamp(),
+      subject: "General",
     });
 
     showModal.value = false;
+    form.value = { title: "", description: "" };
+
     Swal.fire({
       icon: "success",
       title: "課程建立成功！",
       html: `學生邀請碼：<b class="text-primary fs-3">${code}</b>`,
       confirmButtonColor: "#4a70a9",
     });
-
-    form.value = { title: "", description: "", visibility: "public" };
   } catch (e) {
-    console.error("寫入錯誤:", e);
-    Swal.fire("錯誤", "無法寫入資料庫", "error");
+    Swal.fire("錯誤", "無法建立課程", "error");
   }
 };
 
+// 3. 路由導向
 const goToCourse = (course) => {
+  // 判斷身分導向不同看板
   const path =
     course.creatorId === auth.currentUser.uid ? "trdashboard" : "stdashboard";
   router.push(`/${path}/${course.id}`);
 };
 
+// 4. 登出邏輯
 const handleLogout = async () => {
   const result = await Swal.fire({
     title: "確定要登出嗎？",
@@ -256,11 +319,17 @@ const handleLogout = async () => {
     showCancelButton: true,
     confirmButtonText: "確定登出",
     cancelButtonText: "取消",
+    confirmButtonColor: "#4a70a9",
   });
 
   if (result.isConfirmed) {
     await signOut(auth);
     router.replace("/login");
   }
+};
+
+// 5. 行動端側邊欄切換
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
 };
 </script>

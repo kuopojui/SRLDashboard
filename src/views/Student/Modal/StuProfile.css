@@ -1,0 +1,156 @@
+/* --- 彈窗基礎與動畫 --- */
+.animate__animated.animate__zoomIn {
+  animation-duration: 0.4s;
+}
+
+.StuProfile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.7); /* 深藍灰半透明 */
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 20px;
+}
+
+/* 彈窗主體 */
+.StuProfile-box {
+  background: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* --- 標題區 --- */
+.bg-navy {
+  background-color: #1e293b !important;
+}
+
+.StuProfile-header {
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- 身分識別編輯區 --- */
+.profile-editor {
+  background-color: #f8fafc; /* 淺藍灰背景 */
+  border: 1px solid #e2e8f0;
+}
+
+.text-navy {
+  color: #1e293b;
+}
+
+.xx-small {
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.form-control-sm {
+  font-size: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+}
+
+.form-control-sm:focus {
+  border-color: #4a70a9;
+  box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
+}
+
+/* --- 數據卡片區 --- */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  padding: 20px 15px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+}
+
+.stat-val {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #4a70a9;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* --- AI 診斷區 --- */
+.reflection-box {
+  background: #f0f7ff;
+  border-left: 4px solid #4a70a9 !important;
+}
+
+/* --- 按鈕樣式 --- */
+.btn-navy {
+  background-color: #4a70a9;
+  color: white;
+  border: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-navy:hover {
+  background-color: #365584;
+  transform: scale(1.02);
+}
+
+/* --- RWD 手機版優化 --- */
+@media (max-width: 480px) {
+  .StuProfile-box {
+    border-radius: 20px;
+  }
+
+  .StuProfile-content {
+    padding: 20px !important;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr; /* 手機端改為單欄顯示 */
+  }
+
+  .stat-card {
+    padding: 15px;
+  }
+}
+
+/* 客製化滾動條 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}

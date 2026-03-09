@@ -220,55 +220,89 @@ const updateChart = async (id, labels, myScores, color) => {
   }
 };
 onMounted(() => {
-  const uid = getAuth().currentUser?.uid;
+  const auth = getAuth();
+  const uid = auth.currentUser?.uid;
   if (!uid) return;
 
-  // 🌟 現在這個函式已經定義了，不會再噴錯
+  // 1. 紀錄行為紀錄：支援 SRL 歷程追蹤 (自我觀察 phase)
   recordStudentAction(courseId, uid, "進入學習診斷儀表板");
 
-  // 1. 監聽功課數據
+  // 2. 監聽功課數據 (正確對接 JSON 中的 scores 節點)
   onValue(dbRef(db, `courses/${courseId}/assignments`), (snap) => {
+    if (!snap.exists()) return;
     const data = snap.val() || {};
-    const processedHw = Object.entries(data).map(([id, val]) => ({
-      title: val.title,
-      score: val.submissions?.[uid]?.score || 0,
-      avg: val.stats?.avgScore || 0,
-    }));
+
+    const processedHw = Object.entries(data)
+      .map(([id, val]) => {
+        // 🌟 核心修正：根據 JSON，成績存放在 scores/{uid}/score
+        const scoreEntry = val.scores?.[uid];
+
+        return {
+          title: val.title || "未命名功課",
+          score: scoreEntry?.score !== undefined ? scoreEntry.score : null,
+          avg: val.stats?.avgScore || 0,
+        };
+      })
+      .filter((i) => i.score !== null); // 僅顯示已批改有分數的項目
+
     performanceSummary.value.hw = processedHw;
 
     updateChart(
       "hwCompareChart",
       processedHw.map((i) => i.title),
       processedHw.map((i) => i.score),
-      processedHw.map((i) => i.avg),
-      "#4a70a9",
+      "#4a70a9", // 藍色主題
     );
   });
 
-  // 2. 監聽考試數據
+  // 3. 監聽考試數據 (同步對接 scores 節點)
   onValue(dbRef(db, `courses/${courseId}/exams`), (snap) => {
+    if (!snap.exists()) return;
     const data = snap.val() || {};
-    const processedExam = Object.entries(data).map(([id, val]) => ({
-      title: val.title,
-      score: val.submissions?.[uid]?.score || 0,
-      avg: val.stats?.avgScore || 0,
-    }));
+
+    const processedExam = Object.entries(data)
+      .map(([id, val]) => {
+        // 🌟 核心修正：比照功課邏輯讀取 scores 節點
+        const scoreEntry = val.scores?.[uid];
+
+        return {
+          title: val.title || "未命名考試",
+          score: scoreEntry?.score !== undefined ? scoreEntry.score : null,
+          avg: val.stats?.avgScore || 0,
+        };
+      })
+      .filter((i) => i.score !== null);
+
     performanceSummary.value.exam = processedExam;
 
     updateChart(
       "examCompareChart",
       processedExam.map((i) => i.title),
       processedExam.map((i) => i.score),
-      processedExam.map((i) => i.avg),
-      "#10b981",
+      "#10b981", // 綠色主題
     );
   });
-});
 
-// 🌟 卸載時銷毀圖表，防止記憶體洩漏
-onUnmounted(() => {
-  if (hwChartInstance) hwChartInstance.destroy();
-  if (examChartInstance) examChartInstance.destroy();
+  // 4. 監聽討論區參與次數 (正確對接 JSON 結構)
+  onValue(dbRef(db, `courses/${courseId}/discussions`), (snap) => {
+    if (!snap.exists()) {
+      discussionCount.value = 0;
+      return;
+    }
+    const discussions = snap.val();
+    let totalMsgs = 0;
+
+    // 遍歷所有話題，統計該使用者的 userId (JSON 欄位名稱)
+    Object.values(discussions).forEach((disc) => {
+      if (disc.messages) {
+        const userMsgs = Object.values(disc.messages).filter(
+          (m) => m.userId === uid,
+        );
+        totalMsgs += userMsgs.length;
+      }
+    });
+    discussionCount.value = totalMsgs;
+  });
 });
 
 const handleOpenRank = () => {

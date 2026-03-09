@@ -11,7 +11,21 @@
         <div class="CoursePage-nav-item active">
           <i class="bi bi-book-half me-3"></i>我的課程
         </div>
+        <div
+          class="CoursePage-nav-item"
+          @click="handleOpenProfile"
+          style="cursor: pointer"
+        >
+          <i class="bi bi-person-circle me-3"></i>帳號設定
+        </div>
       </nav>
+
+      <StuProfile
+        v-if="showProfileModal"
+        :uid="studentData.uid"
+        :courseId="'system_global'"
+        @close="showProfileModal = false"
+      />
 
       <div class="mt-auto px-3">
         <button class="btn btn-logout w-100 rounded-pill" @click="handleLogout">
@@ -125,13 +139,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { rtdb, auth } from "../../firebase/config";
-import { ref as dbRef, onValue, get, set } from "firebase/database";
+// 修正後的匯入
+import {
+  ref as dbRef,
+  onValue,
+  get,
+  set,
+  push,
+  serverTimestamp,
+} from "firebase/database";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import "./StuCourse.css";
+import StuProfile from "./Modal/StuProfile.vue";
 
 const router = useRouter();
 const joinedCourses = ref([]);
@@ -340,4 +363,37 @@ onMounted(() => {
     else fetchMyCourses(user.uid);
   });
 });
+
+/* --- 在狀態定義區塊新增 --- */
+const showProfileModal = ref(false);
+
+// 準備傳遞給 StuProfile 的個人資料
+const studentData = computed(() => {
+  const user = auth.currentUser;
+  return {
+    uid: user?.uid,
+    displayName: user?.displayName || user?.email?.split("@")[0],
+    email: user?.email,
+  };
+});
+
+// 點擊觸發函式
+const handleOpenProfile = async () => {
+  showProfileModal.value = true;
+
+  // 🌟 補上行為紀錄
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+
+  try {
+    const logPath = `system_logs/${uid}`;
+    await push(dbRef(rtdb, logPath), {
+      action: "學生開啟帳號設定",
+      timestamp: serverTimestamp(),
+      details: { page: "StuCourse" },
+    });
+  } catch (e) {
+    console.error("紀錄失敗:", e);
+  }
+};
 </script>
