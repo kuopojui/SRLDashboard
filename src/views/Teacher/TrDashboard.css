@@ -53,32 +53,44 @@
 }
 
 /* --- 快捷按鈕主體  --- */
+/* --- 頂部快捷按鈕 (btn-quick-kanban) 質感設計 --- */
+
 .btn-quick-kanban {
+  /* 基礎設定：Navy 深藍底色 */
   background-color: #4a70a9;
-  border: 2px solid var(--oatmeal-dark);
-  color: #efece3;
+  border: 2px solid #eeede4; /* 使用 var(--oatmeal-dark) 的顏色 */
+  color: #efece3; /* 使用 var(--oatmeal) 的顏色 */
+
+  /* 尺寸與形狀：長橢圓設計 */
   width: 140px;
   height: 48px;
   border-radius: 50px;
+
+  /* 佈局：完美置中 */
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   gap: 8px;
   padding: 0 16px;
+
+  /* 互動回饋 */
+  cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  outline: none;
 }
 
+/* 懸停效果：放大、位移與深層陰影 */
 .btn-quick-kanban:hover {
   background-color: #4a70a9 !important;
   color: #efece3 !important;
-  border-color: var(--oatmeal-dark) !important;
+  border-color: #eeede4 !important;
   transform: scale(1.06) translateY(-2px);
   box-shadow: 0 12px 25px rgba(58, 90, 138, 0.25);
 }
 
+/* Icon 樣式與動畫觸發 */
 .btn-quick-kanban i {
   font-size: 1.4rem;
   display: flex;
@@ -89,6 +101,29 @@
 
 .btn-quick-kanban:hover i {
   animation: iconBounce 0.6s ease-in-out infinite;
+}
+
+/* 文字標籤：完美置中修正 */
+.btn-quick-kanban .button-label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #efece3;
+  margin: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 🌟 Icon 跳動動畫定義 */
+@keyframes iconBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 .btn-quick-kanban .button-label {
