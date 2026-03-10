@@ -71,19 +71,24 @@
         <div class="header-left">
           <div class="header-breadcrumb-area ms-3">
             <div class="header-main-info">
-              <h5 class="fw-bold mb-0">{{ courseInfo.title }}</h5>
+              <h5 class="fw-bold mb-0 text-navy">{{ courseInfo.title }}</h5>
             </div>
           </div>
         </div>
 
-        <div class="header-right d-flex align-items-center">
-          <div class="join-code-tag me-3 d-none d-md-flex">
+        <div class="header-right d-flex align-items-center me-3">
+          <div class="join-code-pill" @click="copyJoinCode">
+            <i class="bi bi-key-fill me-1"></i>
+            <span class="code">{{ courseInfo.joinCode }}</span>
+          </div>
+
+          <div class="join-code-tag me-3 d-none d-lg-flex">
             <span class="label">邀請碼</span>
             <span class="code">{{ courseInfo.joinCode }}</span>
           </div>
 
           <button
-            class="mobile-hamburger d-lg-none ms-3"
+            class="mobile-hamburger d-lg-none ms-2"
             @click="isMobileOpen = !isMobileOpen"
           >
             <i :class="['bi', isMobileOpen ? 'bi-x-lg' : 'bi-list']"></i>

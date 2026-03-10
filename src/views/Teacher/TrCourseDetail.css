@@ -239,8 +239,38 @@
   .TrSidebar {
     transform: translateX(-100%);
   }
+
   .TrMainContainer {
     margin-left: 0 !important;
+  }
+
+  /* 🌟 新增：漢堡旁的邀請碼膠囊 */
+  .join-code-pill {
+    display: flex;
+    align-items: center;
+    background: #efece3; /* 品牌米色 */
+    border: 1.5px dashed var(--navy); /* 湛藍虛線 */
+    color: var(--navy);
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    margin-right: 8px; /* 與漢堡按鈕的間距 */
+  }
+
+  .join-code-pill:active {
+    transform: scale(0.95);
+    background: var(--navy);
+    color: white;
+  }
+
+  .join-code-pill .code {
+    font-family: "Monaco", monospace;
+    letter-spacing: 1px;
+    margin-left: 4px;
   }
 
   /* 開啟狀態 */
@@ -266,17 +296,47 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0; /* 防止按鈕被擠壓 */
   }
 }
 
-/* 按鈕美化 */
+/* 💻 電腦版隱藏膠囊 */
+@media (min-width: 992px) {
+  .join-code-pill {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ✨ 按鈕與元件美化 */
+/* -------------------------------------------------------------------------- */
+
 .btn-primary {
   background-color: var(--navy) !important;
   border: none;
-  transition: transform 0.2s;
+  border-radius: 10px;
+  padding: 8px 20px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(74, 112, 169, 0.3);
+  filter: brightness(1.1);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* 小手機的極限適配 */
+@media (max-width: 400px) {
+  .join-code-pill {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+  .join-code-pill i {
+    display: none; /* 極小螢幕隱藏鑰匙圖示，只留代碼 */
+  }
 }

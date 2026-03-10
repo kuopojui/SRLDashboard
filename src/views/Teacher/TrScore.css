@@ -1,106 +1,59 @@
-/* --- TrScore 核心容器 --- */
-.TrScore {
-  --navy: #3a5a8a;
-  --soft-navy: rgba(58, 90, 138, 0.1);
-  --oatmeal: #f5f2e9;
-  min-height: 80vh;
-}
+/* ==========================================================================
+   📊 TrScore 成績中心 - 無邊框極簡化修正
+   ========================================================================== */
 
-/* --- 導航容器設計 --- */
-.ScoreNavContainer {
-  background: #ffffff;
+/* --- 1. 導覽容器：移除背景與陰影 --- */
+.TrScore .ScoreNavContainer {
   display: inline-flex;
-  padding: 6px;
-  border-radius: 50px;
-  border: 1px solid #e2e8f0;
+  background: transparent !important; /* 🌟 移除白色背景 */
+  padding: 10px;
+  border-radius: 0;
+  border: none !important; /* 🌟 移除邊框 */
+  box-shadow: none !important; /* 🌟 移除陰影 */
+  gap: 15px;
 }
 
-.ScoreNavButton {
-  border: none;
+/* --- 2. 導覽按鈕：改為虛線或純文字感 --- */
+.TrScore .ScoreNavButton {
+  border: 2px dashed transparent; /* 預設透明虛線 */
   background: transparent;
-  padding: 10px 24px;
+  color: #94a3b8;
+  padding: 8px 24px;
   border-radius: 50px;
-  font-weight: 700;
-  color: #64748b;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 800;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  white-space: nowrap;
-  font-size: 0.95rem;
 }
 
-.ScoreNavButton i {
-  font-size: 1.15rem; /* 微調圖示大小使其更醒目 */
+/* 🌟 Active 狀態：比照你圖片中的藍色虛線框風格 */
+.TrScore .ScoreNavButton.active {
+  background: transparent;
+  color: #3a5a8a;
+  border: 2px dashed #3a5a8a; /* 🌟 改為藍色虛線框，完美對接你的教材列表風格 */
 }
 
-.ScoreNavButton:hover {
-  color: var(--navy);
-  background-color: #f8fafc;
+/* --- 3. 內容包裝區：移除白色背景與框線 --- */
+.TrScore .ScoreContentWrapper {
+  background: transparent !important; /* 🌟 確保內容區也是透出底部的米色 */
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0; /* 移除內距讓內容直接對齊 */
 }
 
-.ScoreNavButton.active {
-  background-color: var(--navy);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(58, 90, 138, 0.25);
-}
-
-/* --- 內容區域過度動畫 --- */
-.ScoreContentWrapper {
-  min-height: 400px;
-}
-
-.score-fade-enter-active,
-.score-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.score-fade-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.score-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-/* --- RWD 響應式優化 --- */
-
-@media (max-width: 768px) {
-  .ScoreNavContainer {
-    width: 95%;
-    justify-content: space-around;
+/* --- 📱 手機版調整 --- */
+@media (max-width: 767px) {
+  .TrScore .ScoreNavContainer {
+    display: flex;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 10px 0;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .ScoreNavButton {
-    padding: 10px 12px;
-    font-size: 0.85rem;
-    flex: 1;
-    justify-content: center;
-  }
-
-  /* 🌟 中小螢幕：隱藏文字，使圖示居中更精緻 */
-  .ScoreNavButton span {
-    display: none;
-  }
-
-  .ScoreNavButton i {
-    margin: 0 !important;
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 480px) {
-  /* 🌟 超小螢幕：恢復文字顯示但極小化，確保老師清楚當前頁面 */
-  .ScoreNavButton span {
-    display: inline;
-    font-size: 0.7rem;
-  }
-  .ScoreNavButton i {
-    font-size: 0.95rem;
-    margin-right: 4px !important;
-  }
-  .ScoreNavButton {
-    padding: 8px 6px;
+  .TrScore .ScoreNavButton {
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    flex-shrink: 0;
   }
 }

@@ -1,77 +1,202 @@
-/* TrTest.css */
-.TrTest.score-view-container {
-  padding: 1.5rem;
-  background: #f8f9fa;
+/* ==========================================================================
+   ✏️ TrExamScore 極簡米色風格 (Oatmeal Minimalist)
+   ========================================================================== */
+
+/* 1. 主容器：保持背景透明，透出底層的米色 */
+.TrExam.score-minimal-container {
+  background-color: transparent;
+  padding: 20px 0;
 }
 
-.TrTest .score-list-card {
-  background: white;
-  border-radius: 1rem;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #e9ecef;
+/* 2. 列表行設計 (Row based) */
+.TrExam .hw-item-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 24px 10px;
+  border-bottom: 1px solid rgba(74, 112, 169, 0.15); /* 極淡海軍藍線 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.TrTest .ex-modal-overlay {
-  background: rgba(26, 42, 64, 0.6);
-  backdrop-filter: blur(4px);
+.TrExam .hw-item-row:hover {
+  background: rgba(255, 255, 255, 0.4); /* 懸浮提亮感 */
+}
+
+.TrExam .hw-type {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.TrExam .hw-title {
+  color: #3a5a8a; /* 品牌海軍藍 */
+  font-weight: 800;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.TrExam .hw-meta {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* 🌟 3. 湛藍虛線按鈕 (對接教材列表風格) */
+.TrExam .btn-minimal-blue {
+  background: transparent;
+  color: #3a5a8a;
+  border: 2px dashed #3a5a8a;
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+}
+
+.TrExam .btn-minimal-blue:hover {
+  background: #3a5a8a;
+  color: #ffffff;
+  border-style: solid;
+}
+
+/* 4. 極簡彈窗：米色質感 */
+.TrExam .minimal-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(239, 236, 227, 0.85); /* 米色半透明 */
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1050;
+  z-index: 3000;
 }
 
-.TrTest .ex-modal-content {
-  background: white;
-  border-radius: 1.25rem;
-  width: 90%;
-  max-width: 850px;
-  max-height: 85vh;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+.TrExam .minimal-modal {
+  background: #efece3; /* 與背景色一致 */
+  width: 95%;
+  max-width: 650px;
+  border-radius: 35px;
+  padding: 35px;
+  box-shadow: 0 30px 60px rgba(74, 112, 169, 0.1);
 }
 
-.TrTest .ex-modal-header {
-  background: #1a2a40;
-  color: white;
-  padding: 1.25rem 1.5rem;
+.TrExam .modal-head {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid rgba(74, 112, 169, 0.1);
 }
 
-.TrTest .badge-post {
-  background: #e2e3ff;
-  color: #4433ff;
-}
-.TrTest .badge-done {
-  background: #d1e7dd;
-  color: #0f5132;
-}
-.TrTest .badge-pending {
-  background: #f8f9fa;
-  color: #6c757d;
-  border: 1px solid #dee2e6;
+/* 5. 學生分數行 (Grid 排版) */
+.TrExam .student-score-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.2fr 0.5fr; /* 姓名, 狀態, 分數, 查看 */
+  align-items: center;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.TrTest .quick-score-box input {
-  width: 70px;
-  border: 2px solid #e9ecef;
-  border-radius: 0.5rem;
+.TrExam .stu-name {
+  font-weight: 800;
+  color: #3a5a8a;
+  font-size: 1.05rem;
+}
+
+/* 狀態標籤 */
+.TrExam .status-dot {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.TrExam .badge-late {
+  font-size: 10px;
+  background: #fff7ed;
+  color: #ea580c; /* 橘色標記遲交 */
+  border: 1px solid #ffedd5;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+/* 6. 分數填寫：測驗專用格式 */
+.TrExam .stu-score-input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.TrExam .stu-score-input input {
+  width: 55px;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  border-bottom: 2px solid #cbd5e1;
   text-align: center;
-  font-weight: bold;
+  font-weight: 900;
+  color: #bf4646; /* 測驗分用磚紅強調 */
+  outline: none;
+  transition: 0.3s;
 }
 
-.TrTest .btn-view-content {
-  border: 1px solid #4a70a9;
-  color: #4a70a9;
-  background: white;
+.TrExam .stu-score-input input:focus {
+  border-bottom-color: #3a5a8a;
+  background: rgba(255, 255, 255, 0.6);
 }
-.TrTest .btn-view-content:hover:not(:disabled) {
-  background: #4a70a9;
-  color: white;
+
+.TrExam .unit-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+/* 7. 控制與圖示 */
+.TrExam .btn-close-red {
+  background: none;
+  border: none;
+  font-weight: 900;
+  font-size: 1.3rem;
+  color: #3a5a8a;
+  transition: all 0.2s;
+}
+.TrExam .btn-close-red:hover {
+  color: #bf4646;
+  transform: rotate(90deg);
+}
+
+.TrExam .btn-view-eye-minimal {
+  background: transparent;
+  border: none;
+  color: #3a5a8a;
+  font-size: 1.25rem;
+  transition: transform 0.2s;
+}
+.TrExam .btn-view-eye-minimal:hover:not(:disabled) {
+  transform: scale(1.2);
+  color: #2563eb;
+}
+
+/* 8. 手機 RWD 適配 */
+@media (max-width: 600px) {
+  .TrExam .hw-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .TrExam .btn-minimal-blue {
+    width: 100%;
+    justify-content: center;
+  }
+  .TrExam .student-score-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
 }
