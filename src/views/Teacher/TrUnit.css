@@ -129,6 +129,68 @@
   font-size: 0.75rem;
   font-weight: 700;
   padding: 5px 12px;
+  background-color: #4a70a9 !important;
+}
+
+/* --- 🌟 單元資源統計區樣式 --- */
+
+.TrUnit .unit-stats-group {
+  margin-right: 5px;
+}
+
+.TrUnit .stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #f8fafc;
+  border: 1px solid #eeede4;
+  padding: 4px 10px;
+  border-radius: 8px;
+  color: #64748b; /* 預設灰色 */
+  transition: all 0.2s ease;
+}
+
+.TrUnit .stat-pill i {
+  font-size: 0.9rem;
+}
+
+.TrUnit .stat-pill .count {
+  font-weight: 800;
+  color: #3a5a8a; /* Navy 強調數字 */
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.TrUnit .stat-pill .label {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* 當數字大於 0 時，給予藍色發亮感 */
+.TrUnit .stat-pill:has(.count:not(:empty)) {
+  /* 如果你的 Vue 環境支援 :has，這會讓有東西的單元亮起來 */
+}
+
+/* --- 📱 手機版 RWD 修正 --- */
+@media (max-width: 767px) {
+  .TrUnit .stat-pill {
+    padding: 2px 6px;
+    gap: 3px;
+    border: none;
+    background: transparent; /* 手機版去背景更簡潔 */
+  }
+
+  .TrUnit .stat-pill i {
+    font-size: 1.1rem; /* 手機版圖示稍微放大方便看 */
+  }
+
+  .TrUnit .stat-pill .count {
+    font-size: 0.85rem;
+  }
+
+  /* 手機版隱藏邊框分隔線 */
+  .TrUnit .border-start {
+    border-left: none !important;
+  }
 }
 
 /* --- 5. TSSGs 四維度網格佈局 --- */

@@ -1,11 +1,6 @@
-/* DiscussionCreate.css - 討論區專用：品牌配色與對齊邏輯 */
-
-.DiscussionCreate {
-  --navy: #4a70a9;
-  --bg-beige: #efece3;
-  --brick-red: #bf4646;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* ==========================================================================
+   💬 DiscussionCreate 專屬樣式 (Navy & Oatmeal Style)
+   ========================================================================== */
 
 .DiscussionCreate.ex-modal-overlay {
   position: fixed;
@@ -13,140 +8,167 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(30, 41, 59, 0.75);
+  background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 2000;
-  padding: 20px;
+  align-items: center;
+  z-index: 3500;
 }
 
 .DiscussionCreate .ex-modal-content {
-  background-color: var(--bg-beige);
-  width: 100%;
+  background: #fdfcf9;
+  width: 92%;
   max-width: 600px;
-  max-height: 90vh;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #e2e8f0;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
+/* 🌟 1. 標頭與記憶中的 X */
 .DiscussionCreate .ex-modal-header {
-  padding: 16px 24px;
-  background-color: var(--navy);
-  color: white;
+  padding: 1.25rem 2rem;
+  background: #ffffff;
+  border-bottom: 2px solid #eeede4;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* 🌟 紅色 X 關閉鈕  */
-.DiscussionCreate .btn-close {
-  background: transparent;
-  border: none;
-  font-size: 2rem;
-  color: var(--brick-red) !important;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.DiscussionCreate .btn-close:hover {
-  transform: rotate(90deg);
-}
-.DiscussionCreate .btn-close::before {
-  content: "×";
+.DiscussionCreate .modal-title-navy {
+  color: #3a5a8a;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin: 0;
 }
 
+.DiscussionCreate .btn-close-red {
+  background: none !important;
+  border: none !important;
+  color: #4a70a9 !important;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  line-height: 1;
+}
+
+.DiscussionCreate .btn-close-red:hover {
+  color: #bf4646 !important;
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* 🌟 2. 輸入控制項 */
 .DiscussionCreate .ex-form-container {
-  padding: 32px;
-  overflow-y: auto;
+  padding: 2rem;
+}
+
+.DiscussionCreate .ex-input-field,
+.DiscussionCreate .ex-textarea-field {
+  width: 100%;
+  border: 1px solid #eeede4;
+  border-radius: 12px;
+  padding: 12px 15px;
+  background: #ffffff;
+  outline: none;
+  transition: 0.3s;
+}
+
+.DiscussionCreate .ex-textarea-field {
+  resize: none;
+  line-height: 1.6;
+}
+
+.DiscussionCreate .ex-input-field:focus,
+.DiscussionCreate .ex-textarea-field:focus {
+  border-color: #3a5a8a;
+  box-shadow: 0 0 0 4px rgba(58, 90, 138, 0.1);
+}
+
+.DiscussionCreate .toggle-box-navy {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #eeede4;
+  border-radius: 12px;
+  padding: 10px 15px;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 🌟 3. 底部按鈕 */
+.DiscussionCreate .ex-modal-footer {
+  padding-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
   gap: 20px;
 }
 
-.DiscussionCreate .ex-label {
-  font-weight: 800;
-  color: var(--navy);
-  margin-bottom: 8px;
-  font-size: 0.85rem;
-  display: block;
-}
-
-.DiscussionCreate .ex-input,
-.DiscussionCreate .ex-textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #d1d5db;
-  border-radius: 12px;
-  background: white;
-  transition: var(--transition);
-  font-size: 1rem;
-}
-
-.DiscussionCreate .ex-input:focus,
-.DiscussionCreate .ex-textarea:focus {
-  border-color: var(--navy);
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.1);
-}
-
-/* 🌟 討論區特有設定網格 */
-.DiscussionCreate .setting-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 16px;
-  align-items: end;
-}
-
-.DiscussionCreate .toggle-box {
-  background: white;
-  border: 2px solid #d1d5db;
-  border-radius: 12px;
-  height: 50px;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.DiscussionCreate .ex-modal-footer {
-  padding: 24px 32px;
-  background: var(--bg-beige);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-.DiscussionCreate .ex-btn-primary {
-  background: var(--navy);
+.DiscussionCreate .ex-btn-navy-action {
+  background: #3a5a8a;
   color: white;
-  padding: 12px 30px;
-  border-radius: 50px;
-  font-weight: 800;
   border: none;
-  cursor: pointer;
-}
-.DiscussionCreate .ex-btn-secondary {
-  background: white;
-  color: var(--navy);
   padding: 12px 30px;
   border-radius: 50px;
-  border: 1px solid #d1d5db;
   font-weight: 800;
-  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(58, 90, 138, 0.2);
 }
 
-@media (max-width: 640px) {
-  .DiscussionCreate .setting-grid {
-    grid-template-columns: 1fr;
-  }
+.DiscussionCreate .btn-cancel-link {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+/* --- 🌟 4. 手機版 RWD 適配 (< 768px) --- */
+@media (max-width: 767px) {
   .DiscussionCreate .ex-modal-content {
-    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
     border-radius: 0;
+    display: flex;
+    flex-direction: column;
   }
+
+  .DiscussionCreate .ex-form-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+  }
+
+  .DiscussionCreate .ex-modal-footer {
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eeede4;
+  }
+
+  .DiscussionCreate .ex-btn-navy-action {
+    width: 100%;
+    height: 50px;
+    order: 1;
+  }
+
+  .DiscussionCreate .btn-cancel-link {
+    width: 100%;
+    text-align: center;
+    order: 2;
+    padding: 10px;
+  }
+
+  .DiscussionCreate .toggle-box-navy {
+    margin-top: 10px;
+  }
+}
+
+/* 捲軸美化 */
+.DiscussionCreate .custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.DiscussionCreate .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3a5a8a;
+  border-radius: 10px;
 }

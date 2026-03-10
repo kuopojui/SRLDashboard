@@ -41,25 +41,47 @@
                 @change="saveUnit(unit)"
               />
             </div>
-            <div class="d-flex align-items-center gap-3">
-              <div class="unit-stats d-none d-md-flex">
-                <span class="badge bg-light text-navy border">
-                  {{ unit.materials?.length || 0 }} 教材
-                </span>
-                <span class="badge bg-light text-navy border">
-                  {{ unit.assignments?.length || 0 }} 任務
-                </span>
-              </div>
-              <i
-                class="bi"
-                :class="unit.isExpanded ? 'bi-chevron-up' : 'bi-chevron-down'"
-              ></i>
-              <button
-                class="btn-delete-brick sm"
-                @click.stop="deleteUnit(unit.firebaseKey)"
+            <div class="d-flex align-items-center gap-2 gap-md-3">
+              <div
+                class="unit-stats-group d-flex align-items-center gap-1 gap-md-2"
               >
-                <span class="label-text">✕</span>
-              </button>
+                <div class="stat-pill" title="教材數量">
+                  <i class="bi bi-file-earmark-text"></i>
+                  <span class="count">{{ unit.materials?.length || 0 }}</span>
+                  <span class="label d-none d-lg-inline">教材</span>
+                </div>
+                <div class="stat-pill" title="作業數量">
+                  <i class="bi bi-journal-check"></i>
+                  <span class="count">{{ unit.assignments?.length || 0 }}</span>
+                  <span class="label d-none d-lg-inline">功課</span>
+                </div>
+                <div class="stat-pill" title="測驗數量">
+                  <i class="bi bi-pencil-square"></i>
+                  <span class="count">{{ unit.exams?.length || 0 }}</span>
+                  <span class="label d-none d-lg-inline">考試</span>
+                </div>
+                <div class="stat-pill" title="討論話題">
+                  <i class="bi bi-chat-dots"></i>
+                  <span class="count">{{ unit.forums?.length || 0 }}</span>
+                  <span class="label d-none d-lg-inline">討論</span>
+                </div>
+              </div>
+
+              <div
+                class="d-flex align-items-center gap-2 border-start ps-2 ps-md-3"
+              >
+                <i
+                  class="bi fs-5 text-secondary cursor-pointer"
+                  :class="unit.isExpanded ? 'bi-chevron-up' : 'bi-chevron-down'"
+                ></i>
+                <button
+                  class="btn-delete-brick"
+                  @click.stop="deleteUnit(unit.firebaseKey)"
+                  title="刪除單元"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           </div>
 
@@ -456,6 +478,14 @@ const addToUnit = async (itemId, unitKey, type) => {
       position: "top-end",
       timer: 2000,
       showConfirmButton: false,
+      // 🌟 加入以下設定來徹底移除遮罩
+      backdrop: false, // 強制關閉背景遮罩
+      showClass: {
+        popup: "animate__animated animate__fadeInRight animate__faster", // 使用自訂動畫避免閃爍
+      },
+      hideClass: {
+        popup: "animate__animated animate__fadeOutRight animate__faster",
+      },
     });
   } else {
     Swal.fire({ icon: "info", title: "該項目已存在於此單元" });

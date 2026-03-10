@@ -56,7 +56,7 @@
           class="ex-input d-flex align-items-center justify-content-between py-2 bg-white"
           style="border-style: dashed"
         >
-          <span class="fw-bold text-navy">交卷後立即顯示成績與解答內容</span>
+          <span class="fw-bold text-navy">交卷後立即顯示成績</span>
           <div class="form-check form-switch m-0">
             <input
               class="form-check-input"
@@ -167,13 +167,6 @@
 
         <div class="ex-modal-footer">
           <div class="score-display">總計評分：{{ totalScore }} 分</div>
-          <button
-            type="button"
-            class="ex-btn-secondary"
-            @click="$emit('close')"
-          >
-            取消
-          </button>
           <button type="submit" class="ex-btn-primary">發佈測驗</button>
         </div>
       </form>
@@ -182,7 +175,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import { rtdb as db } from "../../../firebase/config";
 import { ref as dbRef, push, set } from "firebase/database";
 import Swal from "sweetalert2";
@@ -191,23 +184,38 @@ import "./ExamCreate.css";
 const props = defineProps({ courseId: String });
 const emit = defineEmits(["close"]);
 
-// 1. 測驗基本設定：時長、截止、遲交與即時顯示
+// 🌟 鎖定背景捲動：解決手機版背景滑動問題
+onMounted(() => {
+  document.body.style.overflow = "hidden";
+  if (window.innerWidth < 768) {
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+  }
+});
+
+onUnmounted(() => {
+  document.body.style.overflow = "";
+  document.body.style.position = "";
+  document.body.style.width = "";
+});
+
+// 1. 測驗基本設定
 const form = reactive({
   title: "",
-  duration: 60, // 測驗時長(分)
-  deadline: "", // 截止時間
-  allowLate: false, // 允許遲交
-  showResult: true, // 提交後立即顯示成績與答案
+  duration: 60,
+  deadline: "",
+  allowLate: false,
+  showResult: true,
 });
 
 const questions = ref([]);
 
-// 🌟 自動計算總分：即時掌握評量權重
+// 🌟 自動計算總分
 const totalScore = computed(() => {
   return questions.value.reduce((s, q) => s + (Number(q.point) || 0), 0);
 });
 
-// 2. 新增題目：初始化 5 選項以相容多選，並加入簡答欄位
+// 2. 新增題目
 const addQuestion = () => {
   questions.value.push({
     type: "multipleChoice",
@@ -216,21 +224,38 @@ const addQuestion = () => {
     options: ["", "", "", "", ""],
     answer: 0,
     multiAnswers: [],
-    refAnswer: "", // 🌟 簡答題參考答案
+    refAnswer: "",
   });
 };
 
-// 3. 題型切換重置邏輯：確保資料純淨
+// 3. 題型切換重置
 const handleTypeChange = (q) => {
   q.answer = 0;
   q.multiAnswers = [];
   q.refAnswer = "";
 };
 
-// 4. 發佈測驗
+// 4. 發佈測驗 (含分數檢查邏輯)
 const createExam = async () => {
-  if (questions.value.length === 0)
+  if (questions.value.length === 0) {
     return Swal.fire("提醒", "請至少新增一個題目", "warning");
+  }
+
+  // 🌟 分數檢查：不到 100 分時跳出確認
+  if (totalScore.value < 100) {
+    const result = await Swal.fire({
+      title: "總分不足 100 分",
+      text: `目前總分為 ${totalScore.value} 分，確定要直接發佈嗎？`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3a5a8a", // Navy
+      cancelButtonColor: "#94a3b8",
+      confirmButtonText: "仍要發佈",
+      cancelButtonText: "回去修改",
+    });
+
+    if (!result.isConfirmed) return; // 如果老師點擊回去修改，則中斷程序
+  }
 
   try {
     const examData = {
@@ -238,12 +263,9 @@ const createExam = async () => {
       totalScore: totalScore.value,
       questions: questions.value.map((q) => {
         const base = { type: q.type, question: q.question, point: q.point };
-
-        // 🌟 根據題型過濾儲存資料
         if (q.type === "shortAnswer") {
           return { ...base, refAnswer: q.refAnswer };
         }
-
         return {
           ...base,
           options:
@@ -257,12 +279,14 @@ const createExam = async () => {
     };
 
     await set(push(dbRef(db, `courses/${props.courseId}/exams`)), examData);
+
     Swal.fire({
       icon: "success",
       title: "測驗已發佈",
       showConfirmButton: false,
       timer: 1500,
     });
+
     emit("close");
   } catch (error) {
     Swal.fire("錯誤", "發佈失敗，請稍後再試", "error");
