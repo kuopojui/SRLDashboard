@@ -1,8 +1,6 @@
 <template>
-  <div class="test-create-overlay" @click.self="emitClose">
-    <div
-      class="test-create-modal p-4 shadow-lg bg-white overflow-hidden d-flex flex-column"
-    >
+  <div class="TestCreate test-create-overlay" @click.self="emitClose">
+    <div class="test-create-modal shadow-lg">
       <transition name="toast-fade">
         <div v-if="toast.show" :class="['custom-toast', toast.type]">
           <i
@@ -16,70 +14,79 @@
         </div>
       </transition>
 
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h4 fw-bold mb-0 modal-title-navy">
+      <div class="modal-header-custom">
+        <h2 class="h5 fw-bold mb-0 text-navy">
           <i class="bi bi-clipboard-pulse me-2"></i>設定實驗問卷
         </h2>
-        <button type="button" class="btn-close" @click="emitClose"></button>
+        <button
+          type="button"
+          class="btn-close-red"
+          @click="emitClose"
+          title="關閉"
+        >
+          ✕
+        </button>
       </div>
 
-      <div class="row g-3 mb-4">
-        <div class="col-md-8">
-          <label class="form-label small fw-bold text-muted">問卷標題</label>
-          <input
-            v-model="title"
-            type="text"
-            class="form-control custom-field"
-            placeholder="例如：學習動機量表"
-            :disabled="isLoading"
-          />
+      <div class="modal-body-custom custom-scrollbar">
+        <div class="row g-3 mb-4">
+          <div class="col-md-8 col-12">
+            <label class="form-label small fw-bold text-secondary"
+              >問卷標題</label
+            >
+            <input
+              v-model="title"
+              type="text"
+              class="form-control custom-field"
+              placeholder="例如：學習動機量表"
+              :disabled="isLoading"
+            />
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="form-label small fw-bold text-secondary"
+              >問卷性質</label
+            >
+            <select
+              v-model="testType"
+              class="form-select custom-field fw-bold"
+              :disabled="isLoading"
+            >
+              <option value="pre">Pre-test 前測</option>
+              <option value="post">Post-test 後測</option>
+            </select>
+          </div>
         </div>
-        <div class="col-md-4">
-          <label class="form-label small fw-bold text-muted">問卷性質</label>
-          <select
-            v-model="testType"
-            class="form-select custom-field fw-bold"
-            :disabled="isLoading"
+
+        <section class="question-list-area">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h4 class="h6 fw-bold mb-0 text-navy">
+              題目清單 ({{ questions.length }})
+            </h4>
+          </div>
+
+          <div v-if="questions.length === 0" class="empty-placeholder">
+            <div class="text-muted small">尚未新增題目，請點選下方按鈕</div>
+          </div>
+
+          <div
+            v-for="(q, index) in questions"
+            :key="index"
+            class="question-card shadow-sm border"
           >
-            <option value="pre">Pre-test 前測</option>
-            <option value="post">Post-test 後測</option>
-          </select>
-        </div>
-      </div>
-
-      <section class="question-list-area flex-grow-1 overflow-auto pe-2 mb-4">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <h4 class="h6 fw-bold mb-0 text-secondary">
-            題目清單 ({{ questions.length }})
-          </h4>
-        </div>
-
-        <div
-          v-if="questions.length === 0"
-          class="empty-placeholder py-5 border rounded-4 bg-light text-center"
-        >
-          <div class="text-muted small">尚未新增題目，請點選下方按鈕</div>
-        </div>
-
-        <div
-          v-for="(q, index) in questions"
-          :key="index"
-          class="question-card p-3 mb-3 border rounded-4 bg-white shadow-sm position-relative"
-        >
-          <div class="row g-2 mb-2">
-            <div class="col-8">
-              <input
-                type="text"
-                v-model="q.text"
-                placeholder="輸入題目敘述..."
-                class="form-control form-control-sm border-0 bg-light rounded-3"
-                :disabled="isLoading"
-              />
-            </div>
-            <div class="col-4">
+            <div class="q-content">
+              <div class="q-input-group">
+                <span class="q-index">#{{ index + 1 }}</span>
+                <input
+                  type="text"
+                  v-model="q.text"
+                  placeholder="輸入題目敘述..."
+                  class="q-text-field"
+                  :disabled="isLoading"
+                />
+              </div>
               <select
                 v-model="q.type"
-                class="form-select form-select-sm border-0 bg-light rounded-3 fw-bold text-primary"
+                class="q-type-select"
                 :disabled="isLoading"
               >
                 <option value="likert5">5 點量表</option>
@@ -87,38 +94,28 @@
                 <option value="shortAnswer">簡答題</option>
               </select>
             </div>
+            <button
+              class="btn-remove-q"
+              @click="removeQuestion(index)"
+              v-if="!isLoading"
+            >
+              <i class="bi bi-trash3-fill"></i>
+            </button>
           </div>
-          <button
-            class="btn-remove-q p-0 position-absolute"
-            @click="removeQuestion(index)"
-            v-if="!isLoading"
-          >
-            <i class="bi bi-x-circle-fill"></i>
-          </button>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      <div class="modal-footer-custom d-flex gap-2 pt-2 border-top">
+      <div class="modal-footer-custom">
         <button
-          class="btn btn-add-dashed btn-sm px-3 rounded-pill"
+          class="btn-add-dashed"
           @click="addQuestion"
           :disabled="isLoading"
         >
           <i class="bi bi-plus-lg me-1"></i> 新增題目
         </button>
-        <div class="ms-auto d-flex gap-2">
-          <button
-            class="btn btn-sm btn-light rounded-pill px-4"
-            @click="emitClose"
-            :disabled="isLoading"
-          >
-            取消
-          </button>
-          <button
-            class="btn btn-sm btn-navy rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center"
-            @click="saveTest"
-            :disabled="isLoading"
-          >
+
+        <div class="footer-actions">
+          <button class="btn-save-navy" @click="saveTest" :disabled="isLoading">
             <span
               v-if="isLoading"
               class="spinner-border spinner-border-sm me-2"

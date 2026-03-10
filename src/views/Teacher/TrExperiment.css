@@ -1,200 +1,353 @@
-/* --- TrExperiment 專屬作用域樣式 --- */
-
-.TrExperiment {
+/* --- 1. 核心配色與基礎 --- */
+:root {
   --navy: #3a5a8a;
-  --navy-dark: #2d456b;
-  --soft-navy: rgba(58, 90, 138, 0.1);
-  --success-green: #16a34a;
+  --primary-blue: #4a70a9;
+  --soft-blue: #eef2f7;
   --soft-success: #f0fdf4;
-  --danger-red: #dc2626;
+  --soft-warning: #fffbeb;
   --soft-danger: #fef2f2;
-  --secondary-gray: #64748b;
-  --soft-secondary: #f8fafc;
-  --border-color: #edf2f7;
-  --text-muted: #94a3b8;
-  background-color: transparent;
+  --oatmeal: #f5f2e9;
+  --oatmeal-dark: #eeede4;
+}
+
+/* 基礎卡片樣式 */
+.TrExperiment .card {
+  border-radius: 20px !important;
+  transition: transform 0.3s ease;
 }
 
 .TrExperiment .text-navy {
   color: var(--navy);
 }
 
-/* --- 核心卡片與容器 --- */
-.TrExperiment .card {
-  border-radius: 20px !important;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  background-color: #ffffff;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.TrExperiment .card:hover {
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.06) !important;
-}
-
-/* --- 🌟 測驗管理清單樣式 (New) --- */
-.TrExperiment .test-list-container {
-  min-height: 100px;
-}
-
-.TrExperiment .test-item-card {
-  background-color: #ffffff;
-  border: 1px solid var(--border-color) !important;
-  transition: all 0.2s ease;
-}
-
-.TrExperiment .test-item-card:hover {
-  border-color: var(--navy) !important;
-  transform: translateX(5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
-}
-
-/* 柔和色調按鈕系列 (Soft Buttons) */
-.TrExperiment .btn-soft-success {
-  background-color: var(--soft-success);
-  color: var(--success-green);
-  border: none;
-}
-.TrExperiment .btn-soft-success:hover {
-  background-color: var(--success-green);
-  color: #ffffff;
-}
-
-.TrExperiment .btn-soft-secondary {
-  background-color: var(--soft-secondary);
-  color: var(--secondary-gray);
-  border: none;
-}
-.TrExperiment .btn-soft-secondary:hover {
-  background-color: var(--secondary-gray);
-  color: #ffffff;
-}
-
-.TrExperiment .btn-soft-danger {
-  background-color: var(--soft-danger);
-  color: var(--danger-red);
-  border: none;
-}
-.TrExperiment .btn-soft-danger:hover {
-  background-color: var(--danger-red);
-  color: #ffffff;
-}
-
-/* --- 實驗組別配置卡片 (Group Config Card) --- */
-.TrExperiment .group-config-card {
-  background-color: #ffffff;
-  border: 1.5px solid var(--border-color) !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.TrExperiment .group-config-card:hover {
-  border-color: var(--navy) !important;
-  transform: translateY(-3px);
-  box-shadow: 0 12px 25px rgba(58, 90, 138, 0.08) !important;
-}
-
-/* 🌟 針對標題列匿名開關的微調 */
-.TrExperiment .anonymous-switch {
-  width: 2.2rem !important; /* 稍微縮小以適應標題列高度 */
-  height: 1.1rem !important;
-  cursor: pointer;
-}
-
-/* 匿名開關開啟時使用中性灰色，強調隱私感 */
-.TrExperiment .anonymous-switch:checked {
-  background-color: #6c757d !important;
-  border-color: #6c757d !important;
-}
-
-.TrExperiment .form-check-label.xx-small {
-  font-size: 0.65rem;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  user-select: none;
-}
-
-/* 增加圖示間距與對齊 */
-.TrExperiment .bi-incognito {
-  font-size: 0.8rem;
-  vertical-align: -1px;
-}
-
-/* --- 序號徽章 (Index Badge) --- */
-.TrExperiment .group-index-tag {
-  background-color: var(--navy) !important;
-  color: #ffffff !important;
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 5px 12px;
-  border-radius: 10px;
-  box-shadow: 0 3px 6px rgba(58, 90, 138, 0.2);
-}
-
-/* --- 圖示方塊 (Icon Box) --- */
+/* 圖示外框 */
 .TrExperiment .icon-box {
-  width: 48px;
-  height: 48px;
-  background-color: var(--soft-navy);
-  color: var(--navy);
-  border-radius: 14px;
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.4rem;
 }
 
-/* --- SRL 開關與文字設定 --- */
-.TrExperiment .form-check-input {
-  cursor: pointer;
-  width: 2.6rem;
-  height: 1.3rem;
+.TrExperiment .bg-soft-primary {
+  background-color: var(--soft-blue);
+}
+.TrExperiment .bg-soft-success {
+  background-color: var(--soft-success);
+}
+.TrExperiment .bg-soft-warning {
+  background-color: var(--soft-warning);
+}
+.TrExperiment .bg-soft-navy {
+  background-color: #f0f4f9;
 }
 
-.TrExperiment .form-check-input:checked {
-  background-color: var(--navy);
-  border-color: var(--navy);
+/* --- 2. 組別配置卡片 (Group Config) --- */
+.TrExperiment .group-config-card {
+  background: #ffffff;
+  border: 1px solid var(--oatmeal-dark) !important;
+  transition: all 0.3s ease;
+}
+
+.TrExperiment .group-index-tag {
+  background: var(--navy);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+/* 🌟 通行碼 Badge */
+.TrExperiment .passcode-badge {
+  background: #ffffff !important;
+  border: 1px solid rgba(58, 90, 138, 0.1) !important;
 }
 
 .TrExperiment .xx-small {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  line-height: 1.4;
+  font-size: 0.7rem;
 }
 
-/* --- 按鈕樣式 --- */
+/* 🌟 SRL 開關樣式優化 */
+.TrExperiment .custom-srl-switch {
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.TrExperiment .custom-srl-switch:hover {
+  background: var(--soft-blue);
+}
+
+/* --- 3. 測驗清單樣式 (Test Management) --- */
+.TrExperiment .test-item-card {
+  transition: all 0.2s ease;
+  border: 1px solid var(--oatmeal-dark) !important;
+}
+
+.TrExperiment .test-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+.TrExperiment .btn-soft-success {
+  background: #dcfce7;
+  color: #16a34a;
+  border: none;
+}
+.TrExperiment .btn-soft-secondary {
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+}
+.TrExperiment .btn-soft-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+}
+
+/* --- 4. 📱 手機與平板自適應 (Adaptive Layout) --- */
+
+/* ==========================================================================
+   📱 TrExperiment 專屬手機/平板自適應 (Adaptive Layout)
+   ========================================================================== */
+
+@media (max-width: 991px) {
+  /* 🌟 1. 佈局重組：讓右側控制台在平板/手機上不再 Sticky，防止遮擋內容 */
+  .TrExperiment .sidebar-card {
+    position: static !important;
+    margin-top: 1.5rem;
+    border: 2px solid #eef2f7 !important; /* 增加邊框感區隔主內容 */
+  }
+}
+
+@media (max-width: 767px) {
+  .TrExperiment {
+    padding: 10px !important;
+  }
+
+  /* 🌟 2. 標題與圖示縮小，騰出螢幕空間 */
+  .TrExperiment .icon-box {
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+  }
+
+  .TrExperiment h5 {
+    font-size: 1.1rem;
+  }
+
+  /* 🌟 3. 實驗組別卡片重組：解決「姓名、代碼、開關」擠在一起的問題 */
+  .TrExperiment .group-config-card {
+    padding: 15px !important;
+  }
+
+  .TrExperiment .group-config-card .d-flex.align-items-center {
+    flex-direction: column !important; /* 標頭改垂直堆疊 */
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* 組別名稱輸入框撐滿 */
+  .TrExperiment .group-name-input {
+    width: 100% !important;
+    font-size: 1.1rem;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee !important;
+  }
+
+  /* 通行碼 Badge 在手機版獨立一行，並稍微放大 */
+  .TrExperiment .passcode-badge {
+    width: 100%;
+    justify-content: center;
+    padding: 8px !important;
+  }
+
+  /* 匿名排行與刪除鈕併排 */
+  .TrExperiment .ms-2.d-flex.align-items-center {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0 !important;
+  }
+
+  /* 🌟 4. SRL 階段開關：手機版改為 2x2 網格，且加大點擊面積 */
+  .TrExperiment .custom-srl-switch {
+    background: #f8f9fa;
+    padding: 12px 10px;
+    border-radius: 12px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .TrExperiment .custom-srl-switch .form-check-input {
+    margin: 0;
+    float: none;
+    order: 2; /* 開關移到右邊 */
+    width: 2.5em; /* 加大開關體積 */
+  }
+
+  .TrExperiment .custom-srl-switch .form-check-label {
+    order: 1; /* 文字移到左邊 */
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  /* 🌟 5. 測驗清單：手機版改為垂直列表，避免標題被截斷 */
+  .TrExperiment .test-item-card {
+    padding: 12px !important;
+  }
+
+  .TrExperiment .test-title {
+    max-width: 100% !important; /* 移除寬度限制，讓它換行 */
+    font-size: 0.95rem;
+  }
+
+  /* 🌟 6. 按鈕群組化 */
+  .TrExperiment .btn-add-group-custom,
+  .TrExperiment .btn-navy {
+    width: 100% !important; /* 按鈕全寬 */
+    height: 50px;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  /* 🌟 7. 實驗即時控制：在手機版變更為「設定列表」感 */
+  .TrExperiment .sidebar-card .custom-switch {
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row !important; /* 開關與文字併排 */
+  }
+
+  .TrExperiment .custom-switch .form-check-input {
+    order: 2;
+    margin: 0;
+  }
+
+  .TrExperiment .custom-switch .form-check-label {
+    order: 1;
+    margin-bottom: 0;
+  }
+}
+
+/* --- 5. 其他元件 --- */
 .TrExperiment .btn-navy {
   background-color: var(--navy);
-  color: #ffffff;
+  color: white;
   border: none;
+  transition: all 0.3s;
+}
+
+.TrExperiment .btn-navy:hover:not(:disabled) {
+  background-color: var(--primary-blue);
+  box-shadow: 0 4px 12px rgba(58, 90, 138, 0.3);
+}
+
+.TrExperiment .btn-navy:disabled {
+  opacity: 0.6;
+}
+
+/* 捲軸美化 */
+.TrExperiment .custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.TrExperiment .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--navy);
+  border-radius: 10px;
+}
+
+/* 🌟 動畫 */
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+/* ==========================================================================
+   🌟 增加實驗組別：自定義 Navy 虛線按鈕
+   ========================================================================== */
+
+.TrExperiment .btn-add-group-custom {
+  /* 基礎版面：透明背景 + 記憶中的深藍虛線 (#3a5a8a) */
+  background: rgba(58, 90, 138, 0.03) !important;
+  border: 2px dashed #3a5a8a !important;
+  color: #3a5a8a !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 12px 28px;
+  border-radius: 50px; /* 膠囊形狀 */
+  font-weight: 800;
+  font-size: 0.95rem;
+
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  width: auto;
+  outline: none;
 }
 
-.TrExperiment .btn-navy:hover {
-  background-color: var(--navy-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(58, 90, 138, 0.3);
+/* 按鈕左側的圓圈加號 */
+.TrExperiment .btn-add-group-custom .plus-icon-wrapper {
+  background: #3a5a8a;
   color: #ffffff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.4s ease,
+    background 0.3s ease;
 }
 
-/* 虛線邊框按鈕 (用於添加操作) */
-.TrExperiment .border-dashed {
-  border-style: dashed !important;
-  border-width: 2px !important;
+.TrExperiment .btn-add-group-custom .plus-icon-wrapper i {
+  font-size: 0.85rem;
+  -webkit-text-stroke: 1px; /* 讓加號粗細與文字匹配 */
 }
 
-/* --- 動畫設定 --- */
-.animate__fadeIn {
-  animation: fadeIn 0.5s ease-in-out;
+/* 🔥 Hover 互動：背景反轉為深藍實體 */
+.TrExperiment .btn-add-group-custom:hover {
+  background: #3a5a8a !important;
+  color: #ffffff !important;
+  border-style: solid !important; /* 虛線轉實線 */
+  box-shadow: 0 8px 20px rgba(58, 90, 138, 0.25);
+  transform: translateY(-2px);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+/* Hover 時讓內部的加號轉動 90 度並變色 */
+.TrExperiment .btn-add-group-custom:hover .plus-icon-wrapper {
+  background: #ffffff;
+  color: #3a5a8a;
+  transform: rotate(90deg);
+}
+
+/* 點擊時的縮放反饋 */
+.TrExperiment .btn-add-group-custom:active {
+  transform: translateY(0) scale(0.96);
+}
+
+/* --- 📱 手機版適配 (Mobile Adaptive < 767px) --- */
+@media (max-width: 767px) {
+  .TrExperiment .btn-add-group-custom {
+    width: 100% !important; /* 手機版橫向撐滿 */
+    height: 52px; /* 適合大拇指點擊的高度 */
+    font-size: 1.05rem;
+    margin-top: 15px;
+    border-width: 2px !important;
   }
 }

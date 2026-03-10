@@ -157,10 +157,14 @@
 
           <div class="d-flex justify-content-between mt-2 flex-wrap gap-2">
             <button
-              class="btn btn-outline-primary btn-sm rounded-pill border-2 fw-bold"
+              type="button"
+              class="btn-add-group-custom"
               @click="addGroup"
             >
-              <i class="bi bi-plus-lg me-1"></i> 增加實驗組別
+              <div class="plus-icon-wrapper">
+                <i class="bi bi-plus-lg"></i>
+              </div>
+              <span>增加實驗組別</span>
             </button>
             <button
               class="btn btn-navy px-5 rounded-pill fw-bold text-white shadow-sm"
@@ -324,15 +328,14 @@ const experimentGroups = ref([]);
 
 // SRL 四階段配置描述
 const srlSteps = {
-  planning: { title: "1. 任務計畫", desc: "進入單元前設定目標" },
-  monitoring: { title: "2. 學習監控", desc: "顯示進度與時間提醒" },
-  aiAdvice: { title: "3. AI 策略建議", desc: "顯示個人化學習指引" },
-  reflection: { title: "4. 自我反思", desc: "任務後的成敗歸因" },
+  planning: { title: "任務計畫", desc: "進入單元前設定目標" },
+  monitoring: { title: "學習監控", desc: "顯示進度與時間提醒" },
+  aiAdvice: { title: "AI 策略建議", desc: "顯示個人化學習指引" },
+  reflection: { title: "自我反思", desc: "任務後的成敗歸因" },
 };
 
 // 右側實驗控制參數
 const parameterOptions = {
-  allowVoice: { title: "開啟語音輸入功能", desc: "允許學生使用語音辨識。" },
   enableSrlGuide: {
     title: "強制 SRL 引導流程",
     desc: "必須完成計畫與反思才能結束。",

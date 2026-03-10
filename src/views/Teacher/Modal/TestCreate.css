@@ -1,131 +1,300 @@
-/* --- 背景遮罩 --- */
-.test-create-overlay {
+/* ==========================================================================
+   🧪 TestCreate 專屬樣式 (Navy & Oatmeal 風格)
+   ========================================================================== */
+
+.TestCreate.test-create-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 3000;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2100;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
 }
 
-/* --- Modal 主體 --- */
-.test-create-modal {
-  width: 90%;
-  max-width: 600px;
-  max-height: 85vh;
-  border-radius: 28px;
-  border: 1px solid rgba(74, 112, 169, 0.1);
-  border-top: 8px solid #4a70a9;
+.TestCreate .test-create-modal {
+  background: #fdfcf9; /* 極淺米色 */
+  width: 92%;
+  max-width: 800px;
+  height: 85vh;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   position: relative;
-  animation: modalSlideUp 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.modal-title-navy {
-  color: #4a70a9;
+/* 🌟 1. 標頭區：記憶中的極簡 X 整合 */
+.TestCreate .modal-header-custom {
+  padding: 1.5rem 2rem;
+  background: #ffffff;
+  border-bottom: 2px solid #eeede4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* --- 欄位樣式 --- */
-.custom-field {
-  background-color: #f8fafc;
-  border: 1.5px solid #e2e8f0;
+.TestCreate .btn-close-red {
+  background: none !important;
+  border: none !important;
+  color: #4a70a9 !important;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.TestCreate .btn-close-red:hover {
+  color: #bf4646 !important;
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* 🌟 2. 內容滾動區 */
+.TestCreate .modal-body-custom {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.TestCreate .custom-field {
   border-radius: 12px;
-  transition: all 0.2s;
+  border: 1px solid #eeede4;
+  padding: 12px 15px;
+  background: #ffffff;
+  transition: all 0.3s;
 }
 
-.custom-field:focus {
-  background-color: #ffffff;
-  border-color: #4a70a9;
-  box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
+.TestCreate .custom-field:focus {
+  border-color: #3a5a8a;
+  box-shadow: 0 0 0 4px rgba(58, 90, 138, 0.1);
 }
 
-/* --- 題目卡片 --- */
-.question-card {
-  border: 1px solid #edf2f7 !important;
-  transition: all 0.2s;
+/* 🌟 3. 題目卡片設計 (Adaptive Card) */
+.TestCreate .question-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 15px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
-.question-card:hover {
-  border-color: #4a70a9 !important;
-  transform: translateX(4px);
+.TestCreate .q-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.btn-remove-q {
-  top: -8px;
-  right: -8px;
-  background: transparent;
+.TestCreate .q-input-group {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 5px 12px;
+}
+
+.TestCreate .q-index {
+  font-weight: 800;
+  color: #3a5a8a;
+  margin-right: 10px;
+  font-size: 0.9rem;
+}
+
+.TestCreate .q-text-field {
   border: none;
-  color: #e74c3c;
-  font-size: 1.25rem;
-  transition: transform 0.2s;
+  background: transparent;
+  width: 100%;
+  font-size: 0.95rem;
+  outline: none;
+  padding: 8px 0;
 }
 
-.btn-remove-q:hover {
+.TestCreate .q-type-select {
+  width: 130px;
+  border: none;
+  background: #eef2f7;
+  border-radius: 8px;
+  padding: 8px;
+  color: #3a5a8a;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.TestCreate .btn-remove-q {
+  color: #e2e8f0;
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  transition: 0.2s;
+}
+
+.TestCreate .btn-remove-q:hover {
+  color: #ef4444;
   transform: scale(1.1);
 }
 
-/* --- 按鈕樣式 --- */
-.btn-navy {
-  background-color: #4a70a9;
+/* 🌟 4. 底部按鈕區 (Adaptive Footer) */
+.TestCreate .modal-footer-custom {
+  padding: 1.5rem 2rem;
+  background: #ffffff;
+  border-top: 2px solid #eeede4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 虛線按鈕 */
+.TestCreate .btn-add-dashed {
+  border: 2px dashed #3a5a8a;
+  background: rgba(58, 90, 138, 0.05);
+  color: #3a5a8a;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+.TestCreate .btn-add-dashed:hover {
+  background: #3a5a8a;
+  color: white;
+  border-style: solid;
+}
+
+.TestCreate .btn-save-navy {
+  background: #3a5a8a;
   color: white;
   border: none;
-}
-
-.btn-navy:hover {
-  background-color: #3a5a8a;
-  transform: translateY(-1px);
-}
-
-.btn-add-dashed {
-  color: #4a70a9;
-  border: 1.5px dashed #4a70a9;
-  background: transparent;
-  font-weight: 600;
-}
-
-.btn-add-dashed:hover {
-  background-color: rgba(74, 112, 169, 0.05);
-}
-
-/* --- 捲軸 --- */
-.question-list-area::-webkit-scrollbar {
-  width: 5px;
-}
-.question-list-area::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
-  border-radius: 10px;
-}
-
-/* --- Toast --- */
-.custom-toast {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2200;
-  padding: 8px 24px;
+  padding: 10px 25px;
   border-radius: 50px;
-  font-size: 0.9rem;
-  color: white;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  font-weight: 800;
 }
 
-.custom-toast.success {
-  background: #4a70a9;
-}
-.custom-toast.error {
-  background: #e74c3c;
+/* --- 🌟 手機版適配 (Mobile RWD < 767px) --- */
+/* ==========================================================================
+   📱 TestCreate 專屬手機/平板自適應 (Adaptive Layout)
+   ========================================================================== */
+
+@media (max-width: 767px) {
+  /* 🌟 1. 彈窗本體：轉為滿版抽屜感，不留白邊 */
+  .TestCreate .test-create-modal {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 🌟 2. 標頭區：增加高度與觸控間距 */
+  .TestCreate .modal-header-custom {
+    padding: 1.2rem 1.5rem !important;
+    border-bottom: 2px solid #eeede4;
+  }
+
+  /* 🌟 3. 內容滾動區：優化內距，防止底部被按鈕遮擋 */
+  .TestCreate .modal-body-custom {
+    padding: 1.2rem !important;
+    padding-bottom: 100px !important; /* 為底部懸浮按鈕留空間 */
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 🌟 4. 題目卡片重組：橫向改垂直 (防止字折斷) */
+  .TestCreate .question-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 16px !important;
+    gap: 12px !important;
+    position: relative;
+    border-radius: 16px !important;
+  }
+
+  .TestCreate .q-content {
+    flex-direction: column !important; /* 題目敘述與類型上下排 */
+    gap: 10px !important;
+  }
+
+  /* 題目序號與輸入框組合 */
+  .TestCreate .q-input-group {
+    width: 100%;
+    padding: 8px 12px !important;
+  }
+
+  /* 類型下拉選單：手機版撐滿寬度，加大點擊範圍 */
+  .TestCreate .q-type-select {
+    width: 100% !important;
+    height: 44px;
+    background-color: #f1f5f9 !important; /* 稍微深一點方便辨識 */
+    padding-left: 12px !important;
+  }
+
+  /* 刪除按鈕：移至右上角，不佔用行內空間 */
+  .TestCreate .btn-remove-q {
+    position: absolute !important;
+    top: 10px;
+    right: 10px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+  }
+
+  /* 🌟 5. 底部按鈕區：改為固定懸浮，確保隨時可儲存 */
+  .TestCreate .modal-footer-custom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    flex-direction: column !important; /* 按鈕上下堆疊 */
+    gap: 10px !important;
+    padding: 15px 20px !important;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid #eeede4;
+    z-index: 100;
+  }
+
+  /* 「新增題目」按鈕：撐滿 */
+  .TestCreate .btn-add-dashed {
+    width: 100% !important;
+    height: 48px;
+    justify-content: center;
+    border-style: solid !important; /* 手機版虛線視覺較弱，改實線 */
+  }
+
+  /* 「儲存」按鈕區 */
+  .TestCreate .footer-actions {
+    width: 100% !important;
+  }
+
+  .TestCreate .btn-save-navy {
+    width: 100% !important;
+    height: 50px;
+    font-size: 1rem !important;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(58, 90, 138, 0.3) !important;
+  }
 }
 
-@keyframes modalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* 捲軸美化 */
+.TestCreate .custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.TestCreate .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3a5a8a;
+  border-radius: 10px;
 }
