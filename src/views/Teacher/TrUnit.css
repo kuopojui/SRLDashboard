@@ -165,11 +165,6 @@
   font-weight: 700;
 }
 
-/* 當數字大於 0 時，給予藍色發亮感 */
-.TrUnit .stat-pill:has(.count:not(:empty)) {
-  /* 如果你的 Vue 環境支援 :has，這會讓有東西的單元亮起來 */
-}
-
 /* --- 📱 手機版 RWD 修正 --- */
 @media (max-width: 767px) {
   .TrUnit .stat-pill {

@@ -1,200 +1,142 @@
-/* ============================================================
-   EX-STYLE 學生端課程詳情 - 完整整合版 (漢堡選單右上角)
-   與教師端 TrLayout 結構高度對齊
-   ============================================================ */
-
+/* --- 基礎變數 (同步教師端) --- */
 :root {
-  --navy: #4a70a9;
-  --navy-dark: #355380;
-  --bg-beige: #efece3; /* 品牌米色背景 */
-  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --navy: #4a70a9; /* 核心湛藍 */
+  --navy-dark: #35507d; /* 側邊欄深色背景 */
+  --oatmeal: #efece3; /* 核心米色主內容 */
+  --white: #ffffff;
+  --sidebar-w: 260px;
+  --header-h: 70px;
 }
 
-/* --- 1. 基礎佈局架構 --- */
-.StuCourseDetail.CoursePage {
-  background-color: var(--bg-beige) !important;
-  font-family: "Inter", sans-serif;
-  overflow-x: hidden;
-}
-
-/* --- 2. 精密側邊欄 (與教師端 TrSidebar 一致) --- */
-.CoursePage-sidebar {
-  width: 280px;
-  background: var(--navy);
-  color: #ffffff;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  z-index: 2000;
-  transition: var(--transition);
-}
-
-/* 側邊欄內的課程資訊區 (Hero Box) */
-.course-hero-box {
-  background: #ffffff !important;
-  border-left: 6px solid var(--navy) !important;
-  border-radius: 4px 16px 16px 4px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.CoursePage-nav-item {
-  margin: 8px 16px;
-  padding: 12px 20px;
-  border-radius: 12px;
-  cursor: pointer;
+/* --- 佈局架構 --- */
+.StuCourseDetail.TrLayout {
   display: flex;
-  align-items: center;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.7);
-  transition: var(--transition);
-}
-
-.CoursePage-nav-item i {
-  font-size: 1.2rem;
-}
-
-.CoursePage-nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-.CoursePage-nav-item.active {
-  background: #ffffff;
+  min-height: 100vh;
+  background-color: var(--oatmeal);
   color: var(--navy);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* --- 3. 主要內容區域 --- */
-.flex-grow-1 {
-  min-width: 0;
-}
-
-.course-scroll-area {
-  max-width: 1120px; /* 🌟 內容寬度限制，確保閱讀精密感 */
-  margin: 0 auto;
-  padding-top: 2rem;
-  width: 100%;
-}
-
-/* --- 4. 行動版 RWD 與 漢堡選單右上角佈局 --- */
-@media (max-width: 991.98px) {
-  .CoursePage-sidebar {
-    position: fixed;
-    left: -280px; /* 預設隱藏 */
-    top: 0;
-    transition: var(--transition);
-  }
-
-  .CoursePage-sidebar.show {
-    left: 0;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
-  }
-
-  /* 行動版標頭深藍化 */
-  .mobile-header {
-    background-color: var(--navy) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
-
-  /* 🌟 漢堡選單容器對齊優化 */
-  .mobile-header .d-flex {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-  }
-}
-
-/* --- 5. 背景遮罩 (Overlay) --- */
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
+/* 🌟 1. 側邊欄：回歸湛藍深色系 (同步教師端) */
+.StuCourseDetail .TrSidebar {
+  width: var(--sidebar-w);
+  background-color: var(--navy); /* 👈 修正：改回藍色 */
+  color: white; /* 👈 修正：文字變白色 */
   height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 1999;
-  opacity: 0;
-  visibility: hidden;
-  transition: var(--transition);
-}
-
-.sidebar-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* --- 6. 漢堡選單按鈕 (精密設計) --- */
-.hamburger-btn {
-  background: transparent;
-  border: none;
-  width: 40px;
-  height: 40px;
+  position: fixed;
+  z-index: 1050;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+}
+
+.StuCourseDetail .sidebar-header {
+  height: var(--header-h);
+  display: flex;
   align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  order: 2; /* 🌟 強制排在最後，確保在標頭右側 */
+  padding: 0 25px;
+  background: rgba(0, 0, 0, 0.15); /* 頂部稍微深一點點 */
 }
 
-.hamburger-line {
-  display: block;
-  width: 24px;
-  height: 2px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  position: relative;
-  transition: var(--transition);
-}
-
-.hamburger-line::before,
-.hamburger-line::after {
-  content: "";
-  position: absolute;
-  width: 24px;
-  height: 2px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  transition: var(--transition);
-  left: 0;
-}
-
-.hamburger-line::before {
-  top: -8px;
-}
-.hamburger-line::after {
-  top: 8px;
-}
-
-/* 開啟時轉換為 X 動畫 */
-.hamburger-btn.active .hamburger-line {
+/* 🌟 2. 導航項目：在藍底上的表現 */
+.StuCourseDetail .nav-item {
+  width: calc(100% - 30px);
+  margin: 5px 15px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: none;
   background: transparent;
-}
-.hamburger-btn.active .hamburger-line::before {
-  transform: rotate(45deg);
-  top: 0;
-}
-.hamburger-btn.active .hamburger-line::after {
-  transform: rotate(-45deg);
-  top: 0;
+  color: rgba(255, 255, 255, 0.7); /* 非活躍時白色半透明 */
+  display: flex;
+  align-items: center;
+  font-weight: 800;
+  transition: 0.2s;
 }
 
-/* --- 7. 其他組件樣式 --- */
-.btn-logout {
+.StuCourseDetail .nav-item:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 0.85rem;
-  font-weight: 700;
-  transition: 0.3s;
+  color: white;
 }
 
-.btn-logout:hover {
-  background: #bf4646; /* 紅磚色提示 */
-  border-color: #bf4646;
+.StuCourseDetail .nav-item.active {
+  background-color: rgba(255, 255, 255, 0.2); /* 活躍時微亮的底色 */
+  color: white;
+  box-shadow: inset 4px 0 0 white; /* 教師端經典的左側小白線 */
+}
+
+/* 🌟 3. 課程英雄小卡：在藍底上的白色透明質感 */
+.StuCourseDetail .course-hero-box {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1.5px dashed rgba(255, 255, 255, 0.4) !important; /* 白色虛線 */
+  border-radius: 20px;
+  margin: 0 10px;
+  color: white;
+}
+
+.StuCourseDetail .course-hero-box h6 {
+  color: white !important;
+}
+.StuCourseDetail .course-hero-box p {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 🌟 4. 手機版 Header：保持湛藍 (漢堡在右) */
+.StuCourseDetail .TrMainContainer {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+}
+
+.StuCourseDetail .TrHeader {
+  height: var(--header-h);
+  background: #ffffff; /* 👈 修正：手機 Header 改回藍色 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+}
+
+.StuCourseDetail .TrHeader h5 {
+  color: #4a70a9 !important;
+} /* Header 文字變白 */
+
+@media (max-width: 991.98px) {
+  .StuCourseDetail .TrSidebar {
+    transform: translateX(-100%);
+  }
+  .StuCourseDetail.mobile-open .TrSidebar {
+    transform: translateX(0);
+  }
+  .StuCourseDetail .TrMainContainer {
+    margin-left: 0 !important;
+  }
+
+  /* 邀請碼膠囊樣式 (在藍底 Header 上的白色版本) */
+  .join-code-pill {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px dashed white;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  .mobile-hamburger {
+    background: #4a70a9;
+    color: #efece3;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.logout-style {
+  color: #fecdd3 !important;
+  margin-top: auto;
+  font-weight: 800;
 }

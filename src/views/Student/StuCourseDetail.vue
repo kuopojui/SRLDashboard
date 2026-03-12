@@ -4,9 +4,9 @@
     :class="{ 'mobile-open': isSidebarOpen }"
   >
     <div
-      class="sidebar-overlay"
+      class="mobile-overlay"
       v-if="isSidebarOpen"
-      @click="toggleSidebar"
+      @click="isSidebarOpen = false"
     ></div>
 
     <aside class="TrSidebar shadow">
@@ -22,18 +22,17 @@
       </div>
 
       <nav class="sidebar-nav">
-        <section class="px-3 mb-4">
-          <div
-            class="course-hero-box p-3 rounded-4 bg-white shadow-sm border-start-navy"
-          >
+        <section class="px-2 mb-4">
+          <div class="course-hero-box p-3 rounded-4 shadow-sm">
             <div class="d-flex align-items-center gap-2 mb-2">
               <span
                 v-if="hasPendingTest"
-                class="badge bg-soft-warning text-warning rounded-pill px-2 animate__animated animate__pulse animate__infinite"
-                >有待填寫問卷</span
+                class="badge-alert-pill animate__animated animate__pulse animate__infinite"
               >
+                有待填寫問卷
+              </span>
             </div>
-            <h6 class="fw-bold text-dark mb-1 text-truncate">
+            <h6 class="fw-bold mb-1 text-truncate">
               {{ courseInfo.title || "載入中..." }}
             </h6>
             <p class="text-muted xx-small mb-0 line-clamp-2">
@@ -45,16 +44,22 @@
         <button
           class="nav-item"
           :class="{ active: currentView === 'dashboard' }"
-          @click="switchView('dashboard')"
+          @click="
+            currentView = 'dashboard';
+            isSidebarOpen = false;
+          "
         >
-          <i class="bi bi-speedometer2"></i>
+          <i class="bi bi-graph-up-arrow"></i>
           <span class="nav-label">學習診斷</span>
         </button>
 
         <button
           class="nav-item"
           :class="{ active: currentView === 'content' }"
-          @click="switchView('content')"
+          @click="
+            currentView = 'content';
+            isSidebarOpen = false;
+          "
         >
           <i class="bi bi-collection-play"></i>
           <span class="nav-label">單元清單</span>
@@ -62,9 +67,9 @@
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-info-mini px-3 mb-3 text-white opacity-75">
+        <div class="user-info-mini px-3 mb-3 opacity-75">
           <div class="xx-small fw-bold">{{ currentUser?.displayName }}</div>
-          <div class="smaller">AI 輔助學習中</div>
+          <div class="smaller">學生端系統</div>
         </div>
         <button class="nav-item return-btn logout-style" @click="handleLogout">
           <i class="bi bi-box-arrow-left"></i>
@@ -74,17 +79,23 @@
     </aside>
 
     <div class="TrMainContainer">
-      <header class="TrHeader d-lg-none shadow-sm">
-        <div class="header-left">
+      <header class="TrHeader shadow-sm">
+        <div class="header-left ms-3">
+          <h5 class="fw-bold mb-0 text-navy">{{ courseInfo.title }}</h5>
+        </div>
+
+        <div class="header-right d-flex align-items-center me-3">
+          <div class="join-code-pill d-lg-none" @click="copyJoinCode">
+            <i class="bi bi-key-fill me-1"></i>
+            <span class="code">{{ courseInfo.joinCode }}</span>
+          </div>
+
           <button
-            class="mobile-hamburger ms-2"
+            class="mobile-hamburger d-lg-none ms-2"
             @click="isSidebarOpen = !isSidebarOpen"
           >
             <i :class="['bi', isSidebarOpen ? 'bi-x-lg' : 'bi-list']"></i>
           </button>
-          <h6 class="fw-bold mb-0 ms-3 text-white text-truncate">
-            {{ courseInfo.title }}
-          </h6>
         </div>
       </header>
 
@@ -98,7 +109,6 @@
               >
                 <StuDashboard :courseId="courseId" />
               </div>
-
               <div
                 v-if="currentView === 'content'"
                 class="animate__animated animate__fadeIn"

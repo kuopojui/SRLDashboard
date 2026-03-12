@@ -9,22 +9,24 @@
         <div class="d-flex gap-5 StuDashboard-stats-responsive">
           <div class="StuDashboard-stat-item">
             <div class="label">我的功課均分</div>
-            <div class="value-group mt-1">
-              <h2 class="text-navy mb-0">{{ avgHwScore }}</h2>
+            <div class="value-group">
+              <h2 class="text-navy">{{ avgHwScore }}</h2>
               <span class="unit">分</span>
             </div>
           </div>
+
           <div class="StuDashboard-stat-item border-start ps-md-5">
             <div class="label">我的考試均分</div>
-            <div class="value-group mt-1">
-              <h2 class="text-navy mb-0">{{ avgExamScore }}</h2>
+            <div class="value-group">
+              <h2 class="text-navy">{{ avgExamScore }}</h2>
               <span class="unit">分</span>
             </div>
           </div>
+
           <div class="StuDashboard-stat-item border-start ps-md-5">
             <div class="label">討論區參與</div>
-            <div class="value-group mt-1">
-              <h2 class="text-navy mb-0">{{ discussionCount }}</h2>
+            <div class="value-group">
+              <h2 class="text-navy">{{ discussionCount }}</h2>
               <span class="unit">次發言</span>
             </div>
           </div>
@@ -76,14 +78,24 @@
       >
         <div
           class="StuDashboard-modal-box shadow-lg animate__animated animate__zoomIn"
+          style="width: 95%; max-width: 650px"
         >
-          <div class="StuDashboard-modal-header">
-            <h5 class="m-0 fw-bold">
-              <i class="bi bi-trophy-fill me-2 text-warning"></i>班級匿名排行榜
-            </h5>
-            <button class="btn-close-custom" @click="handleCloseRank">✕</button>
+          <div
+            class="StuDashboard-modal-header d-flex justify-content-between align-items-center p-4"
+          >
+            <div class="d-flex align-items-center">
+              <div class="modal-icon-badge me-3">
+                <i class="bi bi-trophy-fill text-warning"></i>
+              </div>
+              <h5 class="m-0 fw-900 text-navy">班級積分排行榜</h5>
+            </div>
+
+            <button class="btn-close-minimal" @click="showRankModal = false">
+              <i class="bi bi-x-lg"></i>
+            </button>
           </div>
-          <div class="StuDashboard-modal-body p-4">
+
+          <div class="StuDashboard-modal-body p-3 p-md-4 custom-scrollbar">
             <StuRank :course-id="props.courseId" />
           </div>
         </div>
@@ -95,9 +107,8 @@
 <script setup>
 import { ref, onMounted, computed, nextTick, onUnmounted } from "vue";
 import { rtdb as db } from "../../firebase/config";
-import { ref as dbRef, onValue, push } from "firebase/database"; // 🌟 補上 push
+import { ref as dbRef, onValue, push } from "firebase/database";
 import { getAuth } from "firebase/auth";
-import { getFunctions, httpsCallable } from "firebase/functions";
 import { Chart, registerables } from "chart.js";
 import StuRank from "./Modal/StuRank.vue";
 import "./StuDashboard.css";
@@ -108,16 +119,17 @@ const props = defineProps({ courseId: String });
 const courseId = props.courseId;
 
 // --- 狀態控制 ---
-const aiAnalysis = ref("正在載入學習歷程...");
-const isAnalyzing = ref(false);
 const showRankModal = ref(false);
 const discussionCount = ref(0);
 const performanceSummary = ref({ hw: [], exam: [] });
 
+// 湛藍主題色變數
+const THEME_NAVY = "#4a70a9";
+
 let hwChartInstance = null;
 let examChartInstance = null;
 
-// --- 🌟 補上行為紀錄函式 ---
+// --- 🌟 SRL 行為紀錄 ---
 const recordStudentAction = async (cId, uid, actionType) => {
   try {
     const logRef = dbRef(db, `courses/${cId}/logs/${uid}`);
@@ -131,7 +143,7 @@ const recordStudentAction = async (cId, uid, actionType) => {
   }
 };
 
-// --- 計算均分 ---
+// --- 計算均分 (具備 Baseline 對齊的資料源) ---
 const avgHwScore = computed(() => {
   const scores = performanceSummary.value.hw
     .map((i) => i.score)
@@ -150,13 +162,12 @@ const avgExamScore = computed(() => {
     : 0;
 });
 
-// --- 圖表繪製核心 (補強銷毀邏輯) ---
+// --- 圖表繪製核心 (優化樣式與銷毀) ---
 const updateChart = async (id, labels, myScores, color) => {
   await nextTick();
   const ctx = document.getElementById(id);
   if (!ctx) return;
 
-  // 🌟 核心修正：僅保留「我的成績」資料集，移除 avgScores 相關邏輯
   const data = {
     labels,
     datasets: [
@@ -164,14 +175,47 @@ const updateChart = async (id, labels, myScores, color) => {
         label: "我的成績",
         data: myScores,
         borderColor: color,
-        backgroundColor: color + "20",
-        tension: 0.1, // 控制組改用基礎折線，減少視覺引導
+        backgroundColor: color + "15", // 更淡的填充色
+        tension: 0.3, // 稍微增加圓滑度，符合極簡美感
         fill: true,
-        pointRadius: 5,
-        pointBackgroundColor: color,
-        borderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#ffffff",
+        pointBorderColor: color,
+        pointBorderWidth: 2,
+        borderWidth: 2.5,
       },
     ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false }, // 隱藏圖例讓畫面更乾淨
+      tooltip: {
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        titleColor: "#4a70a9",
+        bodyColor: "#1e293b",
+        borderColor: "rgba(74, 112, 169, 0.1)",
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 10,
+        displayColors: false,
+      },
+    },
+    scales: {
+      y: {
+        min: 0,
+        max: 100,
+        grid: { color: "rgba(74, 112, 169, 0.05)", drawBorder: false },
+        ticks: { stepSize: 20, color: "#94a3b8", font: { weight: "600" } },
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: "#94a3b8", font: { weight: "600" } },
+      },
+    },
   };
 
   let instance = id === "hwCompareChart" ? hwChartInstance : examChartInstance;
@@ -183,126 +227,84 @@ const updateChart = async (id, labels, myScores, color) => {
     const newChart = new Chart(ctx, {
       type: "line",
       data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: "bottom",
-            labels: { boxWidth: 10, font: { size: 12 } },
-          },
-          tooltip: {
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
-            titleColor: "#1e293b",
-            bodyColor: "#1e293b",
-            borderColor: "#e2e8f0",
-            borderWidth: 1,
-            displayColors: false,
-          },
-        },
-        scales: {
-          y: {
-            min: 0,
-            max: 100,
-            grid: { color: "#f1f5f9" },
-            ticks: { stepSize: 20, color: "#94a3b8" },
-          },
-          x: {
-            grid: { display: false },
-            ticks: { color: "#94a3b8" },
-          },
-        },
-      },
+      options: chartOptions,
     });
     if (id === "hwCompareChart") hwChartInstance = newChart;
     else examChartInstance = newChart;
   }
 };
+
 onMounted(() => {
   const auth = getAuth();
   const uid = auth.currentUser?.uid;
   if (!uid) return;
 
-  // 1. 紀錄行為紀錄：支援 SRL 歷程追蹤 (自我觀察 phase)
   recordStudentAction(courseId, uid, "進入學習診斷儀表板");
 
-  // 2. 監聽功課數據 (正確對接 JSON 中的 scores 節點)
+  // 1. 監聽功課數據
   onValue(dbRef(db, `courses/${courseId}/assignments`), (snap) => {
     if (!snap.exists()) return;
-    const data = snap.val() || {};
-
+    const data = snap.val();
     const processedHw = Object.entries(data)
-      .map(([id, val]) => {
-        // 🌟 核心修正：根據 JSON，成績存放在 scores/{uid}/score
-        const scoreEntry = val.scores?.[uid];
-
-        return {
-          title: val.title || "未命名功課",
-          score: scoreEntry?.score !== undefined ? scoreEntry.score : null,
-          avg: val.stats?.avgScore || 0,
-        };
-      })
-      .filter((i) => i.score !== null); // 僅顯示已批改有分數的項目
+      .map(([id, val]) => ({
+        title: val.title || "未命名功課",
+        score:
+          val.scores?.[uid]?.score !== undefined ? val.scores[uid].score : null,
+      }))
+      .filter((i) => i.score !== null);
 
     performanceSummary.value.hw = processedHw;
-
     updateChart(
       "hwCompareChart",
       processedHw.map((i) => i.title),
       processedHw.map((i) => i.score),
-      "#4a70a9", // 藍色主題
+      THEME_NAVY,
     );
   });
 
-  // 3. 監聽考試數據 (同步對接 scores 節點)
+  // 2. 監聽考試數據
   onValue(dbRef(db, `courses/${courseId}/exams`), (snap) => {
     if (!snap.exists()) return;
-    const data = snap.val() || {};
-
+    const data = snap.val();
     const processedExam = Object.entries(data)
-      .map(([id, val]) => {
-        // 🌟 核心修正：比照功課邏輯讀取 scores 節點
-        const scoreEntry = val.scores?.[uid];
-
-        return {
-          title: val.title || "未命名考試",
-          score: scoreEntry?.score !== undefined ? scoreEntry.score : null,
-          avg: val.stats?.avgScore || 0,
-        };
-      })
+      .map(([id, val]) => ({
+        title: val.title || "未命名考試",
+        score:
+          val.scores?.[uid]?.score !== undefined ? val.scores[uid].score : null,
+      }))
       .filter((i) => i.score !== null);
 
     performanceSummary.value.exam = processedExam;
-
     updateChart(
       "examCompareChart",
       processedExam.map((i) => i.title),
       processedExam.map((i) => i.score),
-      "#10b981", // 綠色主題
+      THEME_NAVY,
     );
   });
 
-  // 4. 監聽討論區參與次數 (正確對接 JSON 結構)
+  // 3. 監聽討論參與
   onValue(dbRef(db, `courses/${courseId}/discussions`), (snap) => {
     if (!snap.exists()) {
       discussionCount.value = 0;
       return;
     }
-    const discussions = snap.val();
     let totalMsgs = 0;
-
-    // 遍歷所有話題，統計該使用者的 userId (JSON 欄位名稱)
-    Object.values(discussions).forEach((disc) => {
+    Object.values(snap.val()).forEach((disc) => {
       if (disc.messages) {
-        const userMsgs = Object.values(disc.messages).filter(
+        totalMsgs += Object.values(disc.messages).filter(
           (m) => m.userId === uid,
-        );
-        totalMsgs += userMsgs.length;
+        ).length;
       }
     });
     discussionCount.value = totalMsgs;
   });
+});
+
+// 🌟 組件銷毀時清理圖表
+onUnmounted(() => {
+  if (hwChartInstance) hwChartInstance.destroy();
+  if (examChartInstance) examChartInstance.destroy();
 });
 
 const handleOpenRank = () => {
