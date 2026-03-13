@@ -13,9 +13,7 @@
           {{ examData?.title || "載入中..." }}
         </h2>
         <div class="d-flex justify-content-center gap-2 mb-4">
-          <span
-            class="badge rounded-pill bg-navy-soft text-navy border px-3 py-2"
-          >
+          <span class="badge rounded-pill bg-navy text-navy border px-3 py-2">
             <i class="bi bi-clock me-1"></i>限時
             {{ examData?.duration || 0 }} 分鐘
           </span>
@@ -111,7 +109,8 @@
                 class="progress-bar bg-navy"
                 :style="{
                   width:
-                    ((currentIndex + 1) / examData?.questions?.length) * 100 +
+                    ((currentIndex + 1) / (examData?.questions?.length || 1)) *
+                      100 +
                     '%',
                 }"
               ></div>
@@ -120,33 +119,83 @@
           <button @click="$emit('close')" class="btn-close"></button>
         </header>
 
-        <div class="q-content p-4 p-md-5 flex-grow-1 overflow-auto bg-white">
+        <div
+          class="q-content p-4 p-md-5 flex-grow-1 overflow-auto bg-white custom-scrollbar"
+        >
           <h4 class="fw-bold mb-4 text-dark" style="line-height: 1.6">
-            {{ currentQuestion?.text }}
+            {{ currentQuestion?.question }}
           </h4>
 
-          <div class="options-list d-grid gap-3 mb-4">
-            <label
-              v-for="(opt, oIdx) in currentQuestion?.options"
-              :key="oIdx"
-              class="option-item card p-3 border-2 transition-all cursor-pointer shadow-sm"
-              :class="{ 'active-option': userAnswers[currentIndex] === oIdx }"
+          <div class="answer-area">
+            <div
+              v-if="currentQuestion?.type === 'multipleChoice'"
+              class="options-list d-grid gap-3 mb-4"
             >
-              <input
-                type="radio"
-                class="d-none"
+              <label
+                v-for="(opt, oIdx) in currentQuestion?.options"
+                :key="oIdx"
+                class="option-item card p-3 border-2 transition-all cursor-pointer shadow-sm"
+                :class="{ 'active-option': userAnswers[currentIndex] === oIdx }"
+              >
+                <input
+                  type="radio"
+                  class="d-none"
+                  v-model="userAnswers[currentIndex]"
+                  :value="oIdx"
+                />
+                <div class="d-flex align-items-center">
+                  <span class="option-label me-3">{{
+                    String.fromCharCode(65 + oIdx)
+                  }}</span>
+                  <span class="fw-medium text-secondary-emphasis text-wrap">{{
+                    opt
+                  }}</span>
+                </div>
+              </label>
+            </div>
+
+            <div
+              v-else-if="currentQuestion?.type === 'multiSelect'"
+              class="options-list d-grid gap-3 mb-4"
+            >
+              <label
+                v-for="(opt, oIdx) in currentQuestion?.options"
+                :key="oIdx"
+                class="option-item card p-3 border-2 transition-all cursor-pointer shadow-sm"
+                :class="{
+                  'active-option': (userAnswers[currentIndex] || []).includes(
+                    oIdx,
+                  ),
+                }"
+              >
+                <input
+                  type="checkbox"
+                  class="d-none"
+                  :checked="(userAnswers[currentIndex] || []).includes(oIdx)"
+                  @change="handleMultiSelect(oIdx)"
+                />
+                <div class="d-flex align-items-center">
+                  <span class="option-label me-3">{{
+                    String.fromCharCode(65 + oIdx)
+                  }}</span>
+                  <span class="fw-medium text-secondary-emphasis text-wrap">{{
+                    opt
+                  }}</span>
+                </div>
+              </label>
+            </div>
+
+            <div
+              v-else-if="currentQuestion?.type === 'shortAnswer'"
+              class="short-answer-area mb-4"
+            >
+              <textarea
                 v-model="userAnswers[currentIndex]"
-                :value="oIdx"
-              />
-              <div class="d-flex align-items-center">
-                <span class="option-label me-3">{{
-                  String.fromCharCode(65 + oIdx)
-                }}</span>
-                <span class="fw-medium text-secondary-emphasis text-wrap">{{
-                  opt
-                }}</span>
-              </div>
-            </label>
+                class="form-control border-2 p-3 rounded-4 shadow-sm"
+                rows="6"
+                placeholder="請輸入您的答案..."
+              ></textarea>
+            </div>
           </div>
         </div>
 
@@ -156,34 +205,28 @@
           <button
             @click="currentIndex--"
             :disabled="currentIndex === 0"
-            class="btn btn-outline-secondary px-3 px-md-4 rounded-pill"
+            class="btn btn-outline-secondary px-4 rounded-pill"
           >
             <i class="bi bi-chevron-left me-1"></i>上一題
           </button>
 
-          <button
-            v-if="currentIndex === examData?.questions?.length - 1"
-            @click="confirmSubmit"
-            class="btn btn-success px-4 rounded-pill d-md-none"
-          >
-            提交
-          </button>
+          <div class="d-flex gap-2">
+            <button
+              v-if="currentIndex < examData?.questions?.length - 1"
+              @click="currentIndex++"
+              class="btn btn-primary px-4 rounded-pill shadow"
+            >
+              下一題<i class="bi bi-chevron-right ms-1"></i>
+            </button>
 
-          <button
-            @click="currentIndex++"
-            v-if="currentIndex < examData?.questions?.length - 1"
-            class="btn btn-primary px-3 px-md-4 rounded-pill shadow"
-          >
-            下一題<i class="bi bi-chevron-right ms-1"></i>
-          </button>
-
-          <button
-            @click="confirmSubmit"
-            v-else
-            class="btn btn-success px-5 rounded-pill shadow-sm d-none d-md-block"
-          >
-            提交正式測驗
-          </button>
+            <button
+              v-else
+              @click="confirmSubmit"
+              class="btn btn-success px-5 rounded-pill shadow-sm"
+            >
+              提交正式測驗
+            </button>
+          </div>
         </footer>
       </main>
     </div>
@@ -249,6 +292,16 @@ const handleStartExam = () => {
   }, 1000);
 };
 
+const handleMultiSelect = (oIdx) => {
+  if (!Array.isArray(userAnswers.value[currentIndex.value])) {
+    userAnswers.value[currentIndex.value] = [];
+  }
+  const answers = userAnswers.value[currentIndex.value];
+  const foundIdx = answers.indexOf(oIdx);
+  if (foundIdx > -1) answers.splice(foundIdx, 1);
+  else answers.push(oIdx);
+};
+
 const confirmSubmit = async () => {
   const unanswered =
     examData.value.questions.length - Object.keys(userAnswers.value).length;
@@ -271,35 +324,90 @@ const autoSubmit = () => {
 
 const submitExam = async () => {
   if (timer) clearInterval(timer);
-  let score = 0;
-  let errorCount = 0;
+
+  let totalScore = 0;
+  let totalErrorCount = 0;
   const questions = examData.value.questions;
 
   questions.forEach((q, idx) => {
-    if (userAnswers.value[idx] === q.correctAnswer)
-      score += 100 / questions.length;
-    else errorCount++;
+    const userAnswer = userAnswers.value[idx];
+    const questionPoint = q.point || 100 / questions.length; // 取得該題配分
+
+    // 如果完全沒寫或沒選，該題 0 分並計入錯誤
+    if (
+      userAnswer === undefined ||
+      userAnswer === null ||
+      (Array.isArray(userAnswer) && userAnswer.length === 0)
+    ) {
+      totalErrorCount++;
+      return;
+    }
+
+    if (q.type === "multipleChoice") {
+      // --- 單選題判定 ---
+      if (userAnswer === q.finalAnswer) {
+        totalScore += questionPoint;
+      } else {
+        totalErrorCount++;
+      }
+    } else if (q.type === "multiSelect") {
+      // --- 多選題按比例給分判定 ---
+      // 邏輯：比對每一個選項，答對（該選有選、不該選沒選）則拿分
+      const correctAnswers = q.finalAnswer || []; // 正確答案索引陣列
+      const optionsCount = q.options.length; // 總選項數
+      let correctOptionsInTask = 0;
+
+      for (let i = 0; i < optionsCount; i++) {
+        const shouldBeSelected = correctAnswers.includes(i);
+        const isActuallySelected = userAnswer.includes(i);
+
+        // 判定：該選的有選，或是不該選的沒選，皆算對一個選項
+        if (shouldBeSelected === isActuallySelected) {
+          correctOptionsInTask++;
+        }
+      }
+
+      // 計算比例得分：(對的選項數 / 總選項數) * 該題配分
+      const earnedPoint = (correctOptionsInTask / optionsCount) * questionPoint;
+      totalScore += earnedPoint;
+
+      // 如果沒有全對，計入錯誤題數（視為未完全掌握）
+      if (correctOptionsInTask !== optionsCount) {
+        totalErrorCount++;
+      }
+    } else if (q.type === "shortAnswer") {
+      // --- 簡答題判定 ---
+      if (userAnswer?.trim() === q.refAnswer?.trim()) {
+        totalScore += questionPoint;
+      } else {
+        totalErrorCount++;
+      }
+    }
   });
 
+  // 全部計算完畢後才進行四捨五入
+  const finalRoundedScore = Math.round(totalScore);
+
   try {
+    // 這裡建議加上使用者 ID 以免覆蓋他人數據
     const tracePath = `student_traces/${props.courseId}_${props.unitId}`;
     await update(dbRef(rtdb, tracePath), {
-      currentScore: Math.round(score),
-      errorCount: errorCount,
+      currentScore: finalRoundedScore,
+      errorCount: totalErrorCount,
       lastActive: serverTimestamp(),
     });
 
     await Swal.fire({
       title: "測驗完成！",
-      text: `您的得分：${Math.round(score)} 分\n錯誤題數：${errorCount}`,
+      html: `您的得分：<b style="font-size: 1.5rem; color: #1a237e;">${finalRoundedScore}</b> 分<br>錯誤或未完全答對：${totalErrorCount} 題`,
       icon: "success",
       confirmButtonText: "回到單元內容",
     });
 
-    // 🌟 核心：通知父組件 StuUnit 關閉彈窗，達到「跳轉回單元」的效果
     emit("close");
   } catch (error) {
     console.error("🔥 同步失敗:", error);
+    Swal.fire("錯誤", "成績儲存失敗，請檢查網路連線。", "error");
   }
 };
 

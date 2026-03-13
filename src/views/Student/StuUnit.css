@@ -243,13 +243,19 @@
   padding: 15px;
 }
 
-.srl-modal-container {
-  width: 95%;
-  max-width: 900px;
-  background: white;
-  border-radius: 35px;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
+.srl-modal-container:has(.StuExam) {
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.StuExam {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* --- 7. 動畫過場 --- */
@@ -512,4 +518,64 @@
 /* 佔位符背景色 */
 .placeholder {
   height: 12px;
+}
+
+/* --- 1. 修正容器：賦予高度與滾動屬性 --- */
+.srl-modal-container.reflection-content-layer {
+  background-color: var(--oatmeal) !important;
+  border-radius: 28px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important; /* 限制最大高度 */
+  overflow: hidden !important; /* 讓內部 Body 自己滾動 */
+}
+
+/* --- 2. 核心滾動區：StuEval-Internal --- */
+.StuEval-Internal {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 🌟 這是最重要的部分：讓中間內容區可以滾動 */
+.Eval-Body {
+  flex-grow: 1 !important;
+  overflow-y: auto !important; /* 啟用垂直滾動 */
+  padding: 2rem !important;
+  scroll-behavior: smooth;
+}
+
+/* --- 3. 捲軸美化 (符合米藍風格) --- */
+.Eval-Body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.Eval-Body::-webkit-scrollbar-track {
+  background: var(--oatmeal); /* 軌道使用燕麥米 */
+  border-radius: 10px;
+}
+
+.Eval-Body::-webkit-scrollbar-thumb {
+  background: #d1cdc2; /* 滑桿使用深米色 */
+  border-radius: 10px;
+  border: 2px solid var(--oatmeal); /* 增加留白感 */
+}
+
+.Eval-Body::-webkit-scrollbar-thumb:hover {
+  background: var(--navy); /* 滑過時變成海軍藍 */
+}
+
+/* --- 4. 固定 Header 與 Footer --- */
+/* 確保標題和按鈕不會跟著捲走 */
+.Eval-Header {
+  flex-shrink: 0 !important;
+  z-index: 10;
+}
+
+.Eval-Footer {
+  flex-shrink: 0 !important;
+  background: white !important;
+  border-top: 1px solid var(--border-color) !important;
+  z-index: 10;
 }

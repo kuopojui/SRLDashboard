@@ -1,83 +1,200 @@
-/* 🌟 核心佈局：確保填滿父組件提供的白框 */
+/* --- 基礎變數與 SRL 品牌色 --- */
+:root {
+  --navy-deep: #1a237e;
+  --navy-light: #35507d;
+  --primary-blue: #4a70a9;
+  --navy-soft: rgba(74, 112, 169, 0.08);
+  --oatmeal: #efece3; /* 🌟 核心燕麥米 */
+  --white: #ffffff;
+  --success-green: #2e7d32;
+  --danger-red: #d32f2f;
+  --border-color: #d1cdc2; /* 帶米色調的邊框 */
+  --text-main: #2c3e50;
+}
+
+/* --- 全螢幕小彈窗佈局 (修正跑版關鍵) --- */
 .StuEval-Internal {
-  height: 100%;
-  width: 100%;
-  overflow: hidden; /* 防止外框出現雙捲軸 */
+  /* 🌟 確保組件在燕麥米色背景上呈現 */
+  background-color: var(--oatmeal) !important;
+  border-radius: 28px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
+/* --- Header 漸層優化 --- */
 .Eval-Header {
-  background: #4a70a9; /* 與主題藍一致 */
+  background: linear-gradient(
+    135deg,
+    var(--navy-deep) 0%,
+    var(--primary-blue) 100%
+  );
+  color: white;
+  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2);
 }
 
-/* 內容區捲動美化 */
-.Eval-Body::-webkit-scrollbar {
+.header-icon-ring {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* --- 反思卡片設計 (白色卡片浮在米色底上) --- */
+.reflect-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color) !important;
+}
+
+.section-label-v2 {
+  font-weight: 800;
+  color: var(--navy-dark);
+  font-size: 1.1rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+/* --- 1. 時間執行校準區塊 --- */
+.calibration-container {
+  background-color: #faf9f6; /* 淡淡的米白色，增加層次 */
+  border: 1px solid var(--border-color) !important;
+  border-radius: 16px;
+}
+
+.time-circle {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: white;
+  border: 4px solid #eeebe3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.time-circle.is-perfect {
+  border-color: var(--success-green);
+  color: var(--success-green);
+}
+.time-circle.is-over {
+  border-color: var(--danger-red);
+  color: var(--danger-red);
+}
+
+/* --- 2. 歸因按鈕 (FB 風格條列) --- */
+.attribution-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.btn-attribution-v2 {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-color);
+  background: white;
+  color: var(--text-main);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-attribution-v2.active {
+  background: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 112, 169, 0.2);
+}
+
+/* --- 3. 星星評分 --- */
+.star-icon {
+  color: #e0ddd5;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.star-icon.active {
+  color: var(--gold);
+  transform: scale(1.15);
+}
+
+/* --- 4. 心得輸入框 --- */
+.comment-box {
+  background: #fdfdfb;
+  border: 1px solid var(--border-color) !important;
+}
+
+.no-focus-ring:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* --- 5. AI 智能建議 --- */
+.ai-suggestion-v2 {
+  background: #f4f7ff;
+  border-left: 5px solid var(--primary-blue) !important;
+  border-radius: 12px;
+}
+
+.btn-refresh-ai {
+  color: var(--primary-blue);
+  border: 1px solid var(--primary-blue);
+  background: transparent;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  padding: 4px 12px;
+}
+
+.btn-refresh-ai:hover {
+  background: var(--primary-blue);
+  color: white;
+}
+
+/* --- Footer 提交按鈕 --- */
+.Eval-Footer {
+  background-color: var(--white);
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-submit-reflection {
+  background: var(--navy-deep);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 100px;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.btn-submit-reflection:hover:not(:disabled) {
+  background: var(--navy-light);
+  box-shadow: 0 10px 25px rgba(26, 35, 126, 0.3);
+}
+
+/* --- 工具類別與 RWD --- */
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
-.Eval-Body::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1cdc2;
   border-radius: 10px;
 }
 
-/* 時間圓圈圖表樣式 */
-.time-circle {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  background: white;
-  border: 4px solid #e2e8f0;
-}
-.time-circle.planned {
-  border-color: #4a70a9;
-  color: #4a70a9;
-}
-.time-circle.actual.is-perfect {
-  border-color: #48bb78;
-  color: #48bb78;
-}
-.time-circle.actual.is-over {
-  border-color: #f56565;
-  color: #f56565;
-}
-.time-circle .num {
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1;
-}
-.time-circle .unit {
-  font-size: 0.6rem;
-  margin-top: 2px;
-}
-
-/* 歸因按鈕樣式 */
-.btn-attribution {
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  font-size: 0.85rem;
-  transition: all 0.2s;
-}
-.btn-attribution.active {
-  background: #4a70a9;
-  color: white;
-  border-color: #4a70a9;
-}
-
-/* 提交按鈕專屬樣式 */
-.btn-navy-confirm {
-  background-color: #4a70a9;
-  color: white;
-  border: none;
-  font-weight: 600;
-  padding: 12px 30px;
-  transition: 0.3s;
-}
-.btn-navy-confirm:hover:not(:disabled) {
-  background-color: #385a8a;
-  transform: translateY(-2px);
+@media (max-width: 576px) {
+  .StuEval-Internal {
+    border-radius: 0;
+  }
+  .attribution-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }

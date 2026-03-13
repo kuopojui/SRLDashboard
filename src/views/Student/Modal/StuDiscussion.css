@@ -1,172 +1,292 @@
-/* StuDiscuss.css */
+/* StuDiscussion.css */
+
 :root {
-  --dis-navy: #4a70a9;
-  --dis-bg: #efece3;
+  --navy-deep: #1a237e;
+  --forum-bg: #f2f4f7;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .StuDiscuss {
-  background-color: var(--dis-bg);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2000 !important;
+  background-color: var(--forum-bg) !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-/* 討論主題卡片 */
-.StuDiscuss .topic-header-card {
+/* --- 頂部话题主卡片 --- */
+.forum-topic-header {
   background: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  border-left: 5px solid var(--dis-navy);
+  border-bottom: 2px solid var(--navy-deep);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--card-shadow);
 }
 
-/* 留言列表區域 */
-.StuDiscuss .chat-container {
-  padding: 1.5rem;
+/* --- 留言列表佈局 --- */
+.comment-list {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  padding-bottom: 120px;
 }
 
-.StuDiscuss .message-bubble {
-  max-width: 85%;
-  padding: 1rem;
-  border-radius: 18px;
-  position: relative;
+.comment-card {
   background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: var(--card-shadow);
+  border: 1px solid #e1e4e8;
+  transition: transform 0.2s;
 }
 
-.StuDiscuss .message-bubble.is-me {
-  align-self: flex-end;
-  background: var(--dis-navy);
-  color: white;
-  border-bottom-right-radius: 4px;
+/* 特別標註我的留言 */
+.comment-card.is-me {
+  border-left: 4px solid var(--navy-deep);
+  background-color: #fafaff;
 }
 
-.StuDiscuss .message-bubble:not(.is-me) {
-  align-self: flex-start;
-  background: white;
-  color: #2d3748;
-  border-bottom-left-radius: 4px;
-  border: 1px solid #e2e8f0;
+/* --- 留言者資訊欄 --- */
+.comment-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 0.5rem;
 }
 
-/* 底部輸入欄位 */
-.StuDiscuss .input-area {
-  background: white;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e2e8f0;
+.comment-author {
+  font-weight: 700;
+  color: var(--navy-deep);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.StuDiscuss .chat-input {
-  border-radius: 25px;
-  padding: 10px 20px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  transition: 0.2s;
+.author-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  background: #e8eaf6;
+  border-radius: 4px;
 }
 
-.StuDiscuss .chat-input:focus {
+.comment-time {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.comment-text {
+  font-size: 1rem;
+  color: #2d3436;
+  line-height: 1.6;
+  white-space: pre-wrap; /* 支援換行 */
+}
+
+/* --- 底部固定輸入框 (論壇發文感) --- */
+.comment-footer {
   background: white;
-  border-color: var(--dis-navy);
-  box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
+  padding: 1rem 2rem;
+  border-top: 1px solid #dee2e6;
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* RWD 適配 */
-@media (max-width: 767.98px) {
-  .StuDiscuss .topic-header-card {
-    margin: 10px;
-    border-radius: 12px;
+.comment-input-group {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  gap: 12px;
+}
+
+.input-forum {
+  border-radius: 10px !important;
+  border: 2px solid #eee !important;
+  padding: 12px 15px !important;
+  resize: none;
+}
+
+.input-forum:focus {
+  border-color: var(--navy-deep) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+  .forum-topic-header {
+    padding: 1rem;
   }
-  .StuDiscuss .message-bubble {
-    /* StuDiscuss.css */
-    :root {
-      --dis-navy: #4a70a9;
-      --dis-bg: #efece3;
-    }
+  .comment-list {
+    padding: 0 10px 100px;
+  }
+}
+/* StuDiscussion.css */
+:root {
+  --navy: #4a70a9;
+  --navy-dark: #35507d;
+  --navy-soft: rgba(74, 112, 169, 0.08);
+  --oatmeal: #efece3;
+  --white: #ffffff;
+  --gold: #fbbf24;
+  --danger: #f87171;
+  --text-main: #2c3e50;
+  --text-muted: #94a3b8;
+}
 
-    .StuDiscuss {
-      background-color: var(--dis-bg);
-      height: 100%;
-    }
+/* 🌟 全螢幕遮罩 */
+.StuDiscuss {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2500;
+  background-color: rgba(44, 62, 80, 0.5) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
 
-    /* 主題導引卡片 */
-    .StuDiscuss .topic-intro-card {
-      background: white;
-      border-radius: 20px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-      border-left: 5px solid var(--dis-navy);
-      margin-bottom: 1.5rem;
-    }
+/* 🌟 燕麥米色調小彈窗 */
+.discuss-modal-content {
+  width: 95%;
+  max-width: 850px;
+  height: 85vh;
+  background-color: var(--oatmeal);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
 
-    /* 訊息流區域 */
-    .StuDiscuss .chat-stream {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-      padding: 1rem;
-    }
+/* 留言卡片設計 */
+.comment-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(74, 112, 169, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
 
-    .StuDiscuss .message-item {
-      max-width: 85%;
-      padding: 1rem;
-      border-radius: 18px;
-      position: relative;
-      transition: transform 0.2s ease;
-    }
+.comment-card.is-me {
+  border-left: 5px solid var(--navy);
+  background-color: #fafbfc;
+}
 
-    .StuDiscuss .message-item.is-me {
-      align-self: flex-end;
-      background: var(--dis-navy);
-      color: white;
-      border-bottom-right-radius: 4px;
-      box-shadow: 0 4px 12px rgba(74, 112, 169, 0.2);
-    }
+/* 留言者資訊 */
+.author-name {
+  color: var(--navy-dark);
+  font-weight: 800;
+  font-size: 1rem;
+}
 
-    .StuDiscuss .message-item.is-other {
-      align-self: flex-start;
-      background: white;
-      color: #2d3748;
-      border-bottom-left-radius: 4px;
-      border: 1px solid #e2e8f0;
-    }
+.role-badge {
+  font-size: 0.7rem;
+  background: var(--navy-soft);
+  color: var(--navy);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
 
-    /* 輸入控制列 */
-    .StuDiscuss .chat-footer {
-      background: white;
-      padding: 1rem 1.5rem;
-      border-top: 1px solid #e2e8f0;
-    }
+.comment-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
 
-    .StuDiscuss .input-pill {
-      border-radius: 30px;
-      padding: 10px 20px;
-      background: #f8fafc;
-      border: 2px solid transparent;
-      transition: all 0.3s;
-    }
+/* 🌟 回覆按鈕樣式 */
+.reply-trigger {
+  background: none;
+  border: none;
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-top: 10px;
+  padding: 0;
+  transition: opacity 0.2s;
+}
 
-    .StuDiscuss .input-pill:focus {
-      background: white;
-      border-color: var(--dis-navy);
-      box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.1);
-      outline: none;
-    }
+.reply-trigger:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
 
-    /* RWD 手機版優化 */
-    @media (max-width: 767.98px) {
-      .StuDiscuss .message-item {
-        max-width: 95%;
-      }
-      .StuDiscuss .chat-stream {
-        padding: 0.5rem;
-      }
-    }
-    max-width: 95%;
+/* 底部輸入區 */
+.discuss-footer {
+  padding: 1.5rem 2rem;
+  background: var(--white);
+  border-top: 1px solid var(--navy-soft);
+}
+
+.input-container {
+  background-color: var(--oatmeal);
+  border-radius: 18px;
+  padding: 6px 15px;
+  display: flex;
+  align-items: center;
+}
+
+.input-container textarea {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  resize: none;
+}
+
+.input-container textarea:focus {
+  box-shadow: none;
+}
+
+.btn-send {
+  background-color: var(--navy) !important;
+  color: var(--white) !important;
+  border-radius: 50% !important;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* StuDiscussion.css 擴充 */
+
+/* 🌟 引言區塊樣式 */
+.reply-quote {
+  background-color: var(--navy-soft); /* 使用您定義的海軍藍淺色背景 */
+  border-left: 3px solid var(--navy);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.quote-author {
+  font-weight: 700;
+  color: var(--navy-dark);
+  margin-right: 5px;
+}
+
+/* 🌟 自動縮排：如果是回覆特定人的留言，卡片稍微往右推 */
+.comment-card.is-reply {
+  margin-left: 2rem; /* 桌面端縮排 */
+  width: calc(100% - 2rem);
+}
+
+@media (max-width: 768px) {
+  .comment-card.is-reply {
+    margin-left: 1rem;
+    width: calc(100% - 1rem);
   }
 }

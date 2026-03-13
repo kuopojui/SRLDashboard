@@ -1,339 +1,301 @@
 <template>
-  <div class="StuHW h-100 d-flex flex-column animate__animated animate__fadeIn">
-    <div
-      v-if="loading"
-      class="text-center py-5 flex-grow-1 d-flex flex-column justify-content-center"
-    >
-      <div class="spinner-border text-primary"></div>
-      <p class="mt-3 text-muted">正在準備作業環境...</p>
+  <div class="StuHW animate__animated animate__fadeIn">
+    <div v-if="!isStarted" class="d-flex w-100 h-100">
+      <div class="prepare-info text-center m-auto">
+        <i
+          class="bi bi-journal-check text-navy-deep display-1 mb-4 animate-float"
+        ></i>
+        <h2 class="fw-bold text-navy-deep mb-3">
+          {{ hwData?.title || "載入中..." }}
+        </h2>
+
+        <div class="d-flex justify-content-center gap-2 mb-4">
+          <span class="badge rounded-pill bg-navy-solid">
+            <i class="bi bi-list-ol me-1"></i>共
+            {{ hwData?.questions?.length || 0 }} 題
+          </span>
+          <span class="badge rounded-pill bg-light text-muted border px-3 py-2">
+            <i class="bi bi-calendar-event me-1"></i>截止日：{{
+              hwData?.deadline
+                ? new Date(hwData.deadline).toLocaleDateString()
+                : "無限制"
+            }}
+          </span>
+        </div>
+
+        <button
+          @click="isStarted = true"
+          class="btn btn-navy-pill btn-lg w-100 shadow-lg fw-bold"
+        >
+          開始線上作業
+        </button>
+        <button
+          @click="$emit('close')"
+          class="btn btn-link text-muted mt-3 text-decoration-none"
+        >
+          暫時返回單元
+        </button>
+      </div>
     </div>
 
-    <div v-else class="flex-grow-1 d-flex flex-column overflow-hidden">
-      <transition name="fade-slide" mode="out-in">
-        <div
-          v-if="!isStarted"
-          class="m-auto text-center py-5 px-4"
-          style="max-width: 600px"
-        >
-          <i
-            :class="[
-              'bi',
-              isOffline
-                ? 'bi-person-workspace text-success'
-                : 'bi-journal-check text-navy',
-              'display-1 mb-4 animate-float',
-            ]"
-          ></i>
-          <h2 class="fw-bold text-navy mb-3">{{ hwData?.title }}</h2>
-
-          <div
-            class="intro-card p-4 rounded-4 my-4 text-start border shadow-sm bg-white"
-          >
-            <h6 class="fw-bold text-navy mb-3">
-              <i class="bi bi-info-circle-fill me-2"></i>作業須知：
-            </h6>
-            <ul class="text-muted small list-unstyled mb-0 lh-lg">
-              <li v-if="isOffline">
-                ● 請依照教師課堂指派之線下任務進行，完成後回報。
-              </li>
-              <li v-else>
-                ● 總計題數：{{ totalQuestions }} 題，系統會即時儲存進度。
-              </li>
-              <li>
-                ● 截止日期：{{
-                  hwData?.deadline
-                    ? new Date(hwData.deadline).toLocaleString()
-                    : "未設定"
-                }}
-              </li>
-            </ul>
+    <div v-else class="hw-main-container overflow-hidden">
+      <aside class="answer-sidebar d-none d-md-flex">
+        <div class="p-4 bg-navy-deep text-white text-center shadow">
+          <h6 class="fw-bold mb-0">作業進度</h6>
+          <div class="small opacity-75 mt-1">
+            {{ Object.keys(userAnswers).length }} /
+            {{ hwData?.questions?.length }}
           </div>
-
+        </div>
+        <div class="flex-grow-1 overflow-auto p-4 bg-light">
+          <div class="answer-grid">
+            <div
+              v-for="(q, idx) in hwData?.questions"
+              :key="idx"
+              @click="currentIndex = idx"
+              :class="[
+                'answer-status-box',
+                {
+                  active: currentIndex === idx,
+                  completed: isQuestionAnswered(idx),
+                },
+              ]"
+            >
+              {{ idx + 1 }}
+            </div>
+          </div>
+        </div>
+        <div class="p-4 border-top">
           <button
-            @click="handleStart"
-            class="btn btn-navy-pill btn-lg w-100 py-3 shadow-lg fw-bold"
+            @click="confirmSubmit"
+            class="btn btn-navy-deep w-100 rounded-pill py-2 fw-bold text-white"
           >
-            {{ isOffline ? "確認完成線下作業" : "開始線上作答" }}
-          </button>
-          <button @click="$emit('close')" class="btn btn-link text-muted mt-3">
-            暫時返回單元
+            繳交作業
           </button>
         </div>
+      </aside>
 
-        <div
-          v-else
-          class="hw-main-container d-flex flex-grow-1 overflow-hidden"
+      <main class="question-workspace">
+        <header
+          class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white flex-shrink-0"
         >
-          <aside class="answer-sidebar d-none d-md-flex flex-column">
-            <div class="p-3 border-bottom bg-white shadow-sm">
-              <h6 class="fw-bold mb-0 text-navy">作答進度</h6>
-            </div>
-            <div class="flex-grow-1 overflow-auto p-3 bg-light">
-              <div class="answer-grid">
-                <div
-                  v-for="(q, idx) in hwData?.questions"
-                  :key="idx"
-                  @click="currentIndex = idx"
-                  :class="[
-                    'answer-status-box',
-                    {
-                      active: currentIndex === idx,
-                      completed: hasAnswered(idx),
-                    },
-                  ]"
-                >
-                  {{ idx + 1 }}
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <main
-            class="question-workspace flex-grow-1 d-flex flex-column overflow-hidden"
+          <span class="fw-bold text-navy-deep"
+            >題目 {{ currentIndex + 1 }} / {{ hwData?.questions?.length }}</span
           >
-            <div
-              class="workspace-header border-bottom p-3 d-flex justify-content-between align-items-center bg-white flex-shrink-0"
-            >
-              <span class="fw-bold text-navy"
-                >問題 {{ currentIndex + 1 }} / {{ totalQuestions }}</span
-              >
-              <div
-                :class="[
-                  'small px-3 py-1 rounded-pill',
-                  isSaving
-                    ? 'bg-light text-muted'
-                    : 'bg-success-subtle text-success',
-                ]"
-              >
-                <i
-                  :class="[
-                    'bi',
-                    isSaving
-                      ? 'spinner-border spinner-border-sm me-2'
-                      : 'bi-cloud-check-fill me-1',
-                  ]"
-                ></i>
-                {{ isSaving ? "同步中..." : "進度已儲存" }}
-              </div>
-            </div>
+          <button @click="$emit('close')" class="btn-close"></button>
+        </header>
 
-            <div
-              class="q-content p-4 p-md-5 flex-grow-1 overflow-auto bg-white"
-            >
-              <h4 class="fw-bold text-dark mb-5" style="line-height: 1.6">
-                {{ currentQuestion?.question }}
-              </h4>
+        <div class="q-content custom-scrollbar">
+          <h4 class="fw-bold mb-5">{{ currentQuestion?.question }}</h4>
 
-              <div v-if="currentQuestion?.type === 'shortAnswer'">
-                <textarea
-                  v-model="answers[currentIndex]"
-                  class="form-control border-2 rounded-4 p-3 shadow-inner"
-                  rows="8"
-                  placeholder="請在此輸入您的回答..."
-                ></textarea>
-              </div>
-              <div v-else class="options-container">
-                <label
-                  v-for="(opt, oIdx) in currentQuestion?.options"
-                  :key="oIdx"
-                  class="option-pill shadow-sm"
-                  :class="{ selected: hasSelected(currentIndex, oIdx) }"
-                >
-                  <input
-                    type="radio"
-                    :value="oIdx"
-                    v-model="answers[currentIndex]"
-                    class="d-none"
-                  />
-                  <span class="option-marker">{{
+          <div class="answer-area">
+            <div
+              v-if="currentQuestion?.type === 'multipleChoice'"
+              class="d-grid gap-3"
+            >
+              <label
+                v-for="(opt, oIdx) in currentQuestion.options"
+                :key="oIdx"
+                class="option-item shadow-sm"
+                :class="{ 'active-option': userAnswers[currentIndex] === oIdx }"
+              >
+                <input
+                  type="radio"
+                  class="d-none"
+                  v-model="userAnswers[currentIndex]"
+                  :value="oIdx"
+                />
+                <div class="d-flex align-items-center">
+                  <span class="option-label">{{
                     String.fromCharCode(65 + oIdx)
                   }}</span>
-                  <span class="option-text fw-medium">{{ opt }}</span>
-                </label>
-              </div>
+                  <span>{{ opt }}</span>
+                </div>
+              </label>
             </div>
 
-            <footer
-              class="p-3 bg-light border-top d-flex justify-content-between align-items-center flex-shrink-0"
+            <div
+              v-else-if="currentQuestion?.type === 'multiSelect'"
+              class="d-grid gap-3"
             >
-              <button
-                class="btn btn-outline-secondary px-4 rounded-pill"
-                :disabled="currentIndex === 0"
-                @click="currentIndex--"
+              <label
+                v-for="(opt, oIdx) in currentQuestion.options"
+                :key="oIdx"
+                class="option-item shadow-sm"
+                :class="{
+                  'active-option': (userAnswers[currentIndex] || []).includes(
+                    oIdx,
+                  ),
+                }"
               >
-                上一題
-              </button>
+                <input
+                  type="checkbox"
+                  class="d-none"
+                  :checked="(userAnswers[currentIndex] || []).includes(oIdx)"
+                  @change="handleMultiSelect(oIdx)"
+                />
+                <div class="d-flex align-items-center">
+                  <span class="option-label">{{
+                    String.fromCharCode(65 + oIdx)
+                  }}</span>
+                  <span>{{ opt }}</span>
+                </div>
+              </label>
+            </div>
 
-              <button
-                v-if="currentIndex < totalQuestions - 1"
-                class="btn btn-navy px-5 rounded-pill shadow"
-                @click="currentIndex++"
-              >
-                下一題
-              </button>
-              <button
-                v-else
-                class="btn btn-success px-5 rounded-pill shadow-lg fw-bold"
-                @click="submitHW"
-                :disabled="submitting"
-              >
-                正式繳交作業
-              </button>
-            </footer>
-          </main>
+            <div v-else-if="currentQuestion?.type === 'shortAnswer'">
+              <textarea
+                v-model="userAnswers[currentIndex]"
+                class="form-control border-2 rounded-4 p-3 shadow-inner"
+                rows="8"
+                placeholder="請輸入您的答案..."
+              ></textarea>
+            </div>
+          </div>
         </div>
-      </transition>
+
+        <footer class="p-4 border-top d-flex justify-content-between bg-light">
+          <button
+            @click="currentIndex--"
+            :disabled="currentIndex === 0"
+            class="btn btn-outline-secondary px-4 rounded-pill"
+          >
+            上一題
+          </button>
+          <button
+            v-if="currentIndex < hwData?.questions?.length - 1"
+            @click="currentIndex++"
+            class="btn btn-navy-deep px-4 rounded-pill text-white"
+          >
+            下一題
+          </button>
+          <button
+            v-else
+            @click="confirmSubmit"
+            class="btn btn-success px-5 rounded-pill shadow-lg text-white"
+          >
+            正式繳交作業
+          </button>
+        </footer>
+      </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
-import { rtdb as db, auth } from "../../../firebase/config";
-import {
-  ref as dbRef,
-  set,
-  get,
-  update,
-  serverTimestamp,
-} from "firebase/database";
+import { ref, computed, onMounted } from "vue";
+import { rtdb, auth } from "../../../firebase/config";
+import { ref as dbRef, get, update, serverTimestamp } from "firebase/database";
 import Swal from "sweetalert2";
-import "./StuHW.css"; // 🌟 引入新 CSS
+import "./StuHW.css";
 
-const props = defineProps(["courseId", "taskId", "unitId"]); // 🌟 傳入 unitId 以利回傳
+const props = defineProps({
+  isOpen: Boolean,
+  courseId: String,
+  unitId: String,
+  taskId: String,
+});
 const emit = defineEmits(["close"]);
 
 const hwData = ref(null);
-const answers = ref({});
-const loading = ref(true);
-const submitting = ref(false);
-const isSaving = ref(false);
 const isStarted = ref(false);
 const currentIndex = ref(0);
+const userAnswers = ref({});
+const isLoading = ref(false);
 
-const isOffline = computed(() => !hwData.value?.questions?.length);
-const totalQuestions = computed(() => hwData.value?.questions?.length || 0);
 const currentQuestion = computed(
   () => hwData.value?.questions?.[currentIndex.value],
 );
 
-const hasAnswered = (idx) => {
-  const ans = answers.value[idx];
-  return ans !== undefined && ans !== "" && ans !== null;
+const isQuestionAnswered = (idx) => {
+  const ans = userAnswers.value[idx];
+  return (
+    ans !== undefined &&
+    ans !== "" &&
+    (Array.isArray(ans) ? ans.length > 0 : true)
+  );
 };
-const hasSelected = (qIdx, oIdx) => answers.value[qIdx] === oIdx;
 
-onMounted(async () => {
-  const uid = auth.currentUser?.uid;
-  if (!uid) return;
-  const path = `courses/${props.courseId}/assignments/${props.taskId}`;
-  const snap = await get(dbRef(db, path));
-  if (snap.exists()) {
-    hwData.value = snap.val();
-    const draft = await get(dbRef(db, `${path}/drafts/${uid}`));
-    answers.value = draft.exists() ? draft.val().answers : {};
+const handleMultiSelect = (oIdx) => {
+  if (!Array.isArray(userAnswers.value[currentIndex.value]))
+    userAnswers.value[currentIndex.value] = [];
+  const ansArr = userAnswers.value[currentIndex.value];
+  const pos = ansArr.indexOf(oIdx);
+  pos > -1 ? ansArr.splice(pos, 1) : ansArr.push(oIdx);
+};
+
+const fetchHWDetail = async () => {
+  if (!props.taskId) return;
+  isLoading.value = true;
+  try {
+    const path = `courses/${props.courseId}/assignments/${props.taskId}`;
+    const snap = await get(dbRef(rtdb, path));
+    if (snap.exists()) {
+      hwData.value = snap.val();
+    }
+  } catch (error) {
+    console.error("🔥 讀取作業失敗:", error);
+  } finally {
+    isLoading.value = false;
   }
-  loading.value = false;
-});
-
-// 自動儲存草稿
-watch(
-  answers,
-  (newVal) => {
-    if (isOffline.value || !isStarted.value) return;
-    isSaving.value = true;
-    clearTimeout(window.saveTimeout);
-    window.saveTimeout = setTimeout(async () => {
-      const uid = auth.currentUser.uid;
-      await set(
-        dbRef(
-          db,
-          `courses/${props.courseId}/assignments/${props.taskId}/drafts/${uid}`,
-        ),
-        {
-          answers: JSON.parse(JSON.stringify(newVal)),
-          updatedAt: serverTimestamp(),
-        },
-      );
-      isSaving.value = false;
-    }, 1000);
-  },
-  { deep: true },
-);
-
-const handleStart = () => {
-  if (isOffline.value) submitOfflineHW();
-  else isStarted.value = true;
 };
 
 const submitHW = async () => {
-  const unanswered = totalQuestions.value - Object.keys(answers.value).length;
-  const result = await Swal.fire({
-    title: "確定繳交作業？",
-    text:
-      unanswered > 0
-        ? `尚有 ${unanswered} 題未填寫！`
-        : "交卷後老師將收到您的成果。",
-    icon: unanswered > 0 ? "warning" : "question",
-    showCancelButton: true,
-    confirmButtonText: "正式提交",
+  let rawScore = 0;
+  let errorCount = 0;
+  const uid = auth.currentUser?.uid;
+  const questions = hwData.value?.questions || [];
+
+  questions.forEach((q, idx) => {
+    const uAns = userAnswers.value[idx];
+    const qPoint = q.point || 100 / questions.length;
+    const correct = q.answer !== undefined ? q.answer : q.refAnswer;
+
+    if (!isQuestionAnswered(idx)) {
+      errorCount++;
+      return;
+    }
+
+    if (q.type === "multiSelect") {
+      const multiCorrect = q.finalAnswer || [];
+      let matchCount = 0;
+      q.options.forEach((_, oIdx) => {
+        if (multiCorrect.includes(oIdx) === uAns.includes(oIdx)) matchCount++;
+      });
+      rawScore += (matchCount / q.options.length) * qPoint;
+      if (matchCount !== q.options.length) errorCount++;
+    } else {
+      if (uAns === correct) rawScore += qPoint;
+      else errorCount++;
+    }
   });
 
-  if (result.isConfirmed) {
-    submitting.value = true;
-    try {
-      const uid = auth.currentUser.uid;
-      // 1. 存入正式提交節點
-      await set(
-        dbRef(
-          db,
-          `courses/${props.courseId}/assignments/${props.taskId}/submissions/${uid}`,
-        ),
-        {
-          answers: answers.value,
-          submittedAt: serverTimestamp(),
-          status: "completed",
-        },
-      );
+  try {
+    const finalScore = Math.round(rawScore);
+    await update(dbRef(rtdb, `student_traces/${uid}_${props.unitId}`), {
+      hwScore: finalScore,
+      hwStatus: "submitted",
+      lastActive: serverTimestamp(),
+    });
 
-      // 2. 更新 student_traces
-      const tracePath = `student_traces/${props.courseId}_${props.unitId}`;
-      await update(dbRef(db, tracePath), {
-        hwStatus: "submitted",
-        lastActive: serverTimestamp(),
-      });
-
-      await Swal.fire("繳交成功！", "作業已順利傳送。", "success");
-      emit("close"); // 🌟 關鍵：關閉彈窗回到 StuUnit
-    } catch (e) {
-      Swal.fire("提交失敗", e.message, "error");
-    } finally {
-      submitting.value = false;
-    }
+    await Swal.fire("作業提交成功", `得分：${finalScore} 分`, "success");
+    emit("close");
+  } catch (error) {
+    console.error("🔥 存檔失敗:", error);
   }
 };
 
-const submitOfflineHW = async () => {
-  const result = await Swal.fire({
-    title: "確認完成？",
-    text: "您已完成線下指派的作業任務嗎？",
+const confirmSubmit = async () => {
+  const res = await Swal.fire({
+    title: "確定繳交作業？",
+    text: "提交後老師將收到您的成果。",
     icon: "question",
     showCancelButton: true,
-    confirmButtonText: "已完成",
   });
-  if (result.isConfirmed) {
-    const uid = auth.currentUser.uid;
-    await set(
-      dbRef(
-        db,
-        `courses/${props.courseId}/assignments/${props.taskId}/submissions/${uid}`,
-      ),
-      {
-        status: "offline_completed",
-        submittedAt: serverTimestamp(),
-      },
-    );
-    emit("close");
-  }
+  if (res.isConfirmed) submitHW();
 };
+
+onMounted(() => {
+  if (props.isOpen) fetchHWDetail();
+});
 </script>
