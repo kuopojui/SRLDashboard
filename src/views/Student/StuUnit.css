@@ -1,571 +1,515 @@
-/* --- 1. 基礎佈局與背景設定 --- */
-.StuUnit-Page {
-  background-color: #efece3; /* 主背景色 */
-  min-height: 100vh;
-  transition: all 0.3s ease;
-  color: #2d3748;
+/* ==========================================================================
+   🌿 StuUnit 學生學習單元：新 RWD 與 全域樣式整合
+   ========================================================================== */
+
+:root {
+  --navy: #4a70a9;
+  --navy-dark: #35507d;
+  --navy-soft: rgba(74, 112, 169, 0.08);
+  --oatmeal: #efece3;
+  --white: #ffffff;
+  --gold: #fbbf24;
+  --danger: #f87171;
+  --text-main: #2c3e50;
+  --text-muted: #94a3b8;
 }
 
-/* 頂端 Header 配色與層級 */
+/* --- 1. 基礎容器 --- */
+.StuUnit-Page {
+  background-color: var(--oatmeal);
+  min-height: 100vh;
+  font-family: "Inter", "Noto Sans TC", sans-serif;
+  color: var(--text-main);
+  transition: padding 0.3s ease;
+}
+
+/* --- 2. 智慧儀表板 Header --- */
 .srl-header {
-  background: #4a70a9; /* 主題藍 */
-  z-index: 1050;
+  background: var(--navy) !important;
   color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1060;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 .srl-monitor-navbar {
-  height: 64px;
+  height: 75px;
+  position: relative;
 }
 
-/* --- 2. 導覽組件：返回按鈕 --- */
-.btn-back {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  color: white;
-  font-size: 1.1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  padding: 0;
+/* 頂部隱藏式細進度條 */
+.header-progress-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.btn-back:hover {
-  background-color: white;
-  color: #4a70a9;
-  transform: translateX(-3px); /* 往左微移暗示返回 */
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
-}
-
-.btn-back:active {
-  transform: scale(0.9);
-}
-
-/* --- 學習筆記儲存按鈕 --- */
-.btn-navy {
-  background-color: #4a70a9 !important; /* 您的主題海軍藍 */
-  color: #ffffff !important;
-  border: none;
-  font-weight: 600;
-  letter-spacing: 1px;
-  padding: 10px 20px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-navy:hover {
-  background-color: #385a8a; /* 稍微深一點的懸停色 */
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(74, 112, 169, 0.35) !important;
-  transform: translateY(-2px);
-}
-
-.btn-navy:active {
-  transform: translateY(0) scale(0.96); /* 點擊時的物理壓下感 */
-  box-shadow: 0 2px 6px rgba(74, 112, 169, 0.2) !important;
-}
-
-/* 針對筆記區域的 textarea 微調，讓視覺更一致 */
-.note-card textarea {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  resize: none;
-  transition: border-color 0.2s;
-}
-
-.note-card textarea:focus {
-  border-color: #4a70a9;
-  box-shadow: 0 0 0 3px rgba(74, 112, 169, 0.1);
-  outline: none;
-}
-
-/* --- 3. 核心監控：進度條與氣泡 --- */
+/* 主進度條軌道 (中央) */
 .progress-center-track {
   width: 100%;
   max-width: 300px;
   height: 8px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   position: relative;
+  overflow: visible;
 }
 
 .progress-center-fill {
   height: 100%;
   border-radius: 10px;
-  background: linear-gradient(90deg, #63b3ed, #4299e1);
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, #6ee7b7, var(--gold));
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .progress-center-fill.is-over-time {
-  background: linear-gradient(90deg, #fc8181, #f56565);
-  box-shadow: 0 0 10px rgba(245, 101, 101, 0.5);
+  background: var(--danger);
+  box-shadow: 0 0 10px var(--danger);
 }
 
-/* 超時彈出氣泡 */
+/* 超時警示氣泡 */
 .overtime-alert-bubble {
   position: absolute;
-  top: -42px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #f56565;
+  right: -10px;
+  top: -30px;
+  background: var(--danger);
   color: white;
-  padding: 4px 14px;
+  padding: 2px 10px;
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1100;
+  font-size: 0.7rem;
+  font-weight: 800;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.overtime-alert-bubble::after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid #f56565;
+/* --- 3. 任務導覽 (Sidebar Tabs) --- */
+.sidebar-tabs-container {
+  background: white;
+  border: 1px solid rgba(74, 112, 169, 0.1);
+  border-radius: 24px;
+  padding: 10px;
 }
 
-/* --- 4. 功能按鈕組 --- */
-.nav-right-group {
+.nav-link-sidebar {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-/* AI 監控按鈕 */
-.btn-ai-mini {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  font-size: 0.85rem;
-  padding: 6px 16px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  padding: 12px 18px;
+  color: var(--text-muted);
+  border-radius: 15px;
+  margin: 4px 0;
   cursor: pointer;
-}
-
-.btn-ai-mini:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.btn-ai-mini.is-active {
-  background: white;
-  color: #4a70a9;
-  font-weight: bold;
-}
-
-/* 完成學習按鈕 */
-.btn-finish-sm {
-  background: #48bb78; /* 成功綠 */
-  border: none;
-  color: white;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 6px 18px;
-  border-radius: 20px;
   transition: 0.2s;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
 }
 
-.btn-finish-sm:hover {
-  background: #38a169;
-  transform: translateY(-1px);
+.nav-link-sidebar:hover {
+  background: var(--navy-soft);
+  color: var(--navy);
+}
+.nav-link-sidebar.active {
+  background: var(--navy);
+  color: white;
+  box-shadow: 0 8px 15px rgba(74, 112, 169, 0.25);
 }
 
-/* --- 5. 側邊監控抽屜 (Monitor Drawer) --- */
+/* --- 4. 監控中心 (Monitor Drawer) --- */
 .monitor-drawer {
   position: fixed;
+  top: 0;
   right: 0;
-  top: 0;
-  width: 380px;
+  width: 420px;
   height: 100vh;
-  background: #ffffff;
-  z-index: 1200;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+  background: var(--oatmeal);
+  z-index: 1080;
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.monitor-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.drawer-body {
+  flex: 1;
   overflow-y: auto;
-  border-left: 1px solid #e2e8f0;
+  padding-bottom: 30px;
 }
 
-.monitor-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(2px);
-  z-index: 1150;
-}
-
-/* --- 圖表化對照區樣式 --- */
-.section-label-v2 {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-  margin-bottom: 12px;
-  display: block;
-  letter-spacing: 0.5px;
-}
-
+/* 數據對比條 (Comparison Bar) */
 .v-bar-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 40%;
+  width: 60px;
 }
-
 .v-bar {
   width: 32px;
-  border-radius: 8px 8px 0 0;
-  position: relative;
-  transition: height 1s ease-out;
+  border-radius: 8px 8px 4px 4px;
+  transition: height 1s ease;
 }
-
-.v-bar.my-score {
-  background: #4a70a9;
-} /* 個人：主題藍 */
-.v-bar.top-score {
+.my-score {
+  background: var(--navy);
+}
+.top-score {
   background: #cbd5e1;
-} /* 領先平均：淺灰色對照 */
-
+}
 .bar-val {
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-weight: bold;
-  font-size: 0.85rem;
-  color: #1e293b;
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: var(--navy);
+  margin-bottom: 5px;
 }
 
-.bar-label {
-  font-size: 0.7rem;
-  color: #64748b;
-  margin-top: 8px;
-}
-
-/* --- AI 智慧提示回覆區 (一致性白底設計) --- */
+/* AI 建議氣泡 */
 .ai-chat-box {
-  background: #ffffff; /* 改為與對照卡片一致的純白 */
-  border: 1px solid #e2e8f0; /* 增加細微邊框強化層級 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* 統一的微陰影 */
-  border-radius: 16px;
-  padding: 16px;
-  color: #1e293b; /* 使用深藍灰色文字，確保可讀性 */
+  background: white;
+  border: 1.5px dashed var(--navy);
+  border-radius: 24px;
 }
-
-.ai-avatar {
-  width: 28px;
-  height: 28px;
-  background: #4a70a9; /* 主題藍 */
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-}
-
 .ai-reply-pill {
-  /* 背景改為極淺的灰藍色，與白底區分 */
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 10px 14px;
-  color: #4a70a9; /* 文字使用主題藍，增加權威感 */
+  background: var(--navy-soft);
+  padding: 10px 15px;
+  border-radius: 15px;
   font-size: 0.85rem;
-  margin-bottom: 10px;
-  /* 左側亮藍色條：象徵 AI 的引導路徑 */
-  border-left: 4px solid #63b3ed;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  line-height: 1.5;
-  border-top: 1px solid rgba(0, 0, 0, 0.02);
-  border-right: 1px solid rgba(0, 0, 0, 0.02);
+  margin-bottom: 8px;
+  border: 1px solid rgba(74, 112, 169, 0.05);
 }
 
-.ai-reply-pill:hover {
-  background: #ffffff; /* 懸停時變回純白 */
-  transform: translateX(6px);
-  box-shadow: 0 4px 12px rgba(74, 112, 169, 0.1);
-  border-color: rgba(99, 179, 237, 0.3);
-}
+/* --- 5. RWD 響應式優化 --- */
 
-/* 提示內容內的小圖示 */
-.ai-reply-pill i {
-  color: #f6ad55; /* 燈泡圖示使用溫暖的橘黃色 */
-  margin-right: 8px;
-}
-
-/* --- 其他 UI 修正 --- */
-.btn-close-drawer {
-  background: #f1f5f9;
-  border: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  color: #64748b;
-  transition: 0.2s;
-}
-
-.btn-close-drawer:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-
-/* --- 6. RWD 與 導航列轉換邏輯 --- */
-
-/* 💻 桌機版 (992px 以上) */
-@media (min-width: 992px) {
-  .sidebar-sticky-wrapper {
-    top: 80px;
-  }
-  .sidebar-tabs-container {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  }
-  .nav-link-sidebar {
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    color: #64748b;
-    border-radius: 12px;
-    text-decoration: none;
-    transition: 0.2s;
-  }
-  .nav-link-sidebar.active {
-    background: #4a70a9;
-    color: white;
-  }
-}
-
-/* 📱 手機與平板版 (991px 以下) */
 @media (max-width: 991.98px) {
+  /* 手機版導覽列：變更為橫向膠囊 */
   .unit-sidebar-rwd {
-    order: -1;
-    width: 100%;
-    margin: 0 !important;
-  }
-
-  /* 導航貼齊 Header */
-  .sidebar-sticky-wrapper {
     position: sticky;
-    top: 64px !important;
-    z-index: 1000;
+    top: 75px;
+    z-index: 1040;
+    padding: 10px 0;
+    background: var(--oatmeal);
   }
 
-  /* 容器瘦身：融入背景色 */
-  .sidebar-tabs-container {
-    background-color: #efece3 !important;
-    border: none !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    border-radius: 0 !important;
-    padding: 4px 0 !important;
-  }
-
-  /* 橫向滑動列表 */
   .custom-nav-scroll {
-    display: flex !important;
+    display: flex;
     flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    gap: 10px !important;
-    padding: 6px 15px !important;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    background: white;
+    padding: 8px;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 
   .custom-nav-scroll::-webkit-scrollbar {
     display: none;
   }
 
-  /* 行動版按鈕樣式 */
   .nav-link-sidebar {
-    white-space: nowrap !important;
-    padding: 6px 16px !important;
-    font-size: 0.85rem !important;
-    color: #4a70a9 !important;
-    background: rgba(74, 112, 169, 0.08) !important; /* 淺藍背景 */
-    border: 1px solid rgba(74, 112, 169, 0.15) !important;
-    border-radius: 20px !important;
-    transition: 0.2s;
+    margin: 0 5px;
+    white-space: nowrap;
+    padding: 8px 20px;
+    font-size: 0.85rem;
   }
 
-  .nav-link-sidebar.active {
-    background-color: #4a70a9 !important;
-    color: #efece3 !important;
-    border-color: #4a70a9 !important;
-    font-weight: bold;
-    box-shadow: 0 2px 8px rgba(74, 112, 169, 0.2);
-  }
-
-  /* 其他手機適配 */
+  /* 手機版監控中心：改為底部彈出卡片 */
   .monitor-drawer {
-    width: 100%;
+    width: 100% !important;
+    height: 85vh !important;
+    top: auto !important;
+    bottom: 0;
+    border-radius: 35px 35px 0 0;
+    border-top: 6px solid var(--navy);
   }
-  .progress-center-track {
-    max-width: 120px;
-  }
-  .btn-back {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
+
+  .monitor-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1070;
+    backdrop-filter: blur(8px);
   }
 }
 
-/* 🎨 動畫庫 */
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateX(100%);
-}
-
-.bounce-enter-active {
-  animation: bounce-in 0.5s;
-}
-.bounce-leave-active {
-  animation: bounce-in 0.3s reverse;
-}
-
-@keyframes bounce-in {
-  0% {
-    transform: translateX(-50%) scale(0);
-    opacity: 0;
-  }
-  70% {
-    transform: translateX(-50%) scale(1.1);
-  }
-  100% {
-    transform: translateX(-50%) scale(1);
-    opacity: 1;
-  }
-}
-
-/* --- 標題文字 RWD 控制 --- */
-.unit-title-text {
-  font-size: 0.9rem; /* 桌機版字體 */
-  max-width: 180px; /* 桌機版最大寬度 */
-  transition: all 0.3s ease;
-}
-
-/* 📱 手機版 RWD 修正 (991.98px 以下) */
-@media (max-width: 991.98px) {
-  .unit-title-text {
-    /* 🌟 核心：縮小字體並極度限制寬度，防止擠壓中間 */
-    font-size: 0.75rem !important;
-    max-width: 60px !important;
-  }
-
-  .unit-meta {
-    /* 確保標題與返回按鈕的間距縮小 */
-    margin-right: 5px !important;
-  }
-}
-
-/* 針對極小螢幕 (iPhone SE) */
-@media (max-width: 375px) {
-  .unit-title-text {
-    max-width: 45px !important; /* 再縮小一點 */
-  }
-}
-
-/* --- 1. 彈窗全屏遮罩 (保持原有的優異毛玻璃效果) --- */
+/* --- 6. 彈窗樣式 (Modals) --- */
 .modal-overlay-srl {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(8px);
-  /* 🌟 核心：確保遮罩層級高於頁面所有內容 */
-  z-index: 5000 !important;
+  inset: 0;
+  background: rgba(239, 236, 227, 0.85);
+  backdrop-filter: blur(15px) saturate(180%);
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 15px;
 }
 
-/* --- 2. 彈窗內容容器 (修正內容被遮罩模糊的問題) --- */
 .srl-modal-container {
-  /* 🌟 核心：確保不透明白色背景，防止內容跟隨背景一起模糊 */
-  background: #ffffff !important;
-  width: 100%;
-  max-width: 960px;
-  height: 90vh;
-  border-radius: 28px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-
-  /* 🌟 佈局核心：轉為 Flex 模式 */
-  display: flex;
-  flex-direction: column;
+  width: 95%;
+  max-width: 900px;
+  background: white;
+  border-radius: 35px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+}
 
-  /* 🌟 強制建立新的堆疊上下文，確保內容跳出遮罩影響範圍 */
+/* --- 7. 動畫過場 --- */
+.slide-drawer-enter-active,
+.slide-drawer-leave-active {
+  transition: transform 0.4s ease;
+}
+@media (min-width: 992px) {
+  .slide-drawer-enter-from,
+  .slide-drawer-leave-to {
+    transform: translateX(100%);
+  }
+}
+@media (max-width: 991.98px) {
+  .slide-drawer-enter-from,
+  .slide-drawer-leave-to {
+    transform: translateY(100%);
+  }
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+/*按鈕*/
+/* --- 1. 導航按鈕公版優化 --- */
+.btn-back,
+.btn-ai-mini,
+.btn-finish-sm {
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0; /* 🌟 核心：強制按鈕不能被擠壓 */
+}
+
+/* 返回按鈕 (左側) */
+.btn-back {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+
+/* AI 儀表板 (右側 1) */
+.btn-ai-mini {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 38px; /* 手機版預設寬度 */
+  height: 38px;
+  border-radius: 12px;
+  padding: 0; /* 移除內距 */
+}
+
+.btn-ai-mini.is-active {
+  background: #fbbf24 !important;
+  color: #1e293b !important;
+  border-color: transparent;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+}
+
+/* 完成學習按鈕 (右側 2) */
+.btn-finish-sm {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+
+/* --- 2. RWD 響應式佈局 (針對截圖中的擁擠問題) --- */
+@media (max-width: 991.98px) {
+  /* 讓 Header 內容維持在同一排，不換行 */
+  .srl-monitor-navbar .row {
+    flex-wrap: nowrap !important;
+  }
+
+  /* 調整欄位比例：左 2, 中 7, 右 3 (大約) */
+  .col-3 {
+    width: auto !important;
+    max-width: 60px;
+  }
+
+  /* 中間進度條區塊：佔滿剩餘空間 */
+  .col-6 {
+    flex: 1 1 auto !important; /* 拿走剩餘所有空間 */
+    min-width: 0 !important; /* 🌟 防止內容（如 15:31）強行撐開 col */
+    padding: 0 12px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* 右側按鈕區：寬度固定，不換行 */
+  .col-3.d-flex.justify-content-end {
+    width: auto !important;
+    gap: 8px !important; /* 按鈕間的間距 */
+  }
+
+  /* 在手機版隱藏文字，只留圖示以爭取空間 */
+  .btn-ai-mini span,
+  .btn-finish-sm span,
+  .unit-meta small {
+    display: none !important;
+  }
+
+  /* 確保標題文字不會把中間擠爆 */
+  .unit-title-text {
+    max-width: 80px; /* 限制標題寬度 */
+    font-size: 0.9rem !important;
+  }
+}
+
+/* 電腦版恢復文字顯示 */
+@media (min-width: 992px) {
+  .btn-ai-mini,
+  .btn-finish-sm {
+    width: auto;
+    padding: 6px 16px;
+    border-radius: 50px;
+  }
+}
+
+.list-group-item {
+  background-color: #4a70a9 !important;
+}
+
+/* 自定義米色類別 (可以依照需求調整顏色深淺) */
+.text-oatmeal-light {
+  color: #efece3 !important;
+}
+
+/* ==========================================================================
+   🔵 湛藍系按鈕整合：.btn-navy & .btn-navy-pill
+   預設：米色底湛藍框 (Oatmeal) | 互動：湛藍底米字 (Navy)
+   ========================================================================== */
+
+.btn-navy,
+.btn-navy-pill {
+  /* 1. 基礎佈局 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  z-index: 5001 !important;
-  transform: translateZ(0); /* 啟動 GPU 加速解決渲染殘影 Bug */
+  overflow: hidden;
+  text-decoration: none !important;
 
-  animation: modalScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* 2. 🌟 預設狀態 (未點擊)：米色質感底 */
+  background-color: #f5f1e6 !important; /* 淺米色 */
+  color: #4a70a9 !important; /* 湛藍字 */
+  box-shadow: 0 4px 12px rgba(74, 112, 169, 0.1);
 }
 
-/* --- 3. 內容與捲動優化 --- */
-
-/* 標題與頁首：固定高度 */
-.srl-modal-container header,
-.srl-modal-container .modal-header-srl {
-  flex-shrink: 0;
-  background: white;
-  z-index: 10;
+/* 圓角區分 */
+.btn-navy {
+  border-radius: 12px;
+}
+.btn-navy-pill {
+  border-radius: 50px;
 }
 
-/* 🌟 內容主體：自動填滿並開啟捲動 */
-/* 針對反思模組，加入通配符確保內容區塊能捲動 */
-.srl-modal-container .q-content,
-.srl-modal-container .modal-body-srl,
-.srl-modal-container > div:not(header):not(footer) {
-  flex: 1 1 auto;
-  overflow-y: auto !important;
-  padding: 2.5rem;
-  background: white;
-  -webkit-overflow-scrolling: touch;
+/* 🌟 3. 懸停 (Hover)：反轉為實心湛藍 */
+.btn-navy:hover,
+.btn-navy-pill:hover {
+  background-color: #4a70a9 !important;
+  color: #efece3 !important; /* 米色文字 */
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(74, 112, 169, 0.25);
 }
 
-/* 底部操作列：固定高度，永不消失 */
-.srl-modal-container footer,
-.srl-modal-container .modal-footer-srl {
-  flex-shrink: 0;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  padding: 1.25rem 2rem;
-  z-index: 10;
+/* 🌟 4. 點擊 (Active)：下沉回饋 */
+.btn-navy:active,
+.btn-navy-pill:active {
+  background-color: #35507d !important; /* Navy Dark */
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 2px 8px rgba(74, 112, 169, 0.2);
+  transition: all 0.1s;
 }
 
-/* 📱 手機版佈局修正 */
-@media (max-width: 768px) {
-  .modal-overlay-srl {
-    padding: 0;
-  }
-  .srl-modal-container {
-    height: 100vh;
-    max-height: 100vh;
-    border-radius: 0;
-  }
+/* 🌟 5. 禁用 (Disabled) */
+.btn-navy:disabled,
+.btn-navy-pill:disabled {
+  background-color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 內部圖示同步動畫 */
+.btn-navy i,
+.btn-navy-pill i {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-navy:hover i,
+.btn-navy-pill:hover i {
+  transform: scale(1.1);
+}
+
+/* 下載區塊專用虛線框 */
+.download-section .card.border-dashed {
+  border: 2px dashed rgba(74, 112, 169, 0.2) !important;
+  transition: all 0.3s ease;
+}
+
+.download-section .card.border-dashed:hover {
+  border-color: var(--navy) !important;
+  background-color: var(--navy-soft) !important;
+}
+
+.download-icon-wrapper i {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.download-section .card.border-dashed:hover .download-icon-wrapper i {
+  transform: translateY(-10px) scale(1.1);
+}
+
+/*Ai回應*/
+/* AI 回應卡片的細節 */
+.ai-reply-pill {
+  transition: all 0.3s ease;
+  border-left: 3px solid #4a70a9 !important; /* 加強導師感的左側邊條 */
+}
+
+/* 列表跳出動畫 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* 佔位符背景色 */
+.placeholder {
+  height: 12px;
 }

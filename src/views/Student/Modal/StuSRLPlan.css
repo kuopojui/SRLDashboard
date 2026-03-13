@@ -310,32 +310,83 @@ input[type="number"]::-webkit-outer-spin-button {
   transition: all 0.2s ease-in-out;
 }
 
+/* --- 1. 遮罩層：確保彈窗永遠從頂部開始排版，解決截斷問題 --- */
 .ScheduleModalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 20, 40, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 1050;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(239, 236, 227, 0.85) !important; /* Oatmeal 米色 */
+  backdrop-filter: blur(12px) saturate(180%);
+  z-index: 9999 !important;
 
-  /* 🌟 核心修正：開啟捲動機制 */
-  display: block; /* 移除 flex 置中限制 */
-  overflow-y: auto; /* 當內容超過高度時開啟垂直捲動 */
-  -webkit-overflow-scrolling: touch; /* 讓 iOS 捲動更順滑 */
-  padding: 20px; /* 保持四周間距 */
+  /* 🌟 核心修正：使用 Flexbox 並取消垂直居中 */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important; /* 👈 從頂部排起，防止底部被吃掉 */
+
+  overflow-y: auto !important; /* 開啟滾動條 */
+  -webkit-overflow-scrolling: touch;
+  padding: 40px 15px; /* 預留頂部與底部呼吸空間 */
 }
 
-/* 🌟 配合 Overlay 的修正，確保彈窗在電腦版依然水平置中 */
+/* --- 2. 彈窗本體：動態高度 --- */
 .StuSrlPlan-Combined {
+  width: 100%;
   max-width: 950px;
-  margin: 2rem auto; /* 水平置中，且上下保留 2rem 空間 */
-  border-radius: 20px;
-  background: #fff;
+  background: #ffffff;
+  border-radius: 35px;
+  border: 1px solid rgba(74, 112, 169, 0.12);
+  box-shadow: 0 40px 100px rgba(74, 112, 169, 0.2) !important;
+
+  /* 🌟 核心修正：高度必須隨內容撐開 */
+  height: auto !important;
+  min-height: min-content;
+  flex-shrink: 0; /* 防止被父層 Flex 壓縮高度 */
+  margin-bottom: 60px !important; /* 確保滑到底時按鈕不會貼邊 */
+
   position: relative;
-  /* 移除原本可能有的固定高度設定 */
-  height: auto;
+  /* 🌟 手機版若有輸入框，不要在容器層級 hidden，否則可能影響捲動 */
+  overflow: visible !important;
+}
+
+/* --- 3. 極簡 X 按鈕 --- */
+.btn-close-minimal {
+  background: rgba(74, 112, 169, 0.05);
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: #4a70a9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-close-minimal:hover {
+  background: #bf4646;
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* --- 🌟 4. RWD 手機與平板加強修正 --- */
+@media (max-width: 991.98px) {
+  .ScheduleModalOverlay {
+    padding: 15px 10px !important; /* 縮小手機版的外距 */
+  }
+
+  .StuSrlPlan-Combined {
+    border-radius: 25px;
+    /* 🌟 針對手機版增加更大的底部邊距，防止被瀏覽器導航列遮擋按鈕 */
+    margin-bottom: 100px !important;
+    margin-top: 10px !important;
+  }
+
+  /* 修正手機版 Row 造成的白邊問題 */
+  .row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
 }
 
 /* 🌟 RWD 手機版特別處理 */

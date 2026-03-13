@@ -8,8 +8,9 @@
       <h4 class="fw-800 mb-0 text-navy">
         <i class="bi bi-journal-check me-2"></i>單元學習準備
       </h4>
-      <button class="close-btn border-0 bg-transparent" @click="$emit('close')">
-        <span class="fs-4">✕</span>
+
+      <button class="btn-close-minimal" @click="$emit('close')" title="關閉">
+        <i class="bi bi-x-lg"></i>
       </button>
     </div>
 
