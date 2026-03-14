@@ -239,7 +239,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { rtdb, auth } from "../../../firebase/config";
 import { ref as dbRef, update, push } from "firebase/database";
@@ -247,6 +247,8 @@ import "./StuSRLPlan.css";
 import Swal from "sweetalert2";
 import "../StuUnit.vue";
 import StuUnit from "../StuUnit.vue";
+// 🌟 匯入你定義好的 logger 工具
+import { recordStudentAction as recordAction } from "../../../utils/logger.js";
 
 const props = defineProps({
   courseId: String,
@@ -431,13 +433,27 @@ const addCustomStrategy = () => {
 
 const toggleStrategy = (label) => {
   const index = planData.value.strategies.indexOf(label);
-  if (index > -1) planData.value.strategies.splice(index, 1);
-  else planData.value.strategies.push(label);
+  let isAdded = false;
+  if (index > -1) {
+    planData.value.strategies.splice(index, 1);
+    isAdded = false;
+  } else {
+    planData.value.strategies.push(label);
+    isAdded = true;
+  }
+
+  // 🌟 紀錄：學生對特定學習策略的興趣
+  recordAction(props.courseId, `規劃行為：${isAdded ? "選取" : "移除"}策略`, {
+    strategyName: label,
+    currentStrategies: planData.value.strategies,
+  });
 };
 
 // 🌟 4. 寫入 Firebase 邏輯
+// 🌟 確保頂部有匯入工具：import { recordStudentAction as recordAction } from "../../utils/logger.js";
+
 const saveToFirebase = async (isStarting) => {
-  // 1. 進階驗證：檢查時間與目標
+  // 1. 驗證邏輯
   if (calculatedTotalMins.value <= 0 || !planData.value.targetGoal.trim()) {
     Swal.fire({
       icon: "warning",
@@ -450,50 +466,51 @@ const saveToFirebase = async (isStarting) => {
 
   isSaving.value = true;
   const user = auth.currentUser;
+  if (!user) return false;
 
-  // 2. 路徑清洗與對齊
   const cleanId = props.taskId?.replace("unit_", "");
   const path = `courses/${props.courseId}/profiles/${user.uid}/srl/planning/${cleanId}`;
-  const logPath = `courses/${props.courseId}/logs/${user.uid}`;
 
-  // 3. 構建資料酬載 (Payload)
+  // 3. 構建資料酬載
   const payload = {
     targetTime: calculatedTotalMins.value,
     targetGoal: planData.value.targetGoal,
     strategies: planData.value.strategies || [],
     confidence: planData.value.confidence,
-    lastUpdated: Date.now(), // 記錄最後修改時間
+    lastUpdated: Date.now(),
   };
 
-  // 🌟 若為「開始本單元」，額外注入啟動標籤
   if (isStarting) {
     payload.startTime = Date.now();
     payload.status = "learning";
   }
 
   try {
-    // 4. 同步更新資料庫
+    // 4. 更新規劃數據
     await update(dbRef(rtdb, path), payload);
 
-    // 5. 自動記錄行為日誌 (這對 SRL 分析非常重要)
-    await push(dbRef(rtdb, logPath), {
-      type: isStarting ? "srl_start_learning" : "srl_save_plan",
+    // 🌟 5. 統一紀錄行為日誌
+    const actionLabel = isStarting
+      ? "完成單元規劃並開始學習"
+      : "儲存單元學習規劃";
+
+    await recordAction(props.courseId, actionLabel, {
       unitId: cleanId,
-      content: isStarting
-        ? `[開始學習] 目標:${planData.value.targetGoal} (預計 ${calculatedTotalMins.value} 分鐘)`
-        : `[儲存規劃] 信心度: ${planData.value.confidence}`,
-      timestamp: Date.now(),
+      unitTitle: props.unitData?.title,
+      plannedMins: calculatedTotalMins.value,
+      targetGoal: planData.value.targetGoal,
+      strategies: planData.value.strategies,
+      confidence: planData.value.confidence,
+      isImmediateStart: isStarting,
     });
 
     return true;
   } catch (error) {
     console.error("Firebase Update Error:", error);
-
-    // 錯誤反饋
     Swal.fire({
       icon: "error",
       title: "連線發生錯誤",
-      text: "資料暫時無法存檔，請檢查網路連線後再試一次。",
+      text: "資料暫時無法存檔",
       confirmButtonColor: "#d33",
     });
     return false;
@@ -608,4 +625,12 @@ const handleStartUnit = async () => {
     }
   }
 };
+
+onMounted(() => {
+  const cleanId = props.taskId?.replace("unit_", "");
+  recordAction(props.courseId, "開啟單元學習準備彈窗", {
+    unitId: cleanId,
+    unitTitle: props.unitData?.title,
+  });
+});
 </script>

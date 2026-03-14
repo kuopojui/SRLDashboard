@@ -237,8 +237,10 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { rtdb } from "../../../firebase/config";
 import { ref as dbRef, get, update, serverTimestamp } from "firebase/database";
+import { getAuth } from "firebase/auth"; // 🌟 引入 Auth 取得 uid
 import Swal from "sweetalert2";
-import "./StuExam.css"; // 🌟 引入獨立的 CSS
+import "./StuExam.css";
+import { recordStudentAction as recordAction } from "../../../utils/logger.js";
 
 const props = defineProps({
   isOpen: Boolean,
@@ -286,6 +288,14 @@ const fetchExamDetail = async () => {
 
 const handleStartExam = () => {
   isStarted.value = true;
+
+  // 🌟 紀錄：正式開始測驗
+  recordAction(props.courseId, "開始執行單元測驗", {
+    unitId: props.unitId,
+    examId: props.examId,
+    examTitle: examData.value?.title,
+  });
+
   timer = setInterval(() => {
     if (remainingTime.value > 0) remainingTime.value--;
     else autoSubmit();
@@ -308,9 +318,12 @@ const confirmSubmit = async () => {
   const result = await Swal.fire({
     title: "確定提交？",
     text:
-      unanswered > 0 ? `尚有 ${unanswered} 題未作答！` : "提交後將紀錄成績。",
+      unanswered > 0
+        ? `尚有 ${unanswered} 題未作答！`
+        : "提交後將紀錄成績並無法修改。",
     icon: "question",
     showCancelButton: true,
+    confirmButtonColor: "#4a70a9",
     confirmButtonText: "正式提交",
     cancelButtonText: "繼續檢查",
   });
@@ -328,12 +341,12 @@ const submitExam = async () => {
   let totalScore = 0;
   let totalErrorCount = 0;
   const questions = examData.value.questions;
+  const uid = getAuth().currentUser?.uid; // 🌟 取得目前使用者 ID
 
   questions.forEach((q, idx) => {
     const userAnswer = userAnswers.value[idx];
-    const questionPoint = q.point || 100 / questions.length; // 取得該題配分
+    const questionPoint = q.point || 100 / questions.length;
 
-    // 如果完全沒寫或沒選，該題 0 分並計入錯誤
     if (
       userAnswer === undefined ||
       userAnswer === null ||
@@ -344,62 +357,54 @@ const submitExam = async () => {
     }
 
     if (q.type === "multipleChoice") {
-      // --- 單選題判定 ---
-      if (userAnswer === q.finalAnswer) {
-        totalScore += questionPoint;
-      } else {
-        totalErrorCount++;
-      }
+      if (userAnswer === q.finalAnswer) totalScore += questionPoint;
+      else totalErrorCount++;
     } else if (q.type === "multiSelect") {
-      // --- 多選題按比例給分判定 ---
-      // 邏輯：比對每一個選項，答對（該選有選、不該選沒選）則拿分
-      const correctAnswers = q.finalAnswer || []; // 正確答案索引陣列
-      const optionsCount = q.options.length; // 總選項數
+      const correctAnswers = q.finalAnswer || [];
+      const optionsCount = q.options.length;
       let correctOptionsInTask = 0;
-
       for (let i = 0; i < optionsCount; i++) {
-        const shouldBeSelected = correctAnswers.includes(i);
-        const isActuallySelected = userAnswer.includes(i);
-
-        // 判定：該選的有選，或是不該選的沒選，皆算對一個選項
-        if (shouldBeSelected === isActuallySelected) {
+        if (correctAnswers.includes(i) === userAnswer.includes(i))
           correctOptionsInTask++;
-        }
       }
-
-      // 計算比例得分：(對的選項數 / 總選項數) * 該題配分
-      const earnedPoint = (correctOptionsInTask / optionsCount) * questionPoint;
-      totalScore += earnedPoint;
-
-      // 如果沒有全對，計入錯誤題數（視為未完全掌握）
-      if (correctOptionsInTask !== optionsCount) {
-        totalErrorCount++;
-      }
+      totalScore += (correctOptionsInTask / optionsCount) * questionPoint;
+      if (correctOptionsInTask !== optionsCount) totalErrorCount++;
     } else if (q.type === "shortAnswer") {
-      // --- 簡答題判定 ---
-      if (userAnswer?.trim() === q.refAnswer?.trim()) {
+      if (userAnswer?.trim() === q.refAnswer?.trim())
         totalScore += questionPoint;
-      } else {
-        totalErrorCount++;
-      }
+      else totalErrorCount++;
     }
   });
 
-  // 全部計算完畢後才進行四捨五入
   const finalRoundedScore = Math.round(totalScore);
 
   try {
-    // 這裡建議加上使用者 ID 以免覆蓋他人數據
-    const tracePath = `student_traces/${props.courseId}_${props.unitId}`;
-    await update(dbRef(rtdb, tracePath), {
-      currentScore: finalRoundedScore,
-      errorCount: totalErrorCount,
-      lastActive: serverTimestamp(),
-    });
+    // 🌟 1. 更新課程內的學生 Trace (狀態追蹤)
+    // 路徑移入課程節點內：courses/{courseId}/users/{uid}/trace/{unitId}
+    if (uid) {
+      const tracePath = `courses/${props.courseId}/users/${uid}/trace/${props.unitId}`;
+      await update(dbRef(rtdb, tracePath), {
+        currentScore: finalRoundedScore,
+        errorCount: totalErrorCount,
+        lastActive: serverTimestamp(),
+        status: "submitted",
+        examId: props.examId,
+      });
+
+      // 🌟 2. 同步紀錄詳細行為 Log (合併紀錄)
+      await recordAction(props.courseId, "提交單元測驗結果", {
+        unitId: props.unitId,
+        examId: props.examId,
+        examTitle: examData.value?.title,
+        score: finalRoundedScore,
+        errors: totalErrorCount,
+        timeUsedSeconds: examData.value.duration * 60 - remainingTime.value,
+      });
+    }
 
     await Swal.fire({
       title: "測驗完成！",
-      html: `您的得分：<b style="font-size: 1.5rem; color: #1a237e;">${finalRoundedScore}</b> 分<br>錯誤或未完全答對：${totalErrorCount} 題`,
+      html: `您的得分：<b style="font-size: 1.5rem; color: #4a70a9;">${finalRoundedScore}</b> 分<br>未完全答對：${totalErrorCount} 題`,
       icon: "success",
       confirmButtonText: "回到單元內容",
     });
@@ -414,6 +419,7 @@ const submitExam = async () => {
 onMounted(() => {
   if (props.isOpen) fetchExamDetail();
 });
+
 onUnmounted(() => {
   if (timer) clearInterval(timer);
 });

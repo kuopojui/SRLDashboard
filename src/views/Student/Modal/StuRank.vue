@@ -35,18 +35,18 @@
 
           <div class="avatar-wrapper mx-2 mx-md-3">
             <div class="avatar-circle" :class="'ring-' + (index + 1)">
-              {{ getDisplayName(student).substring(0, 1) }}
+              {{ getAvatarText(student) }}
             </div>
           </div>
 
           <div class="flex-grow-1 min-w-0">
             <div class="d-flex align-items-center gap-2 mb-1">
-              <span class="fw-800 text-navy text-truncate">{{
-                getDisplayName(student)
-              }}</span>
-              <span v-if="student.uid === currentUser?.uid" class="badge-me"
-                >我</span
-              >
+              <span class="fw-800 text-navy text-truncate">
+                {{ getDisplayName(student) }}
+              </span>
+              <span v-if="student.uid === currentUser?.uid" class="badge-me">
+                我
+              </span>
             </div>
             <div class="progress-container">
               <div
@@ -84,9 +84,10 @@ const currentUser = auth.currentUser;
 const rankData = ref([]);
 const isAnonymousMode = ref(true); // 預設開啟匿名以保護隱私
 
-// 🌟 核心邏輯：監聽排行榜數據
 onMounted(() => {
-  // 1. 監聽課程設定 (確認是否強制匿名)
+  if (!props.courseId) return;
+
+  // 1. 監聽課程設定：確認老師是否開啟了「匿名排行榜」
   onValue(
     dbRef(db, `courses/${props.courseId}/settings/isAnonymous`),
     (snap) => {
@@ -94,32 +95,56 @@ onMounted(() => {
     },
   );
 
-  // 2. 監聽學生積分 (假設存在於 members 節點或專門的 leaderboard 節點)
+  // 2. 監聽學生成績資料 (路徑：courses/ID/members)
   onValue(dbRef(db, `courses/${props.courseId}/members`), (snap) => {
-    if (!snap.exists()) return;
+    if (!snap.exists()) {
+      rankData.value = [];
+      return;
+    }
     const data = snap.val();
     rankData.value = Object.entries(data).map(([uid, val]) => ({
       uid,
-      displayName: val.displayName || "隱名組員",
+      // 儲存原始資料，顯示邏輯由 function 統一處理
+      displayName: val.displayName || val.realName || "學習者",
       score: val.totalScore || 0,
       progress: val.learningProgress || 0,
     }));
   });
 });
 
-// 排序邏輯
+/**
+ * 🏆 排序邏輯：根據分數從高到低排序
+ */
 const sortedRank = computed(() => {
   return [...rankData.value].sort((a, b) => b.score - a.score);
 });
 
-// 匿名處理
+/**
+ * 🔒 姓名顯示邏輯：
+ * 1. 如果是本人，顯示真實姓名。
+ * 2. 如果是匿名模式，顯示「隱名組員」。
+ * 3. 否則顯示真實姓名。
+ */
 const getDisplayName = (student) => {
   if (student.uid === currentUser?.uid) return student.displayName;
   return isAnonymousMode.value ? "隱名組員" : student.displayName;
 };
+
+/**
+ * 🔒 頭像文字顯示邏輯：
+ * 1. 如果是本人，顯示名字首字。
+ * 2. 如果是匿名模式，統一顯示「匿」。
+ * 3. 否則顯示名字首字。
+ */
+const getAvatarText = (student) => {
+  if (student.uid === currentUser?.uid)
+    return student.displayName.substring(0, 1);
+
+  return isAnonymousMode.value ? "匿" : student.displayName.substring(0, 1);
+};
 </script>
 
 <style scoped>
-/* 這裡建議直接引入我們剛才寫好的 StuRank.css */
+/* 引入外部 CSS 以保持簡潔 */
 @import "./StuRank.css";
 </style>

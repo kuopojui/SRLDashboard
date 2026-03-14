@@ -131,9 +131,11 @@ import { ref as dbRef, onValue, get, off } from "firebase/database";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import Swal from "sweetalert2";
 
-// 🌟 組件引入 (確保路徑正確)
+// 🌟 組件引入
 import StuDashboard from "./StuDashboard.vue";
 import StuSchedule from "./StuSchedule.vue";
+// 確保路徑指向你的 utils/logger.js
+import { recordStudentAction as recordAction } from "../../utils/logger.js";
 import "./StuCourseDetail.css";
 
 // 路由與基礎狀態
@@ -148,10 +150,8 @@ const currentUser = ref(null);
 const courseInfo = ref({ title: "載入課程中...", description: "" });
 const units = ref([]);
 
-// 🌟 單元引導彈窗狀態管理 (對接 HTML 中的 v-if)
-const showUnitIntroModal = ref(false);
-const selectedUnitData = ref(null);
-const selectedUnitIdx = ref(0);
+// 🌟 時間追蹤變數
+const pageEnterTime = ref(null);
 
 // SRL 實驗問卷相關狀態
 const hasPendingTest = ref(false);
@@ -161,19 +161,40 @@ const isCheckingTest = ref(true);
 let activeListeners = [];
 let checkVersion = 0;
 
-// --- 資料同步邏輯 ---
+// --- 1. 行為紀錄邏輯 ---
+/**
+ * 處理視圖切換並紀錄行為
+ */
+const switchView = (view) => {
+  if (currentView.value === view) return;
+
+  const oldView = currentView.value;
+  currentView.value = view;
+
+  // 🌟 紀錄 2: 紀錄切換分頁行為
+  if (currentUser.value?.uid) {
+    const viewLabel = view === "dashboard" ? "學習診斷" : "單元清單";
+    recordAction(courseId, currentUser.value.uid, `切換分頁至：${viewLabel}`, {
+      from: oldView,
+      to: view,
+    });
+  }
+
+  isSidebarOpen.value = false;
+};
+
+// --- 2. 資料同步邏輯 ---
 const initAllData = (uid) => {
   if (!courseId) return;
 
-  // 監聽課程主資料
   const coursePath = dbRef(rtdb, `courses/${courseId}`);
   onValue(coursePath, (snap) => {
     if (snap.exists()) courseInfo.value = snap.val();
   });
   activeListeners.push(coursePath);
 
-  // 執行 SRL 問卷檢查
   checkExperimentalTests(uid);
+  watchUserGroup(uid); // 🌟 啟動組別監聽
 };
 
 const checkExperimentalTests = (uid) => {
@@ -213,15 +234,9 @@ const checkExperimentalTests = (uid) => {
   activeListeners.push(preTestRef);
 };
 
-// --- UI 互動函式 ---
+// --- 3. UI 互動函式 ---
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
-};
-const switchView = (view) => {
-  currentView.value = view;
-};
-const triggerTestPopup = () => {
-  /* 這裡可寫導航至問卷頁面的邏輯 */
 };
 
 const handleLogout = async () => {
@@ -238,18 +253,34 @@ const handleLogout = async () => {
   }
 };
 
-// 生命週期
+// --- 4. 生命週期與紀錄 ---
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
-    if (!user) router.replace("/login");
-    else {
+    if (!user) {
+      router.replace("/login");
+    } else {
       currentUser.value = user;
       initAllData(user.uid);
+
+      // 🌟 紀錄 1: 學生進入課程詳細頁面
+      pageEnterTime.value = Date.now();
+      recordAction(courseId, user.uid, "進入課程主頁面", {
+        platform: "web",
+      });
     }
   });
 });
 
 onUnmounted(() => {
+  // 🌟 紀錄 3: 離開頁面並計算總停留時間
+  if (currentUser.value?.uid && pageEnterTime.value) {
+    const stayDuration = Math.round((Date.now() - pageEnterTime.value) / 1000);
+    recordAction(courseId, currentUser.value.uid, "離開課程主頁面", {
+      total_stay_seconds: stayDuration,
+      final_view: currentView.value,
+    });
+  }
+
   activeListeners.forEach((path) => off(path));
   activeListeners = [];
 });
@@ -262,7 +293,6 @@ const watchUserGroup = (uid) => {
   onValue(userPath, (snap) => {
     const profile = snap.val();
     if (profile?.groupId) {
-      // 取得組別後，再去抓該組開啟了哪些模組 (Planning, AI Advice 等)
       const featPath = dbRef(
         rtdb,
         `courses/${courseId}/experiment/groups/${profile.groupId}`,

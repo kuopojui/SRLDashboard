@@ -188,6 +188,8 @@ import { rtdb, auth } from "../../../firebase/config";
 import { ref as dbRef, get, update, serverTimestamp } from "firebase/database";
 import Swal from "sweetalert2";
 import "./StuHW.css";
+// 🌟 匯入 Logger
+import { recordStudentAction as recordAction } from "../../../utils/logger.js";
 
 const props = defineProps({
   isOpen: Boolean,
@@ -222,6 +224,17 @@ const handleMultiSelect = (oIdx) => {
   const ansArr = userAnswers.value[currentIndex.value];
   const pos = ansArr.indexOf(oIdx);
   pos > -1 ? ansArr.splice(pos, 1) : ansArr.push(oIdx);
+};
+
+// 🌟 處理開始作業
+const handleStartHw = () => {
+  isStarted.value = true;
+  // 紀錄：學生開始寫作業
+  recordAction(props.courseId, "開始單元功課任務", {
+    unitId: props.unitId,
+    taskId: props.taskId,
+    taskTitle: hwData.value?.title,
+  });
 };
 
 const fetchHWDetail = async () => {
@@ -270,27 +283,48 @@ const submitHW = async () => {
     }
   });
 
+  const finalScore = Math.round(rawScore);
+
   try {
-    const finalScore = Math.round(rawScore);
-    await update(dbRef(rtdb, `student_traces/${uid}_${props.unitId}`), {
+    // 🌟 1. 更新課程內的學生 Trace (狀態追蹤)
+    // 路徑移入課程內部：courses/{courseId}/users/{uid}/trace/{unitId}
+    const tracePath = `courses/${props.courseId}/users/${uid}/trace/${props.unitId}`;
+    await update(dbRef(rtdb, tracePath), {
       hwScore: finalScore,
       hwStatus: "submitted",
       lastActive: serverTimestamp(),
+    });
+
+    // 🌟 2. 紀錄 Log
+    recordAction(props.courseId, "提交單元功課結果", {
+      unitId: props.unitId,
+      taskId: props.taskId,
+      taskTitle: hwData.value?.title,
+      score: finalScore,
+      errors: errorCount,
     });
 
     await Swal.fire("作業提交成功", `得分：${finalScore} 分`, "success");
     emit("close");
   } catch (error) {
     console.error("🔥 存檔失敗:", error);
+    Swal.fire("錯誤", "繳交失敗，請檢查網路", "error");
   }
 };
 
 const confirmSubmit = async () => {
+  const unanswered =
+    (hwData.value?.questions?.length || 0) -
+    Object.keys(userAnswers.value).length;
   const res = await Swal.fire({
     title: "確定繳交作業？",
-    text: "提交後老師將收到您的成果。",
+    text:
+      unanswered > 0
+        ? `尚有 ${unanswered} 題未完成！提交後老師將收到您的成果。`
+        : "提交後老師將收到您的成果。",
     icon: "question",
     showCancelButton: true,
+    confirmButtonColor: "#4a70a9",
   });
   if (res.isConfirmed) submitHW();
 };

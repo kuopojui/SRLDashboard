@@ -107,11 +107,14 @@
 <script setup>
 import { ref, onMounted, computed, nextTick, onUnmounted } from "vue";
 import { rtdb as db } from "../../firebase/config";
-import { ref as dbRef, onValue, push } from "firebase/database";
+import { ref as dbRef, onValue } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import { Chart, registerables } from "chart.js";
 import StuRank from "./Modal/StuRank.vue";
 import "./StuDashboard.css";
+
+// 🌟 引入統一的紀錄工具
+import { recordStudentAction } from "../../utils/logger.js";
 
 Chart.register(...registerables);
 
@@ -122,6 +125,7 @@ const courseId = props.courseId;
 const showRankModal = ref(false);
 const discussionCount = ref(0);
 const performanceSummary = ref({ hw: [], exam: [] });
+const pageEnterTime = ref(null); // 🌟 用於計算停留時間
 
 // 湛藍主題色變數
 const THEME_NAVY = "#4a70a9";
@@ -129,21 +133,7 @@ const THEME_NAVY = "#4a70a9";
 let hwChartInstance = null;
 let examChartInstance = null;
 
-// --- 🌟 SRL 行為紀錄 ---
-const recordStudentAction = async (cId, uid, actionType) => {
-  try {
-    const logRef = dbRef(db, `courses/${cId}/logs/${uid}`);
-    await push(logRef, {
-      action: actionType,
-      timestamp: Date.now(),
-      platform: "web",
-    });
-  } catch (e) {
-    console.error("行為紀錄失敗:", e);
-  }
-};
-
-// --- 計算均分 (具備 Baseline 對齊的資料源) ---
+// --- 計算均分 ---
 const avgHwScore = computed(() => {
   const scores = performanceSummary.value.hw
     .map((i) => i.score)
@@ -162,7 +152,7 @@ const avgExamScore = computed(() => {
     : 0;
 });
 
-// --- 圖表繪製核心 (優化樣式與銷毀) ---
+// --- 圖表繪製核心 ---
 const updateChart = async (id, labels, myScores, color) => {
   await nextTick();
   const ctx = document.getElementById(id);
@@ -175,11 +165,10 @@ const updateChart = async (id, labels, myScores, color) => {
         label: "我的成績",
         data: myScores,
         borderColor: color,
-        backgroundColor: color + "15", // 更淡的填充色
-        tension: 0.3, // 稍微增加圓滑度，符合極簡美感
+        backgroundColor: color + "15",
+        tension: 0.3,
         fill: true,
         pointRadius: 4,
-        pointHoverRadius: 6,
         pointBackgroundColor: "#ffffff",
         pointBorderColor: color,
         pointBorderWidth: 2,
@@ -191,30 +180,10 @@ const updateChart = async (id, labels, myScores, color) => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false }, // 隱藏圖例讓畫面更乾淨
-      tooltip: {
-        backgroundColor: "rgba(255, 255, 255, 0.95)",
-        titleColor: "#4a70a9",
-        bodyColor: "#1e293b",
-        borderColor: "rgba(74, 112, 169, 0.1)",
-        borderWidth: 1,
-        padding: 12,
-        cornerRadius: 10,
-        displayColors: false,
-      },
-    },
+    plugins: { legend: { display: false } },
     scales: {
-      y: {
-        min: 0,
-        max: 100,
-        grid: { color: "rgba(74, 112, 169, 0.05)", drawBorder: false },
-        ticks: { stepSize: 20, color: "#94a3b8", font: { weight: "600" } },
-      },
-      x: {
-        grid: { display: false },
-        ticks: { color: "#94a3b8", font: { weight: "600" } },
-      },
+      y: { min: 0, max: 100, ticks: { color: "#94a3b8" } },
+      x: { ticks: { color: "#94a3b8" } },
     },
   };
 
@@ -239,7 +208,9 @@ onMounted(() => {
   const uid = auth.currentUser?.uid;
   if (!uid) return;
 
-  recordStudentAction(courseId, uid, "進入學習診斷儀表板");
+  // 🌟 紀錄 1: 進入儀表板
+  pageEnterTime.value = Date.now();
+  recordStudentAction(courseId, "進入學習診斷儀表板");
 
   // 1. 監聽功課數據
   onValue(dbRef(db, `courses/${courseId}/assignments`), (snap) => {
@@ -252,7 +223,6 @@ onMounted(() => {
           val.scores?.[uid]?.score !== undefined ? val.scores[uid].score : null,
       }))
       .filter((i) => i.score !== null);
-
     performanceSummary.value.hw = processedHw;
     updateChart(
       "hwCompareChart",
@@ -273,7 +243,6 @@ onMounted(() => {
           val.scores?.[uid]?.score !== undefined ? val.scores[uid].score : null,
       }))
       .filter((i) => i.score !== null);
-
     performanceSummary.value.exam = processedExam;
     updateChart(
       "examCompareChart",
@@ -301,15 +270,29 @@ onMounted(() => {
   });
 });
 
-// 🌟 組件銷毀時清理圖表
 onUnmounted(() => {
+  const uid = getAuth().currentUser?.uid;
+  // 🌟 紀錄 2: 離開儀表板時紀錄總停留秒數
+  if (uid && pageEnterTime.value) {
+    const stayDuration = Math.round((Date.now() - pageEnterTime.value) / 1000);
+    recordStudentAction(courseId, "離開學習診斷儀表板", {
+      total_stay_seconds: stayDuration,
+    });
+  }
+
   if (hwChartInstance) hwChartInstance.destroy();
   if (examChartInstance) examChartInstance.destroy();
 });
 
+// 🌟 紀錄 3: 排行榜點擊紀錄
 const handleOpenRank = () => {
   showRankModal.value = true;
+  const uid = getAuth().currentUser?.uid;
+  recordStudentAction(courseId, "點擊查看排行榜", {
+    from_card: "performance_summary",
+  });
 };
+
 const handleCloseRank = () => {
   showRankModal.value = false;
 };

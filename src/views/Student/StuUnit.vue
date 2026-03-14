@@ -463,22 +463,14 @@
                           </p>
 
                           <div class="d-flex justify-content-center gap-3">
-                            <a
-                              :href="unitContent.fileUrl"
-                              target="_blank"
-                              download
-                              class="btn-navy-pill text-decoration-none"
+                            <button
+                              @click="handleDownload(unitContent)"
+                              class="btn-navy-pill border-0 text-decoration-none"
+                              style="cursor: pointer"
                             >
                               <i class="bi bi-cloud-download me-2"></i
                               >立即下載文件
-                            </a>
-                          </div>
-
-                          <div class="mt-4 p-3 bg-light rounded-3">
-                            <small class="text-muted italic">
-                              <i class="bi bi-info-circle me-1"></i>
-                              下載後學習期間，系統仍會為您統計「閱讀計時」數據。
-                            </small>
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -690,11 +682,13 @@
                   <i class="bi bi-pencil-square me-2 text-primary"></i>學習筆記
                 </h6>
                 <textarea
+                  v-model="noteText"
                   class="form-control mb-3 border-light bg-light small"
                   rows="8"
                   placeholder="輸入您的思考..."
                 ></textarea>
                 <button
+                  @click="handleSaveNote"
                   class="btn btn-navy btn-sm w-100 rounded-pill shadow-sm py-2"
                 >
                   儲存筆記紀錄
@@ -799,6 +793,7 @@ import StuExamModal from "./Modal/StuExam.vue";
 import StuHwModal from "./Modal/StuHW.vue";
 import StuDiscussModal from "./Modal/StuDiscussion.vue";
 import { AiService } from "../../services/aiService.js";
+import { recordStudentAction as recordAction } from "../../utils/logger.js";
 
 const props = defineProps({ courseId: String, id: String, userId: String });
 const router = useRouter();
@@ -811,8 +806,8 @@ const unitTitle = ref("正在載入...");
 const isMonitorLoading = ref(false);
 const isContentLoading = ref(false);
 const lastUpdateTime = ref("");
+const noteText = ref(""); // 🌟 新增：筆記內容變數
 
-// 記錄上次 AI 檢查的分鐘數，防止同一分鐘內重複觸發
 const tabs = [
   { id: "material", label: "課程教材", icon: "bi bi-book" },
   { id: "quiz", label: "單元檢測", icon: "bi bi-card-checklist" },
@@ -879,10 +874,17 @@ const scoreGap = computed(
 const switchMaterial = (mat) => {
   unitContent.value = mat;
   lastTrackTime.value = 0;
+
+  // 紀錄切換教材
+  recordAction(props.courseId, "切換學習教材", {
+    unitId: props.id,
+    materialTitle: mat.title,
+    type: mat.fileUrl?.includes(".mp4") ? "video" : "document",
+  });
+
   manageReadingTimer();
 };
 
-// 影片播放進度追蹤
 const handleVideoProgress = () => {
   if (!videoPlayerRef.value) return;
   const current = videoPlayerRef.value.currentTime;
@@ -891,7 +893,6 @@ const handleVideoProgress = () => {
     const addedMins = delta / 60;
     traceData.value.videoMins += addedMins;
     if (Math.floor(current) % 15 === 0) {
-      // 每 15 秒同步一次影片進度
       update(dbRef(rtdb, `student_traces/${props.userId}_${props.id}`), {
         videoMins: traceData.value.videoMins,
         lastActive: serverTimestamp(),
@@ -901,23 +902,16 @@ const handleVideoProgress = () => {
   lastTrackTime.value = current;
 };
 
-// 閱讀計時邏輯 (PDF / 下載件)
 const manageReadingTimer = () => {
   if (readingTimer) clearInterval(readingTimer);
-
-  // 條件：在教材分頁、有內容、且不是影片
   if (
     activeTab.value === "material" &&
     unitContent.value &&
     !unitContent.value.fileUrl?.includes(".mp4")
   ) {
-    console.log("📖 閱讀計時器已啟動...");
     readingTimer = setInterval(() => {
-      // 🌟 核心：確保 traceData.value 屬性被正確修改
       if (!traceData.value.readingMins) traceData.value.readingMins = 0;
       traceData.value.readingMins += 1 / 60;
-
-      // 每 15 秒同步一次 Firebase，減少請求但保持數據安全
       const currentSecs = Math.floor(traceData.value.readingMins * 60);
       if (currentSecs > 0 && currentSecs % 15 === 0) {
         update(dbRef(rtdb, `student_traces/${props.userId}_${props.id}`), {
@@ -929,12 +923,10 @@ const manageReadingTimer = () => {
   }
 };
 
-// 總投入時間計時器 (帶自動存檔)
 const startTimer = () => {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     elapsedTime.value++;
-    // 每 10 秒將總秒數備份到 Firebase，防止重整
     if (elapsedTime.value % 10 === 0) {
       update(dbRef(rtdb, `student_traces/${props.userId}_${props.id}`), {
         totalSeconds: elapsedTime.value,
@@ -942,6 +934,66 @@ const startTimer = () => {
       });
     }
   }, 1000);
+};
+
+// 🌟 新增：處理教材下載並紀錄行為
+// --- 🌟 修正：教材下載紀錄與開啟視窗 ---
+const handleDownload = (mat) => {
+  if (!mat || !mat.fileUrl) return;
+
+  // 1. 紀錄 Log
+  recordAction(props.courseId, "點擊下載教材", {
+    unitId: props.id,
+    materialTitle: mat.title,
+    fileUrl: mat.fileUrl,
+  });
+
+  // 2. 觸發開啟新視窗 (下載文件)
+  window.open(mat.fileUrl, "_blank");
+};
+
+// --- 🌟 修正：儲存筆記與行為紀錄 ---
+const handleSaveNote = async () => {
+  // 防呆：如果沒輸入內容就不紀錄
+  if (!noteText.value.trim()) {
+    Swal.fire({
+      title: "請輸入筆記內容",
+      icon: "warning",
+      toast: true,
+      position: "top-end",
+      timer: 2000,
+    });
+    return;
+  }
+
+  try {
+    const tracePath = `student_traces/${props.userId}_${props.id}`;
+
+    // 1. 實際存檔到 Firebase (確保老師看得到內容)
+    await update(dbRef(rtdb, tracePath), {
+      note: noteText.value,
+      lastActive: serverTimestamp(),
+    });
+
+    // 2. 紀錄 Log 行為 (用於 SRL 行為路徑分析)
+    recordAction(props.courseId, "儲存學習筆記", {
+      unitId: props.id,
+      contentLength: noteText.value.length,
+    });
+
+    // 成功提示
+    Swal.fire({
+      icon: "success",
+      title: "筆記已儲存",
+      toast: true,
+      position: "top-end",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (e) {
+    console.error("筆記儲存失敗:", e);
+    Swal.fire("錯誤", "儲存失敗，請檢查網路連線", "error");
+  }
 };
 
 // --- 7. 核心初始化 ---
@@ -956,8 +1008,6 @@ const initSrlEnvironment = async () => {
 
   try {
     isContentLoading.value = true;
-
-    // 1. 恢復學習軌跡
     const traceSnap = await get(dbRef(rtdb, tracePath));
     if (traceSnap.exists()) {
       const tData = traceSnap.val();
@@ -968,10 +1018,8 @@ const initSrlEnvironment = async () => {
         errorCount: 0,
         ...tData,
       };
-      console.log(`⏱️ 恢復學習進度：從 ${formattedTime.value} 接續`);
     }
 
-    // 2. 讀取學生 Profile 與實驗分組
     const profileSnap = await get(
       dbRef(rtdb, `${coursePath}/profiles/${props.userId}`),
     );
@@ -989,7 +1037,6 @@ const initSrlEnvironment = async () => {
       srlSession.value = profile.srl?.planning?.[props.id] || null;
     }
 
-    // 3. 讀取單元資料與關聯資源
     const unitSnap = await get(dbRef(rtdb, `${coursePath}/units/${props.id}`));
     if (unitSnap.exists()) {
       const uData = unitSnap.val();
@@ -1046,27 +1093,27 @@ const initSrlEnvironment = async () => {
       }
     }
 
-    // 4. 啟動監控機制
     if (activeFeatures.monitoring) {
       await fetchMonitorData();
       startTimer();
     }
 
-    // 🌟 關鍵修正：解決初始化時變數未定義的問題
-    // 保險 A：如果 unitContent 已經有值了，直接啟動
-    if (unitContent.value) {
-      console.log("📖 教材已即時就緒，啟動閱讀計時");
-      manageReadingTimer();
-    } else {
-      // 保險 B：如果還在載入，監聽它的變化，執行一次後銷毀
+    if (unitContent.value) manageReadingTimer();
+    else {
       const unwatchStart = watch(unitContent, (newVal) => {
         if (newVal) {
-          console.log("📖 偵測內容載入，補啟動閱讀計時");
           manageReadingTimer();
           unwatchStart();
         }
       });
     }
+
+    // 🌟 修正 6: 紀錄進入行為
+    recordAction(props.courseId, "進入具體單元學習頁", {
+      unitId: props.id,
+      unitTitle: unitTitle.value,
+      plannedTime: srlSession.value?.targetTime,
+    });
   } catch (error) {
     console.error("🔥 單元環境初始化失敗:", error);
   } finally {
@@ -1084,42 +1131,30 @@ const fetchMonitorData = async () => {
     if (statsSnap.exists()) topAverage.value = statsSnap.val().topAverage || 85;
 
     const tracePath = `student_traces/${props.userId}_${props.id}`;
-
-    // 使用 onValue 監聽雲端數據
     onValue(dbRef(rtdb, tracePath), (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // --- 🌟 防回彈邏輯：單向遞增檢查 ---
         const remoteReading = data.readingMins || 0;
         const localReading = traceData.value.readingMins || 0;
-
         const remoteVideo = data.videoMins || 0;
         const localVideo = traceData.value.videoMins || 0;
-
-        // 只有雲端數值領先本地超過一定數值，或是本地還是 0 時才同步
-        // 這樣可以防止 15 秒存檔週期內的舊數據把本地正在跑的秒數「拉回去」
         const shouldUpdateReading =
           localReading === 0 || remoteReading > localReading + 0.1;
         const shouldUpdateVideo =
           localVideo === 0 || remoteVideo > localVideo + 0.1;
 
         traceData.value = {
-          ...traceData.value, // 先展開舊數據
-          ...data, // 覆蓋雲端數據 (如 errorCount, reflection)
-          // 針對會即時跳動的欄位進行鎖定判斷
+          ...traceData.value,
+          ...data,
           readingMins: shouldUpdateReading ? remoteReading : localReading,
           videoMins: shouldUpdateVideo ? remoteVideo : localVideo,
         };
-
-        // 總秒數同步 (Header 計時器)
-        // 同樣道理：如果本地正在跑，且雲端數據比較舊，則不覆蓋
         if (
           data.totalSeconds &&
           (data.totalSeconds > elapsedTime.value || elapsedTime.value === 0)
         ) {
           elapsedTime.value = data.totalSeconds;
         }
-
         lastUpdateTime.value = new Date().toLocaleTimeString();
       }
     });
@@ -1128,26 +1163,14 @@ const fetchMonitorData = async () => {
   }
 };
 
-// --- 🌟 8. AI 智慧改善建議 (真 AI 串接版 + 防呆追蹤) ---
-
-// 記錄上次檢查的時間點與錯誤數，防止重複觸發
+// --- 🌟 AI 智慧改善建議 ---
 const lastAiCheckMin = ref(-1);
 const lastProcessedErrorCount = ref(0);
 
-/**
- * 核心 Function：呼叫 AI 服務獲取藥石建議
- */
-/**
- * 🌟 核心：向真 AI 服務請求診斷建議
- */
 const triggerAiDiagnostic = async () => {
-  // 防呆：功能沒開、正在思考中、或沒資料就跳過
   if (!activeFeatures.aiAdvice || isAiThinking.value) return;
-
   isAiThinking.value = true;
-
   try {
-    // 1. 準備數據 Context (必須對齊 AiService.js 的欄位)
     const context = {
       unitTitle: unitTitle.value || "未命名單元",
       videoMins: Number(traceData.value.videoMins || 0),
@@ -1157,67 +1180,69 @@ const triggerAiDiagnostic = async () => {
       elapsedTime: Math.floor(elapsedTime.value / 60),
       plannedTime: Number(srlSession.value?.targetTime || 0),
     };
-
-    console.group("🚀 [真 AI 診斷啟動]");
-    console.log("📊 數據上下文:", context);
-    console.groupEnd();
-
-    // 2. 🌟 呼叫真 AI 服務
     const aiResult = await AiService.getLearningAdvice(context);
-
-    // 3. 將結果更新到畫面
-    if (aiResult) {
-      aiStrategies.value = [aiResult];
-      console.log("✅ [AI 回應成功]:", aiResult);
-    }
-
+    if (aiResult) aiStrategies.value = [aiResult];
     lastUpdateTime.value = new Date().toLocaleTimeString();
-    lastProcessedErrorCount.value = context.errorCount; // 更新防呆標記
+    lastProcessedErrorCount.value = context.errorCount;
   } catch (error) {
-    console.error("❌ AI 診斷連線失敗:", error);
+    console.error("❌ AI 診斷失敗:", error);
     aiStrategies.value = ["AI 導師目前連線繁忙，請繼續您的學習。"];
   } finally {
     isAiThinking.value = false;
   }
 };
 
-/**
- * 🌟 核心監聽：判斷「藥石」跳出時機
- */
 watch(
   () => traceData.value,
   (newData) => {
     if (!activeFeatures.aiAdvice || !newData) return;
-
-    // 判斷是否偵測到新錯誤 (由 0 變 1, 1 變 2 等)
     const currentError = newData.errorCount || 0;
     const hasNewError = currentError > lastProcessedErrorCount.value;
-
-    // 判斷是否每 5 分鐘
     const currentMin = Math.floor(elapsedTime.value / 60);
     const isTimeStep =
       currentMin > 0 &&
       currentMin % 5 === 0 &&
       currentMin !== lastAiCheckMin.value;
-
     if (hasNewError || isTimeStep) {
       if (isTimeStep) lastAiCheckMin.value = currentMin;
-      console.log(
-        `🎯 診斷觸發原因: ${hasNewError ? "錯誤增加" : "時間檢查點"}`,
-      );
       triggerAiDiagnostic();
     }
   },
   { deep: true },
 );
 
+// 🌟 修正 2: 監聽分頁切換
+watch(activeTab, (newTab) => {
+  const tabNames = {
+    material: "課程教材",
+    quiz: "單元檢測",
+    hw: "功課提交",
+    discuss: "討論區",
+  };
+  recordAction(props.courseId, `切換單元分頁：${tabNames[newTab] || newTab}`, {
+    unitId: props.id,
+    unitTitle: unitTitle.value,
+  });
+  manageReadingTimer();
+});
+
+// 🌟 修正 3: 紀錄監控儀表板開啟
+watch(showMonitor, (isOpen) => {
+  if (isOpen) {
+    recordAction(props.courseId, "開啟單元監控儀表板", {
+      unitId: props.id,
+      currentScore: currentScore.value,
+      scoreGap: scoreGap.value,
+      elapsedMins: Math.floor(elapsedTime.value / 60),
+    });
+  }
+});
+
 onMounted(initSrlEnvironment);
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval);
   if (readingTimer) clearInterval(readingTimer);
 });
-
-watch(activeTab, manageReadingTimer);
 
 const goBack = () =>
   router.push({
@@ -1233,8 +1258,27 @@ const handleFinish = async () => {
     showCancelButton: true,
     confirmButtonColor: "#4a70a9",
     confirmButtonText: "開始反思",
+    cancelButtonText: "繼續學習",
   });
-  if (result.isConfirmed) showEvalModal.value = true;
+
+  if (result.isConfirmed) {
+    // 🌟 紀錄 1：學生接受建議，點擊「開始反思」
+    recordAction(props.courseId, "觸發單元自我反思", {
+      unitId: props.id,
+      unitTitle: unitTitle.value,
+      totalTimeSeconds: elapsedTime.value, // 紀錄他在這個單元總共待了多久
+      action: "start_reflection",
+    });
+
+    showEvalModal.value = true;
+  } else {
+    // 🌟 紀錄 2：學生點擊取消（選擇繼續留在單元內）
+    // 這有助於分析學生是否覺得自己還沒學夠
+    recordAction(props.courseId, "取消完成學習", {
+      unitId: props.id,
+      action: "cancel_finish",
+    });
+  }
 };
 
 const showExamModal = ref(false);
@@ -1242,15 +1286,38 @@ const showHwModal = ref(false);
 const showDiscussModal = ref(false);
 const activeTaskId = ref(null);
 
+// --- 🌟 修正：點擊測驗任務紀錄 ---
 const startExam = (examId) => {
+  const ex = unitExams.value.find((e) => e.id === examId);
+  recordAction(props.courseId, "點擊進入單元測驗", {
+    unitId: props.id,
+    examId: examId,
+    examTitle: ex ? ex.title : "未知測驗",
+  });
   activeTaskId.value = examId;
   showExamModal.value = true;
 };
+
+// --- 🌟 修正：點擊功課任務紀錄 ---
 const startHw = (hwId) => {
+  const hw = unitAssignments.value.find((h) => h.id === hwId);
+  recordAction(props.courseId, "點擊進入功課提交", {
+    unitId: props.id,
+    hwId: hwId,
+    hwTitle: hw ? hw.title : "未知功課",
+  });
   activeTaskId.value = hwId;
   showHwModal.value = true;
 };
+
+// --- 🌟 修正：點擊參與討論紀錄 ---
 const enterDiscussion = (disId) => {
+  const dis = unitForums.value.find((d) => d.id === disId);
+  recordAction(props.courseId, "點擊參與討論區", {
+    unitId: props.id,
+    discussId: disId,
+    discussTitle: dis ? dis.title : "未知討論",
+  });
   activeTaskId.value = disId;
   showDiscussModal.value = true;
 };

@@ -96,7 +96,7 @@
             :key="opt.val"
             class="btn-attribution-v2"
             :class="{ active: attribution === opt.val }"
-            @click="attribution = opt.val"
+            @click="handleAttributionClick(opt)"
           >
             {{ opt.label }}
           </button>
@@ -119,7 +119,7 @@
               :key="i"
               class="bi fs-2 pointer star-icon"
               :class="i <= strategyScore ? 'bi-star-fill active' : 'bi-star'"
-              @click="strategyScore = i"
+              @click="handleScoreClick(i)"
             ></i>
           </div>
         </div>
@@ -132,6 +132,7 @@
         <div class="comment-box p-3 rounded-4 border-solid bg-white shadow-xs">
           <textarea
             v-model="userComment"
+            @blur="handleCommentBlur"
             class="form-control border-0 bg-transparent no-focus-ring"
             rows="3"
             placeholder="請分享這單元學到了什麼，或是下次可以怎麼改進？"
@@ -167,7 +168,7 @@
               <p class="small mb-3 text-dark lh-lg">
                 {{ aiAdviceText }}
               </p>
-              <button @click="generateAiAdvice" class="btn btn-refresh-ai">
+              <button @click="handleRefreshAi" class="btn btn-refresh-ai">
                 <i class="bi bi-arrow-clockwise me-1"></i>重新分析
               </button>
             </div>
@@ -201,10 +202,10 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-// 🌟 改為引入 AiService 統一管理
 import { AiService } from "../../../services/aiService";
 import "./StuSRLEval.css";
 import Swal from "sweetalert2";
+import { recordStudentAction as recordAction } from "../../../utils/logger.js";
 
 const props = defineProps({
   isOpen: Boolean,
@@ -215,10 +216,9 @@ const props = defineProps({
 
 const emit = defineEmits(["confirm", "close"]);
 
-// --- 響應式狀態 ---
 const attribution = ref(null);
 const strategyScore = ref(0);
-const userComment = ref(""); // 學生輸入的心得
+const userComment = ref("");
 const aiAdviceText = ref("正在根據您的表現分析調節建議...");
 const isAiLoading = ref(false);
 
@@ -230,33 +230,89 @@ const attributionOptions = [
   { val: "other", label: "其他突發狀況" },
 ];
 
-// --- 生命週期 ---
+// --- 🌟 動作 1：進入頁面 ---
 onMounted(() => {
-  // 初始進入若尚未填寫，先給予預設載入文字，或執行一次基礎分析
-  if (props.isOpen) generateAiAdvice();
-});
-
-// --- 監聽觸發 ---
-// 🌟 當學生選擇了「歸因原因」與「評分」後，自動觸發 AI 分支獲取精準建議
-watch([attribution, strategyScore], () => {
-  if (attribution.value && strategyScore.value > 0) {
+  if (props.isOpen) {
+    console.log(
+      "🚀 [System Log] 進入反思頁面, 單元:",
+      props.srlSession?.unitTitle,
+    );
+    recordAction(props.srlSession?.courseId, "進入單元自我反思頁面", {
+      unitTitle: props.srlSession?.unitTitle,
+      plannedMins: props.plannedMins,
+      actualMins: props.actualMins,
+    });
     generateAiAdvice();
   }
 });
 
 /**
- * 🚀 核心邏輯：生成 AI 反思建議 (呼叫 AiService 分支)
+ * 🌟 動作 2：點擊執行落差歸因
+ * 移除異動判斷，每次點擊都紀錄 Console + Firebase
  */
+const handleAttributionClick = (opt) => {
+  attribution.value = opt.val;
+  console.log(`🎯 [Action Log] 點擊歸因: ${opt.label} (${opt.val})`);
+
+  recordAction(props.srlSession?.courseId, "點擊反思歸因選項", {
+    unitTitle: props.srlSession?.unitTitle,
+    selectedLabel: opt.label,
+    selectedVal: opt.val,
+    timestamp: new Date().getTime(),
+  });
+};
+
+/**
+ * 🌟 動作 3：點擊策略評分 (星星)
+ * 每次點擊都紀錄，偵測猶豫軌跡
+ */
+const handleScoreClick = (score) => {
+  strategyScore.value = score;
+  console.log(`⭐ [Action Log] 給予評分: ${score} 星`);
+
+  recordAction(props.srlSession?.courseId, "點擊策略有效性評分", {
+    unitTitle: props.srlSession?.unitTitle,
+    score: score,
+    timestamp: new Date().getTime(),
+  });
+};
+
+/**
+ * 🌟 動作 4：心得輸入框聚焦/失焦
+ */
+const handleCommentFocus = () => {
+  console.log("✍️ [Action Log] 開始輸入學習心得...");
+  recordAction(props.srlSession?.courseId, "開始輸入心得", {
+    unitTitle: props.srlSession?.unitTitle,
+  });
+};
+
+const handleCommentBlur = () => {
+  const length = userComment.value.length;
+  console.log(`📝 [Action Log] 結束心得輸入, 目前字數: ${length}`);
+
+  recordAction(props.srlSession?.courseId, "結束心得輸入框聚焦", {
+    unitTitle: props.srlSession?.unitTitle,
+    contentLength: length,
+    isLengthValid: length >= 5,
+  });
+};
+
+// 監聽：僅用於觸發 AI
+watch([attribution, strategyScore], () => {
+  if (attribution.value && strategyScore.value > 0) {
+    console.log("🤖 [AI Trigger] 條件達成，重新請求 AI 建議...");
+    generateAiAdvice();
+  }
+});
+
 const generateAiAdvice = async () => {
   if (isAiLoading.value) return;
   isAiLoading.value = true;
-
   try {
     const selectedAttr =
       attributionOptions.find((o) => o.val === attribution.value)?.label ||
       "未選擇";
-
-    // 1. 封裝反思階段需要的 Context
     const context = {
       unit: props.srlSession?.unitTitle || "當前單元",
       gap: props.actualMins - props.plannedMins,
@@ -265,48 +321,62 @@ const generateAiAdvice = async () => {
       userComment: userComment.value,
     };
 
-    // 2. 🌟 呼叫 aiService.js 中的 Eval 專用分支
     const result = await AiService.getEvalAdvice(context);
     aiAdviceText.value = result;
+    console.log("✅ [AI Success] 建議生成完畢");
+
+    recordAction(props.srlSession?.courseId, "生成 AI 自我調節建議", {
+      unitTitle: props.srlSession?.unitTitle,
+    });
   } catch (error) {
-    console.error("AI 反思分析失敗:", error);
-    aiAdviceText.value = "目前分析服務繁忙，請先專注於填寫您的學習心得。";
+    console.error("❌ [AI Error] 建議生成失敗:", error);
   } finally {
     isAiLoading.value = false;
   }
 };
 
-/**
- * 🌟 提交邏輯：打包 Stage 4 數據
- */
+const handleRefreshAi = () => {
+  console.log("🔄 [Action Log] 使用者手動請求重新分析");
+  recordAction(props.srlSession?.courseId, "點擊重新生成 AI 建議", {
+    unitTitle: props.srlSession?.unitTitle,
+  });
+  generateAiAdvice();
+};
+
 const handleConfirm = () => {
+  // 防呆提示 Console
   if (
     !attribution.value ||
     strategyScore.value === 0 ||
     userComment.value.length < 5
   ) {
+    console.warn("⚠️ [Submit Refused] 驗證未通過: 歸因、評分或心得字數不足");
     Swal.fire({
       title: "反思尚未完成",
-      text: "請填寫歸因、評分並輸入至少 5 個字的心得再提交喔！",
       icon: "warning",
-      confirmButtonColor: "#4a70a9",
+      text: "請確認所有項目皆已填寫並達 5 字心得",
     });
     return;
   }
 
+  console.log("🏁 [Submit Log] 最終反思數據提交中...");
   const reflectionPayload = {
     unitTitle: props.srlSession?.unitTitle || "未命名單元",
     attribution: attribution.value,
     strategyScore: strategyScore.value,
     userComment: userComment.value,
-    aiAdvice: aiAdviceText.value,
-    plannedMins: props.plannedMins,
-    actualMins: props.actualMins,
-    timeGap: props.actualMins - props.plannedMins,
     submittedAt: new Date().toISOString(),
   };
 
-  console.log("✅ [Stage 4] 反思數據打包成功:", reflectionPayload);
+  recordAction(props.srlSession?.courseId, "提交單元反思結果", {
+    unitTitle: reflectionPayload.unitTitle,
+    finalScore: strategyScore.value,
+    finalAttribution: attributionOptions.find(
+      (o) => o.val === attribution.value,
+    )?.label,
+    commentLength: userComment.value.length,
+  });
+
   emit("confirm", reflectionPayload);
 };
 </script>

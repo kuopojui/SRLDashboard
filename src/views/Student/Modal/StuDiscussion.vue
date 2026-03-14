@@ -113,6 +113,8 @@ import {
 } from "firebase/database";
 import Swal from "sweetalert2";
 import "./StuDiscussion.css";
+// 🌟 引入 Logger 工具
+import { recordStudentAction as recordAction } from "../../../utils/logger.js";
 
 const props = defineProps(["courseId", "unitId", "disId"]);
 const emit = defineEmits(["close"]);
@@ -133,14 +135,28 @@ const formatTime = (ts) => {
   return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
 };
 
-// 🌟 回覆功能：自動填入 @ 並聚焦
+// 🌟 修正：回覆功能並紀錄行為
 const handleReply = (name) => {
   newMessage.value = `@${name} `;
   replyInput.value?.focus();
+
+  // 紀錄行為：點擊回覆按鈕（代表有社交互動意圖）
+  recordAction(props.courseId, "點擊回覆他人留言", {
+    unitId: props.unitId,
+    targetUserName: name,
+    discussId: props.disId,
+  });
 };
 
 onMounted(async () => {
   if (!props.disId) return;
+
+  // 🌟 紀錄 1：進入討論視窗
+  recordAction(props.courseId, "進入單元討論區視窗", {
+    unitId: props.unitId,
+    discussId: props.disId,
+  });
+
   try {
     // 1. 讀取使用者真實姓名與角色
     const userSnap = await get(dbRef(db, `users/${currentUid}`));
@@ -192,16 +208,28 @@ onUnmounted(() => {
 
 const handleSend = async () => {
   if (!newMessage.value.trim() || sending.value) return;
+
+  const messageText = newMessage.value; // 暫存用於紀錄
   sending.value = true;
+
   try {
     const path = `courses/${props.courseId}/discussions/${props.disId}/messages`;
     await set(push(dbRef(db, path)), {
       userId: currentUid,
       userName: userProfile.value.name,
       role: userProfile.value.role,
-      content: newMessage.value,
+      content: messageText,
       timestamp: serverTimestamp(),
     });
+
+    // 🌟 紀錄 2：正式發送留言
+    recordAction(props.courseId, "發送討論區留言", {
+      unitId: props.unitId,
+      discussId: props.disId,
+      contentLength: messageText.length,
+      isReply: messageText.startsWith("@"),
+    });
+
     newMessage.value = "";
   } catch (err) {
     Swal.fire("發言失敗", "請檢查網路連線", "error");

@@ -63,6 +63,8 @@ import { rtdb, auth } from "../../firebase/config";
 import { ref as dbRef, onValue } from "firebase/database";
 import StuSrlPlan from "./Modal/StuSRLPlan.vue";
 import "./StuSchedule.css";
+// 🌟 匯入您定義好的 logger 工具
+import { recordStudentAction as recordAction } from "../../utils/logger.js";
 
 const props = defineProps({ courseId: String, userId: String });
 const router = useRouter();
@@ -79,23 +81,36 @@ const activeTaskInitialData = ref({});
 // 🌟 核心點擊邏輯：如果已完成，也可以直接進入
 const handleUnitClick = (unit) => {
   const unitId = unit.id;
+  const uid = auth.currentUser?.uid || props.userId; // 確保有 uid
   const isFinished = !!unitTraces.value[unitId]?.isFinished;
   const hasPlan = !!(unitPlans.value && unitPlans.value[unitId]?.targetTime);
 
   // 1. 如果已完成：直接跳轉查看
   if (isFinished) {
+    recordAction(props.courseId, "查看已完成單元", {
+      unitId,
+      unitTitle: unit.title,
+    }); // 🌟 紀錄
     handleRedirectToUnit(unitId);
     return;
   }
 
   // 2. 如果需規劃且尚未填寫：彈出 Modal
   if (activeFeatures.value.planning && !hasPlan) {
+    recordAction(props.courseId, "觸發學習規劃引導", {
+      unitId,
+      unitTitle: unit.title,
+    }); // 🌟 紀錄
     activeTaskId.value = unitId;
     activeTaskInitialData.value = { unitTitle: unit.title };
     showActiveModal.value = true;
   }
   // 3. 其他情況：直接進入
   else {
+    recordAction(props.courseId, "點擊進入學習單元", {
+      unitId,
+      unitTitle: unit.title,
+    }); // 🌟 紀錄
     handleRedirectToUnit(unitId);
   }
 };
@@ -110,6 +125,12 @@ const handleRedirectToUnit = async (unitId) => {
   if (!unitId || !props.courseId || !currentUid) return;
 
   try {
+    // 🌟 在跳轉前紀錄具體單元進入
+    recordAction(props.courseId, "實際跳轉至單元頁面", {
+      unitId,
+      timestamp: Date.now(),
+    });
+
     await router.push({
       name: "StuUnit",
       params: { courseId: props.courseId, id: unitId, userId: currentUid },
