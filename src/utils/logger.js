@@ -1,5 +1,5 @@
 import { ref, onMounted, computed, nextTick, onUnmounted } from "vue";
-import { rtdb as db } from "../../firebase/config";
+import { rtdb as db } from "../firebase/config";
 import {
   ref as dbRef,
   onValue,
@@ -8,8 +8,6 @@ import {
 } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import { Chart, registerables } from "chart.js";
-import StuRank from "./Modal/StuRank.vue";
-import "./StuDashboard.css";
 
 Chart.register(...registerables);
 

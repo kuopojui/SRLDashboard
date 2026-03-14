@@ -21,9 +21,9 @@
       </nav>
 
       <StuProfile
-        v-if="showProfileModal"
+        v-if="showProfileModal && studentData.uid"
         :uid="studentData.uid"
-        :courseId="'system_global'"
+        :courseId="null"
         @close="showProfileModal = false"
       />
 
@@ -230,9 +230,9 @@ const promptJoinCode = async () => {
         <div class="badge bg-primary rounded-circle me-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px;">1</div>
         <label class="small fw-bold text-navy mb-0">課程邀請碼 (6位代碼)</label>
       </div>
-      <input id="swal-input-joincode" 
-             class="form-control form-control-lg rounded-pill border-2 shadow-sm passcode-input" 
-             placeholder="例如: K89X2P" 
+      <input id="swal-input-joincode"
+             class="form-control form-control-lg rounded-pill border-2 shadow-sm passcode-input"
+             placeholder="例如: K89X2P"
              style="text-align: center; letter-spacing: 2px;">
     </div>
 
@@ -241,12 +241,12 @@ const promptJoinCode = async () => {
         <div class="badge bg-success rounded-circle me-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px;">2</div>
         <label class="small fw-bold text-navy mb-0">組別通行碼 (班級代碼)</label>
       </div>
-      <input id="swal-input-passcode" 
-             class="form-control form-control-lg rounded-pill border-2 shadow-sm passcode-input" 
-             placeholder="例如: AAA" 
+      <input id="swal-input-passcode"
+             class="form-control form-control-lg rounded-pill border-2 shadow-sm passcode-input"
+             placeholder="例如: AAA"
              style="text-align: center; letter-spacing: 2px;">
     </div>
-    
+
     <div class="mt-3 p-2 bg-light rounded-4 small text-muted">
       <i class="bi bi-info-circle me-1"></i> 請向授課教師索取以上代碼
     </div>
@@ -378,19 +378,20 @@ const studentData = computed(() => {
 });
 
 // 點擊觸發函式
+// StuCourse.vue Script 部分
 const handleOpenProfile = async () => {
   showProfileModal.value = true;
 
-  // 🌟 補上行為紀錄
   const uid = auth.currentUser?.uid;
   if (!uid) return;
 
   try {
-    const logPath = `system_logs/${uid}`;
+    // 🌟 建議路徑：將全域動作歸類在 logs/global 下
+    const logPath = `logs/global/${uid}`;
     await push(dbRef(rtdb, logPath), {
       action: "學生開啟帳號設定",
       timestamp: serverTimestamp(),
-      details: { page: "StuCourse" },
+      details: { page: "StuCourse_Home" },
     });
   } catch (e) {
     console.error("紀錄失敗:", e);
