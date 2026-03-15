@@ -1,11 +1,25 @@
-/* 容器層次 */
+/* --- 1. 容器與基礎設定 --- */
 .StudentSchedule {
   max-width: 850px;
   margin: 2rem auto;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
+  font-family: "Inter", "Noto Sans TC", system-ui, sans-serif;
+  /* 增加進場動畫，讓列表載入更流暢 */
+  animation: fadeIn 0.6s ease-out;
 }
 
-/* 核心卡片設計：專業海軍藍邊框 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- 2. 核心卡片設計：頂級海軍藍風格 --- */
 .unit-card-premium {
   position: relative;
   background: #ffffff;
@@ -17,6 +31,9 @@
   justify-content: space-between;
   align-items: center;
   z-index: 1;
+  cursor: pointer;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 /* 懸停：深度懸浮感 + 邊框強化 */
@@ -26,7 +43,7 @@
   border-color: #002c53 !important;
 }
 
-/* 背景流光：點擊感的視覺反饋 */
+/* 背景流光特效 */
 .unit-card-premium::before {
   content: "";
   position: absolute;
@@ -47,14 +64,14 @@
   left: 100%;
 }
 
-/* 左側狀態指示燈 */
+/* --- 3. 狀態指示系統 --- */
 .status-bar {
   position: absolute;
   left: 0;
   top: 0;
   height: 100%;
   width: 5px;
-  background: #e2e8f0;
+  background: #e2e8f0; /* 預設灰色 */
   transition: all 0.3s ease;
 }
 
@@ -62,46 +79,51 @@
   width: 8px;
 }
 
-/* 狀態顏色 */
+/* 狀態顏色變換 */
+.is-finished .status-bar {
+  background: #002c53;
+} /* 已完成 */
 .is-planned .status-bar {
   background: #198754;
-} /* 成功綠 */
+} /* 已規劃 */
 .needs-planning .status-bar {
-  background: #ffc107; /* 警告黃 */
+  background: #ffc107; /* 需規劃 */
   box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
 }
 
-/* 序號球：海軍藍質感 */
+/* --- 4. 序號球與裝飾元件 --- */
 .unit-index-badge {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   color: #002c53;
   transition: all 0.3s ease;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .unit-card-premium:hover .unit-index-badge {
   background: #002c53;
   color: #ffffff;
-  transform: rotate(-10deg) scale(1.1);
+  transform: rotate(-8deg) scale(1.1);
 }
 
-/* 標籤設計：更精緻的背景色 */
 .badge-custom {
   font-size: 0.75rem;
-  padding: 5px 12px;
+  padding: 4px 12px;
   border-radius: 50px;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
 
-/* 右側箭頭：動態平移 */
+/* 右側箭頭動效 */
 .arrow-wrapper {
   color: #002c53;
   opacity: 0.3;
@@ -114,17 +136,32 @@
   transform: translateX(5px) scale(1.2);
 }
 
-/* --- Modal 遮罩層：高級玻璃擬態 --- */
+/* --- 5. Modal 彈窗：絕對置中與玻璃擬態 --- */
 .ScheduleModalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 20, 40, 0.4); /* 深藍色半透明 */
-  backdrop-filter: blur(10px); /* 模糊背景 */
+  background: rgba(0, 20, 40, 0.4); /* 深藍透明底 */
+  backdrop-filter: blur(10px); /* 玻璃模糊 */
   z-index: 10000;
+  /* 🌟 強制置中關鍵 */
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 1.5rem;
   animation: modalIn 0.4s ease-out;
+}
+
+.test-result-modal {
+  background: #ffffff;
+  width: 100%;
+  max-width: 650px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh; /* 確保長問卷不會超出螢幕 */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden; /* 確保內部的捲動不會撐破圓角 */
 }
 
 @keyframes modalIn {
@@ -136,4 +173,83 @@
     opacity: 1;
     backdrop-filter: blur(10px);
   }
+}
+
+/* 內部回答區塊微調 */
+.modal-body-custom {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.bg-light.rounded-3 {
+  background-color: #f8fafc !important;
+  border: 1px solid #f1f5f9;
+  transition: transform 0.2s ease;
+}
+
+.bg-light.rounded-3:hover {
+  transform: scale(1.01);
+}
+
+/* --- 6. 特效動畫 --- */
+@keyframes pulse-navy {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 112, 169, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(74, 112, 169, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 112, 169, 0);
+  }
+}
+
+.pulse-animation {
+  animation: pulse-navy 2s infinite;
+}
+
+/* --- 7. RWD 響應式優化 --- */
+@media (max-width: 576px) {
+  .StudentSchedule {
+    margin: 1rem auto;
+  }
+
+  .unit-card-premium {
+    padding: 1rem;
+    flex-wrap: wrap; /* 手機版內容自動換行 */
+  }
+
+  .unit-index-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  /* 手機版文字換行與間距處理 */
+  .unit-card-premium > div:nth-child(2) {
+    width: calc(100% - 80px);
+    padding-left: 0.5rem;
+  }
+
+  .badge-custom {
+    display: inline-block;
+    margin-top: 5px;
+  }
+
+  .test-result-modal {
+    max-height: 90vh; /* 手機版彈窗佔比稍大 */
+    border-radius: 20px;
+  }
+}
+
+/* 滾動條美化 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }

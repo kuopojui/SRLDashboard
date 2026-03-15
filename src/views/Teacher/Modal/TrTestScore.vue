@@ -83,6 +83,7 @@ import { rtdb as db } from "../../../firebase/config";
 import { ref as dbRef, onValue, update } from "firebase/database";
 import Swal from "sweetalert2";
 import TrTestAns from "./TrTestAns.vue"; // 🌟 引入新組件
+import "./TrTestScore.css";
 
 const props = defineProps({ courseId: String });
 const profiles = ref({});

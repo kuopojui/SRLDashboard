@@ -188,13 +188,13 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { auth, rtdb } from "../../firebase/config";
-// 🌟 匯入必要的 Firebase 方法
 import {
   ref as dbRef,
-  push,
   set,
   onValue,
   serverTimestamp,
+  push as dbPush, // 🌟 重新命名以與 Array.push 區分
+  remove,
 } from "firebase/database";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import Swal from "sweetalert2";
@@ -217,12 +217,10 @@ const form = ref({
 });
 
 // --- 計算屬性 ---
-// 確保 filteredCourses 始終回傳陣列，避免 HTML 中的 .length 報錯
 const filteredCourses = computed(() => {
   return courses.value || [];
 });
 
-// 準備給 TrProfile 的教師資料
 const teacherData = computed(() => ({
   uid: auth.currentUser?.uid,
   displayName: auth.currentUser?.displayName || "管理者",
@@ -235,12 +233,10 @@ onMounted(() => {
     if (!user) {
       router.replace("/login");
     } else {
-      // 監聽所有課程數據
       const coursesPath = dbRef(rtdb, "courses");
       onValue(coursesPath, (snap) => {
         const data = snap.val();
         if (data) {
-          // 將物件格式轉為陣列供 v-for 使用
           courses.value = Object.entries(data).map(([id, val]) => ({
             id,
             ...val,
@@ -255,23 +251,9 @@ onMounted(() => {
 
 // --- 行為方法 ---
 
-// 1. 開啟帳號設定並紀錄鉅細靡遺 Log
-const handleOpenProfile = async () => {
+// 1. 開啟帳號設定 (🌟 已移除 System Log 紀錄)
+const handleOpenProfile = () => {
   showProfileModal.value = true;
-  const uid = auth.currentUser?.uid;
-  if (!uid) return;
-
-  try {
-    // 紀錄教師點擊行為，支援後續教學調節分析
-    const logPath = `system_logs/${uid}`;
-    await push(dbRef(rtdb, logPath), {
-      action: "開啟教師帳號設定",
-      timestamp: serverTimestamp(),
-      details: { page: "TrCourse" },
-    });
-  } catch (e) {
-    console.error("Log 紀錄失敗:", e);
-  }
 };
 
 // 2. 建立新課程單元
@@ -280,9 +262,8 @@ const createCourse = async () => {
     return Swal.fire("提醒", "請填寫課程名稱", "warning");
   }
 
-  // 生成隨機 6 位邀請碼
   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-  const newRef = push(dbRef(rtdb, "courses"));
+  const newRef = dbPush(dbRef(rtdb, "courses")); // 使用 dbPush
 
   try {
     await set(newRef, {
@@ -311,7 +292,6 @@ const createCourse = async () => {
 
 // 3. 路由導向
 const goToCourse = (course) => {
-  // 判斷身分導向不同看板
   const path =
     course.creatorId === auth.currentUser.uid ? "trdashboard" : "stdashboard";
   router.push(`/${path}/${course.id}`);
@@ -339,16 +319,15 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
 };
 
-//刪除課程
-/* --- 刪除課程邏輯 --- */
+// 6. 刪除課程邏輯
 const deleteCourse = async (courseId) => {
   const result = await Swal.fire({
     title: "確定要刪除此課程？",
     text: "刪除後所有學生數據與教材將無法復原！",
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: "#BF4646", // 主要紅色
-    cancelButtonColor: "#4a70a9", // 主要深藍
+    confirmButtonColor: "#BF4646",
+    cancelButtonColor: "#4a70a9",
     confirmButtonText: "確定刪除",
     cancelButtonText: "取消",
     reverseButtons: true,
@@ -356,10 +335,7 @@ const deleteCourse = async (courseId) => {
 
   if (result.isConfirmed) {
     try {
-      // 🌟 執行 Firebase 刪除動作 (courses/{id})
-      const { remove } = await import("firebase/database");
       await remove(dbRef(rtdb, `courses/${courseId}`));
-
       Swal.fire({
         icon: "success",
         title: "已刪除",

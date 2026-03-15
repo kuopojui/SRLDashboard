@@ -1,0 +1,174 @@
+/* --- 變數定義 --- */
+.TrTest {
+  --navy: #3a5a8a;
+  --navy-light: #f0f4f9;
+  --primary-soft: rgba(58, 90, 138, 0.1);
+  --success-green: #22c55e;
+  --warning-orange: #f59e0b;
+  --bg-beige: #efece3; /* 配合系統主題 */
+}
+
+/* --- 容器與佈局 --- */
+.score-view-container {
+  padding: 1.5rem;
+  background-color: transparent;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* --- 頂部過濾列 --- */
+.score-filter-bar {
+  background: white;
+  padding: 1.25rem 2rem;
+  border: 1px solid rgba(58, 90, 138, 0.1);
+}
+
+.text-navy {
+  color: var(--navy) !important;
+}
+
+.bg-soft-primary {
+  background-color: var(--primary-soft);
+}
+
+/* --- 學生卡片主體 --- */
+.student-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 5px solid transparent !important;
+  position: relative;
+}
+
+.student-card:hover {
+  transform: translateX(5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 🌟 當有分組時顯示左側藍色邊框 */
+.student-card.has-group-border {
+  border-left: 5px solid var(--navy) !important;
+}
+
+/* 大頭貼圓圈 */
+.avatar-circle {
+  width: 45px;
+  height: 45px;
+  background: var(--navy);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 8px rgba(58, 90, 138, 0.2);
+}
+
+/* --- 狀態指示器 --- */
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-indicator.completed {
+  background-color: var(--success-green);
+}
+.status-indicator.pending {
+  background-color: var(--warning-orange);
+}
+
+/* --- 🌟 下拉選單樣式 (ex-select-sm) --- */
+.ex-select-sm {
+  padding: 6px 30px 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  background-color: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 110px;
+}
+
+.ex-select-sm:hover {
+  border-color: var(--navy);
+  background-color: #ffffff;
+}
+
+.ex-select-sm.selected-group {
+  background-color: var(--navy-light);
+  border-color: var(--navy);
+  color: var(--navy);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233a5a8a' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* --- 按鈕 --- */
+.btn-navy {
+  background-color: var(--navy);
+  color: white;
+  border: none;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-navy:hover {
+  background-color: #2a4a7a;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(58, 90, 138, 0.3);
+}
+
+/* --- 📱 RWD 響應式佈局 --- */
+
+@media (max-width: 768px) {
+  .score-view-container {
+    padding: 1rem;
+  }
+
+  .score-filter-bar {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  /* 手機版卡片改為垂直堆疊 */
+  .student-card {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 15px;
+    padding: 1.25rem !important;
+  }
+
+  /* 讓右側的控制區在手機版撐滿 */
+  .student-card > div:last-child,
+  .student-card > .d-flex.align-items-center.gap-4 {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 10px;
+  }
+
+  .ex-select-sm {
+    flex: 1;
+    text-align: center;
+  }
+
+  .btn-navy {
+    flex: 1;
+  }
+}
+
+/* 字體微調 */
+.xx-small {
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}

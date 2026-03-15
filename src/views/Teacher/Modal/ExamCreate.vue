@@ -1,173 +1,239 @@
 <template>
   <div class="ExamCreate ex-modal-overlay" @click.self="$emit('close')">
-    <div class="ex-modal-content">
+    <div
+      class="ex-modal-content homework-theme animate__animated animate__fadeInUp"
+    >
       <div class="ex-modal-header">
-        <h3><i class="bi bi-pencil-square"></i>建立單元測驗</h3>
-        <button class="btn-close" @click="$emit('close')"></button>
+        <h3 class="modal-title-navy">
+          <i class="bi bi-pencil-square me-2"></i>建立單元測驗
+        </h3>
+        <button
+          type="button"
+          class="btn-close-red"
+          @click="$emit('close')"
+          title="關閉"
+        >
+          ✕
+        </button>
       </div>
 
-      <form @submit.prevent="createExam" class="ex-form-container">
-        <div class="form-section">
-          <label class="ex-label">測驗標題</label>
-          <input
-            v-model="form.title"
-            class="ex-input"
-            placeholder="例如：期末總複習"
-            required
-          />
-        </div>
-
-        <div class="exam-settings-grid">
-          <div>
-            <label class="ex-label">截止日期</label>
+      <form
+        @submit.prevent="createExam"
+        class="ex-form-container custom-scrollbar"
+      >
+        <div class="form-body">
+          <div class="mb-4">
+            <label class="ex-label-small text-secondary fw-bold mb-2"
+              >測驗標題</label
+            >
             <input
-              v-model="form.deadline"
-              type="datetime-local"
-              class="ex-input"
+              v-model="form.title"
+              type="text"
+              class="ex-input-field"
+              placeholder="例如：第一單元 總結性評量"
               required
             />
           </div>
-          <div>
-            <label class="ex-label">時長 (分鐘)</label>
-            <input
-              v-model="form.duration"
-              type="number"
-              class="ex-input"
-              placeholder="60"
-            />
+
+          <div class="exam-settings-grid mb-4">
+            <div class="setting-item">
+              <label class="ex-label-small text-secondary fw-bold mb-2"
+                >截止日期</label
+              >
+              <input
+                v-model="form.deadline"
+                type="datetime-local"
+                class="ex-input-field"
+                required
+              />
+            </div>
+
+            <div class="setting-item">
+              <label class="ex-label-small text-secondary fw-bold mb-2"
+                >時長 (分鐘)</label
+              >
+              <input
+                v-model="form.duration"
+                type="number"
+                class="ex-input-field"
+                placeholder="60"
+                min="1"
+              />
+            </div>
+
+            <div class="setting-item">
+              <label class="ex-label-small text-secondary fw-bold mb-2"
+                >可測驗次數</label
+              >
+              <input
+                v-model="form.maxAttempts"
+                type="number"
+                class="ex-input-field"
+                placeholder="1"
+                min="1"
+              />
+              <div class="xx-small text-muted mt-1">預設為 1 次</div>
+            </div>
           </div>
-          <div class="d-flex align-items-end">
-            <div
-              class="ex-input d-flex align-items-center justify-content-between py-2 bg-white"
-            >
-              <span class="small fw-bold">允許遲交</span>
-              <div class="form-check form-switch m-0">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  v-model="form.allowLate"
-                />
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6 col-12">
+              <div
+                class="setting-card p-3 border rounded-4 bg-white d-flex justify-content-between align-items-center"
+              >
+                <span class="small fw-bold text-navy">允許遲交</span>
+                <div class="form-check form-switch m-0">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="form.allowLate"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div
+                class="setting-card p-3 border rounded-4 bg-white d-flex justify-content-between align-items-center"
+                style="border-style: dashed !important"
+              >
+                <span class="small fw-bold text-navy">交卷後立即顯示成績</span>
+                <div class="form-check form-switch m-0">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="form.showResult"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div
-          class="ex-input d-flex align-items-center justify-content-between py-2 bg-white"
-          style="border-style: dashed"
-        >
-          <span class="fw-bold text-navy">交卷後立即顯示成績</span>
-          <div class="form-check form-switch m-0">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              v-model="form.showResult"
-            />
-          </div>
-        </div>
+          <hr class="ex-divider my-4" />
 
-        <hr class="ex-divider" />
-
-        <div class="ex-question-card" v-for="(q, idx) in questions" :key="idx">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-danger">Q {{ idx + 1 }}</span>
-              <input
-                v-model="q.point"
-                type="number"
-                class="ex-input py-1"
-                style="width: 80px"
-              />
-              <span class="small fw-bold">分</span>
-            </div>
-            <button
-              type="button"
-              class="btn-close"
-              @click="questions.splice(idx, 1)"
-            ></button>
-          </div>
-
-          <input
-            v-model="q.question"
-            class="ex-input mb-3"
-            placeholder="請輸入問題內容..."
-            required
-          />
-
-          <select
-            v-model="q.type"
-            class="ex-select mb-3"
-            @change="handleTypeChange(q)"
-          >
-            <option value="shortAnswer">簡答題</option>
-            <option value="multipleChoice">單選題 (4選1)</option>
-            <option value="multiSelect">多選題 (5選項)</option>
-          </select>
-
-          <div class="ex-answer-setup">
-            <label class="ex-label-small text-muted mb-2 d-block"
-              >參考答案設定</label
+          <div class="ex-question-list">
+            <div
+              class="ex-question-card shadow-sm border mb-4"
+              v-for="(q, idx) in questions"
+              :key="idx"
             >
-
-            <div v-if="q.type === 'shortAnswer'">
-              <textarea
-                v-model="q.refAnswer"
-                class="ex-textarea"
-                rows="2"
-                placeholder="請輸入評分關鍵字或參考答案..."
-              ></textarea>
-            </div>
-
-            <div v-else>
               <div
-                v-for="i in q.type === 'multipleChoice' ? 4 : 5"
-                :key="i"
-                class="d-flex gap-3 mb-2 align-items-center"
+                class="q-card-header d-flex justify-content-between align-items-center"
               >
-                <span
-                  class="small fw-bold text-muted"
-                  style="min-width: 20px"
-                  >{{ String.fromCharCode(64 + i) }}</span
+                <div class="d-flex align-items-center gap-2">
+                  <span
+                    class="badge-index bg-danger text-white px-2 py-1 rounded"
+                    >Q {{ idx + 1 }}</span
+                  >
+                  <div class="input-group input-group-sm" style="width: 120px">
+                    <input
+                      v-model="q.point"
+                      type="number"
+                      class="form-control"
+                      placeholder="分值"
+                      min="0"
+                    />
+                    <span class="input-group-text bg-white">分</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn-remove-q"
+                  @click="questions.splice(idx, 1)"
                 >
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </div>
+
+              <div class="q-card-body p-3">
                 <input
-                  v-model="q.options[i - 1]"
-                  class="ex-input py-1"
-                  placeholder="選項內容"
+                  v-model="q.question"
+                  type="text"
+                  class="ex-input-field mb-3"
+                  placeholder="請輸入問題內容..."
                   required
                 />
 
-                <input
-                  v-if="q.type === 'multipleChoice'"
-                  type="radio"
-                  :name="'exans-' + idx"
-                  :value="i - 1"
-                  v-model="q.answer"
-                  class="form-check-input"
-                />
-                <input
-                  v-else
-                  type="checkbox"
-                  :value="i - 1"
-                  v-model="q.multiAnswers"
-                  class="form-check-input"
-                />
+                <select
+                  v-model="q.type"
+                  class="ex-select-field mb-3"
+                  @change="handleTypeChange(q)"
+                >
+                  <option value="shortAnswer">簡答題</option>
+                  <option value="multipleChoice">單選題 (4選1)</option>
+                  <option value="multiSelect">多選題 (5選項)</option>
+                </select>
+
+                <div class="ex-answer-setup p-3 rounded-4 bg-light">
+                  <label class="xx-small fw-bold text-navy mb-2 d-block"
+                    >參考答案設定</label
+                  >
+
+                  <div v-if="q.type === 'shortAnswer'">
+                    <textarea
+                      v-model="q.refAnswer"
+                      class="ex-input-field"
+                      rows="2"
+                      placeholder="請輸入評分關鍵字或參考答案..."
+                    ></textarea>
+                  </div>
+
+                  <div v-else class="options-container">
+                    <div
+                      v-for="i in q.type === 'multipleChoice' ? 4 : 5"
+                      :key="i"
+                      class="option-row d-flex gap-2 mb-2 align-items-center"
+                    >
+                      <span
+                        class="opt-label fw-bold text-muted"
+                        style="min-width: 25px"
+                      >
+                        {{ String.fromCharCode(64 + i) }}
+                      </span>
+                      <input
+                        v-model="q.options[i - 1]"
+                        type="text"
+                        class="ex-input-field sm flex-grow-1"
+                        placeholder="選項內容"
+                        required
+                      />
+                      <input
+                        v-if="q.type === 'multipleChoice'"
+                        type="radio"
+                        :name="'exans-' + idx"
+                        :value="i - 1"
+                        v-model="q.answer"
+                        class="form-check-input"
+                      />
+                      <input
+                        v-else
+                        type="checkbox"
+                        :value="i - 1"
+                        v-model="q.multiAnswers"
+                        class="form-check-input"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          <button
+            type="button"
+            class="btn-add-dashed-full mb-4"
+            @click="addQuestion"
+          >
+            <i class="bi bi-plus-lg me-2"></i> 新增下一道題目
+          </button>
         </div>
 
-        <button
-          type="button"
-          class="ex-btn-secondary w-100 mb-4"
-          style="border-style: dashed"
-          @click="addQuestion"
+        <div
+          class="ex-modal-footer d-flex justify-content-between align-items-center"
         >
-          ＋ 新增下一道題目
-        </button>
-
-        <div class="ex-modal-footer">
-          <div class="score-display">總計評分：{{ totalScore }} 分</div>
-          <button type="submit" class="ex-btn-primary">發佈測驗</button>
+          <div class="score-display fw-bold text-navy">
+            總計評分：<span class="fs-4 text-danger">{{ totalScore }}</span> 分
+          </div>
+          <button type="submit" class="ex-btn-navy-action">發佈測驗</button>
         </div>
       </form>
     </div>
@@ -204,6 +270,7 @@ const form = reactive({
   title: "",
   duration: 60,
   deadline: "",
+  maxAttempts: 1, // 🌟 新增：可測驗次數，預設為 1 次
   allowLate: false,
   showResult: true,
 });
@@ -259,13 +326,17 @@ const createExam = async () => {
 
   try {
     const examData = {
-      ...form,
+      ...form, // 🌟 包含新增的 maxAttempts
       totalScore: totalScore.value,
       questions: questions.value.map((q) => {
         const base = { type: q.type, question: q.question, point: q.point };
+
+        // 簡答題處理
         if (q.type === "shortAnswer") {
           return { ...base, refAnswer: q.refAnswer };
         }
+
+        // 選擇題與多選題處理
         return {
           ...base,
           options:
@@ -278,7 +349,9 @@ const createExam = async () => {
       createdAt: Date.now(),
     };
 
-    await set(push(dbRef(db, `courses/${props.courseId}/exams`)), examData);
+    // 寫入路徑：courses/{courseId}/exams
+    const newExamRef = push(dbRef(db, `courses/${props.courseId}/exams`));
+    await set(newExamRef, examData);
 
     Swal.fire({
       icon: "success",
@@ -289,6 +362,7 @@ const createExam = async () => {
 
     emit("close");
   } catch (error) {
+    console.error(error);
     Swal.fire("錯誤", "發佈失敗，請稍後再試", "error");
   }
 };

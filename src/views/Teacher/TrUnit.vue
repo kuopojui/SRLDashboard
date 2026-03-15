@@ -90,28 +90,59 @@
             class="unit-details-content animate__animated animate__fadeIn"
           >
             <div
-              class="unit-management-panel mb-4 p-3 rounded-3 bg-light border"
+              class="unit-management-panel mb-4 p-4 rounded-4 bg-light border shadow-sm"
             >
-              <div class="row g-3">
+              <div class="row g-4">
                 <div class="col-md-6">
-                  <label class="ex-label-small text-secondary mb-1">
-                    <i class="bi bi-info-circle"></i> 單元學習引導
-                    (將顯示於學生規劃彈窗)
+                  <label
+                    class="ex-label-small text-navy fw-bold mb-2 d-flex align-items-center"
+                  >
+                    <i class="bi bi-bullseye me-2"></i> 單元學習目標
+                    <span
+                      class="ms-2 badge bg-white text-muted border fw-normal"
+                      style="font-size: 0.65rem"
+                      >學生規劃參考</span
+                    >
                   </label>
                   <textarea
-                    v-model="unit.description"
-                    class="form-control form-control-sm border-0 shadow-sm"
-                    placeholder="請輸入單元簡介或學習目標..."
+                    v-model="unit.goals"
+                    class="form-control form-control-sm border-0 shadow-sm p-3"
+                    placeholder="例如：1. 掌握現在完成式 2. 能夠描述旅遊經歷..."
                     rows="3"
+                    style="border-radius: 12px"
                   ></textarea>
                 </div>
 
-                <div class="col-md-4">
-                  <label class="ex-label-small text-secondary mb-1">
-                    <i class="bi bi-clock"></i> 標竿時常 (日 / 時 / 分)
+                <div class="col-md-6">
+                  <label
+                    class="ex-label-small text-navy fw-bold mb-2 d-flex align-items-center"
+                  >
+                    <i class="bi bi-info-circle me-2"></i> 單元學習引導
+                    <span
+                      class="ms-2 badge bg-white text-muted border fw-normal"
+                      style="font-size: 0.65rem"
+                      >建議學習路徑</span
+                    >
+                  </label>
+                  <textarea
+                    v-model="unit.description"
+                    class="form-control form-control-sm border-0 shadow-sm p-3"
+                    placeholder="請輸入給學生的引導語或提示..."
+                    rows="3"
+                    style="border-radius: 12px"
+                  ></textarea>
+                </div>
+
+                <div class="col-md-8 col-lg-9">
+                  <label class="ex-label-small text-secondary fw-bold mb-2">
+                    <i class="bi bi-clock-history me-1"></i> 標竿建議時長 (日 /
+                    時 / 分)
                   </label>
                   <div class="d-flex gap-2">
-                    <div class="input-group input-group-sm shadow-sm">
+                    <div
+                      class="input-group input-group-sm shadow-sm"
+                      style="max-width: 120px"
+                    >
                       <input
                         type="number"
                         :value="Math.floor((unit.targetTime || 0) / 1440)"
@@ -119,14 +150,17 @@
                           (e) => updateTimeParts(unit, 'd', e.target.value)
                         "
                         class="form-control border-0"
-                        placeholder="日"
+                        placeholder="0"
                       />
                       <span
                         class="input-group-text border-0 bg-white text-muted xx-small"
                         >日</span
                       >
                     </div>
-                    <div class="input-group input-group-sm shadow-sm">
+                    <div
+                      class="input-group input-group-sm shadow-sm"
+                      style="max-width: 120px"
+                    >
                       <input
                         type="number"
                         :value="
@@ -136,14 +170,17 @@
                           (e) => updateTimeParts(unit, 'h', e.target.value)
                         "
                         class="form-control border-0"
-                        placeholder="時"
+                        placeholder="0"
                       />
                       <span
                         class="input-group-text border-0 bg-white text-muted xx-small"
                         >時</span
                       >
                     </div>
-                    <div class="input-group input-group-sm shadow-sm">
+                    <div
+                      class="input-group input-group-sm shadow-sm"
+                      style="max-width: 120px"
+                    >
                       <input
                         type="number"
                         :value="(unit.targetTime || 0) % 60"
@@ -151,7 +188,7 @@
                           (e) => updateTimeParts(unit, 'm', e.target.value)
                         "
                         class="form-control border-0"
-                        placeholder="分"
+                        placeholder="0"
                       />
                       <span
                         class="input-group-text border-0 bg-white text-muted xx-small"
@@ -162,71 +199,42 @@
                 </div>
 
                 <div
-                  class="col-md-2 d-flex flex-column justify-content-end pb-1"
+                  class="col-md-4 col-lg-3 d-flex flex-column justify-content-end align-items-md-end"
                 >
-                  <label class="ex-label-small text-secondary mb-1"
-                    >任務狀態</label
+                  <label class="ex-label-small text-secondary fw-bold mb-2"
+                    >發佈狀態</label
                   >
-                  <div class="form-check form-switch custom-switch-lg">
+                  <div
+                    class="form-check form-switch custom-switch-lg p-0 m-0 d-flex align-items-center"
+                  >
                     <input
-                      class="form-check-input"
+                      class="form-check-input ms-0 me-2"
                       type="checkbox"
                       role="switch"
                       v-model="unit.visible"
                       :id="'visibleSwitch' + unit.firebaseKey"
                     />
                     <label
-                      class="form-check-label small fw-bold"
+                      class="form-check-label small fw-800 text-navy"
                       :for="'visibleSwitch' + unit.firebaseKey"
                     >
-                      {{ unit.visible ? "已開放" : "已隱藏" }}
+                      {{ unit.visible ? "學生可見" : "暫不公開" }}
                     </label>
                   </div>
                 </div>
 
-                <div class="col-12 text-end border-top mt-3 pt-2">
+                <div class="col-12 text-end border-top mt-2 pt-3">
                   <button
-                    class="btn btn-navy btn-sm px-4 rounded-pill shadow-sm"
+                    class="btn btn-navy btn-sm px-4 rounded-pill shadow-sm py-2"
                     @click="saveUnit(unit)"
                   >
-                    <i class="bi bi-cloud-check-fill me-1"></i> 儲存單元設定
+                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> 更新單元配置
                   </button>
                 </div>
               </div>
             </div>
 
-            <div class="ex-resource-grid">
-              <div
-                v-for="type in ['material', 'assignment', 'exam', 'forum']"
-                :key="type"
-                class="ex-resource-column"
-              >
-                <h6 class="ex-label-small">
-                  <i :class="getIcon(type)"></i> {{ getLabel(type) }}
-                </h6>
-                <div class="ex-resource-list">
-                  <div
-                    v-for="itemId in unit[type + 's']"
-                    :key="itemId"
-                    class="ex-item-brick"
-                  >
-                    <span class="text-truncate flex-grow-1 small">{{
-                      getTitle(itemId, type)
-                    }}</span>
-                    <i
-                      class="bi bi-x remove-icon"
-                      @click="deleteUnitItem(unit.firebaseKey, itemId, type)"
-                    ></i>
-                  </div>
-                  <div
-                    v-if="!unit[type + 's']?.length"
-                    class="ex-empty-placeholder"
-                  >
-                    未分配
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div class="ex-resource-grid">...</div>
           </div>
         </div>
       </div>
@@ -413,31 +421,37 @@ const currentLibraryItems = computed(() => {
 // --- 4. 核心管理邏輯 ---
 
 // 新增單元 (後向教學設計的起點)
-// 新增單元 (後向教學設計的起點)
 const addUnit = async () => {
   const newUnitRef = push(dbRef(db, `courses/${props.courseId}/units`));
 
-  await set(newUnitRef, {
-    title: "新學習單元",
-    description: "", // 🌟 新增：單元學習引導/簡介 (供學生規劃時參考)
-    targetTime: 30, // 🌟 新增：教師標竿時常 (預設 30 分鐘，作為學生 SRL 的基準)
-    visible: true, // 🌟 單元開放/隱藏狀態
-    materials: [],
-    assignments: [],
-    exams: [],
-    forums: [],
-    createdAt: Date.now(),
-  });
+  try {
+    await set(newUnitRef, {
+      title: "新學習單元",
+      goals: "", // 🌟 新增：單元學習目標 (供學生前瞻計畫規劃時參考)
+      description: "", // 單元學習引導/簡介
+      targetTime: 30, // 教師標竿時常 (預設 30 分鐘)
+      visible: true, // 單元開放狀態
+      materials: [],
+      assignments: [],
+      exams: [],
+      forums: [],
+      createdAt: Date.now(),
+    });
 
-  // 成功後自動展開該單元，方便老師立即編輯內容
-  // 注意：這裡假設您的單元物件結構中有 isExpanded 屬性控制 UI
-  Swal.fire({
-    icon: "success",
-    title: "單元已建立",
-    text: "您可以開始設定簡介與標竿時間囉！",
-    timer: 1500,
-    showConfirmButton: false,
-  });
+    // 成功提示
+    Swal.fire({
+      icon: "success",
+      title: "單元已建立",
+      text: "您可以開始設定學習目標與引導囉！",
+      timer: 1500,
+      showConfirmButton: false,
+      toast: true,
+      position: "top-end",
+    });
+  } catch (error) {
+    console.error("建立單元失敗:", error);
+    Swal.fire("錯誤", "無法建立新單元", "error");
+  }
 };
 
 // 刪除單元 (紅磚按鈕邏輯)
@@ -526,22 +540,24 @@ const updateTimeParts = (unit, part, value) => {
 };
 
 // 儲存標題變更 (Inline 更新)
-// 儲存標題、簡介、標竿時常與顯示狀態
+// 儲存標題、目標、簡介、標竿時常與顯示狀態
 const saveUnit = async (unit) => {
-  const { firebaseKey, title, description, targetTime, visible } = unit;
+  // 🌟 1. 加入 goals 到解構清單中
+  const { firebaseKey, title, goals, description, targetTime, visible } = unit;
 
   if (!firebaseKey) return;
 
   try {
-    // 🌟 一次更新所有核心欄位
+    // 🌟 2. 在 update 物件中包含 goals
     await update(dbRef(db, `courses/${props.courseId}/units/${firebaseKey}`), {
       title: title || "新學習單元",
-      description: description || "", // 🌟 儲存單元簡介
-      targetTime: Number(targetTime) || 0, // 🌟 儲存標竿總分鐘數 (由 updateTimeParts 計算)
-      visible: visible !== undefined ? visible : true, // 🌟 儲存顯示/隱藏狀態
+      goals: goals || "", // 🌟 儲存單元學習目標
+      description: description || "", // 儲存單元學習引導
+      targetTime: Number(targetTime) || 0,
+      visible: visible !== undefined ? visible : true,
     });
 
-    // 成功提示 (可選，讓老師知道有存檔成功)
+    // 成功提示
     Swal.fire({
       icon: "success",
       title: "單元設定已儲存",
@@ -549,6 +565,11 @@ const saveUnit = async (unit) => {
       position: "top-end",
       timer: 1500,
       showConfirmButton: false,
+      // 避免老師連續儲存時畫面閃爍
+      backdrop: false,
+      showClass: {
+        popup: "animate__animated animate__fadeInRight animate__faster",
+      },
     });
   } catch (error) {
     console.error("儲存單元失敗:", error);

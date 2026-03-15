@@ -269,3 +269,13 @@
   background: #3a5a8a;
   border-radius: 10px;
 }
+
+/* 🌟 新增設定卡片的微調樣式 */
+.setting-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+}
+.setting-card:hover {
+  border-color: #4a70a9;
+  background-color: #f1f5f9 !important;
+}

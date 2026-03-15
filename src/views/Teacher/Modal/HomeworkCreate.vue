@@ -48,13 +48,56 @@
               />
             </div>
             <div class="col-md-5 col-12 d-flex align-items-end">
-              <div class="late-toggle-box">
+              <div class="late-toggle-box w-100">
                 <span class="small fw-bold text-navy">允許遲交</span>
                 <div class="form-check form-switch m-0">
                   <input
                     class="form-check-input"
                     type="checkbox"
                     v-model="form.allowLate"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6 col-12">
+              <div
+                class="setting-card p-3 border rounded-4 bg-light d-flex justify-content-between align-items-center"
+              >
+                <div>
+                  <span class="small fw-bold text-navy d-block"
+                    >提交後可修改</span
+                  >
+                  <small class="text-muted" style="font-size: 0.7rem"
+                    >截止前允許學生更新答案</small
+                  >
+                </div>
+                <div class="form-check form-switch m-0">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="form.allowEditAfterSubmit"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div
+                class="setting-card p-3 border rounded-4 bg-light d-flex justify-content-between align-items-center"
+              >
+                <div>
+                  <span class="small fw-bold text-navy d-block">自動批改</span>
+                  <small class="text-muted" style="font-size: 0.7rem"
+                    >提交後立即顯示分數(限選擇題)</small
+                  >
+                </div>
+                <div class="form-check form-switch m-0">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="form.autoGrading"
                   />
                 </div>
               </div>
@@ -192,6 +235,9 @@ const form = reactive({
   description: "",
   deadline: "",
   allowLate: false,
+  // 🌟 新增開關屬性
+  allowEditAfterSubmit: false, // 提交後可修改 (預設關閉)
+  autoGrading: true, // 自動批改 (預設開啟)
 });
 
 const questions = ref([]);
@@ -250,7 +296,7 @@ const createHomework = async () => {
     });
 
     const homeworkData = {
-      ...form,
+      ...form, // 🌟 包含新增的設定
       questions: processedQuestions,
       createdAt: Date.now(),
       courseId: props.courseId,
@@ -269,6 +315,7 @@ const createHomework = async () => {
     });
     emitClose();
   } catch (error) {
+    console.error(error);
     Swal.fire("錯誤", "發佈失敗", "error");
   }
 };

@@ -1,19 +1,6 @@
 <template>
   <div class="TestCreate test-create-overlay" @click.self="emitClose">
     <div class="test-create-modal shadow-lg">
-      <transition name="toast-fade">
-        <div v-if="toast.show" :class="['custom-toast', toast.type]">
-          <i
-            :class="
-              toast.type === 'success'
-                ? 'bi bi-check-circle-fill'
-                : 'bi bi-exclamation-circle-fill'
-            "
-          ></i>
-          {{ toast.msg }}
-        </div>
-      </transition>
-
       <div class="modal-header-custom">
         <h2 class="h5 fw-bold mb-0 text-navy">
           <i class="bi bi-clipboard-pulse me-2"></i>設定實驗問卷
@@ -129,16 +116,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from "vue";
+import { ref, computed } from "vue";
 import { rtdb as db } from "../../../firebase/config";
 import { ref as dbRef, push, set } from "firebase/database";
 import { useRoute } from "vue-router";
+import Swal from "sweetalert2"; // 🌟 引入 SweetAlert2
 import "./TestCreate.css";
 
 const emit = defineEmits(["close", "created"]);
 const route = useRoute();
 
-// 1. 🌟 接收來自父組件的 courseId，這是解決 undefined 的最穩妥方法
 const props = defineProps({
   courseId: {
     type: String,
@@ -146,26 +133,14 @@ const props = defineProps({
   },
 });
 
-// 2. 🌟 建立一個計算屬性來確保獲取到正確的 ID
 const activeCourseId = computed(() => {
   return props.courseId || route.params.id;
 });
 
 const title = ref("");
-const testType = ref("pre"); // 控制 pre 或 post
+const testType = ref("pre");
 const questions = ref([{ text: "", type: "likert5" }]);
 const isLoading = ref(false);
-
-const toast = reactive({ show: false, msg: "", type: "success" });
-
-const triggerToast = (msg, type = "success") => {
-  toast.msg = msg;
-  toast.type = type;
-  toast.show = true;
-  setTimeout(() => {
-    toast.show = false;
-  }, 3000);
-};
 
 const addQuestion = () => {
   questions.value.push({ text: "", type: "likert5" });
@@ -175,22 +150,37 @@ const removeQuestion = (index) => {
 };
 
 const saveTest = async () => {
-  // 3. 🌟 嚴格檢查 ID 是否有效，避免再次寫入到根目錄的 undefined 節點
+  // 檢查 ID
   if (!activeCourseId.value || activeCourseId.value === "undefined") {
-    console.error("Firebase Path Error: courseId is missing.");
-    return triggerToast("系統錯誤：找不到課程編號，請重新整理頁面", "error");
+    return Swal.fire({
+      icon: "error",
+      title: "系統錯誤",
+      text: "找不到課程編號，請重新整理頁面",
+      confirmButtonColor: "#4a70a9",
+    });
   }
 
-  if (!title.value.trim()) return triggerToast("請輸入問卷標題", "error");
-  if (questions.value.length === 0)
-    return triggerToast("請至少新增一個題目", "error");
+  // 驗證欄位
+  if (!title.value.trim()) {
+    return Swal.fire({
+      icon: "warning",
+      title: "請輸入問卷標題",
+      confirmButtonColor: "#4a70a9",
+    });
+  }
+
+  if (questions.value.length === 0) {
+    return Swal.fire({
+      icon: "warning",
+      title: "請至少新增一個題目",
+      confirmButtonColor: "#4a70a9",
+    });
+  }
 
   isLoading.value = true;
 
-  // 4. 🌟 根據需求格式化資料夾名稱：pretest 或 posttest
   const folderName = `${testType.value}test`;
   const dbPath = `courses/${activeCourseId.value}/experiment/test/${folderName}`;
-
   const examRef = push(dbRef(db, dbPath));
 
   try {
@@ -203,15 +193,24 @@ const saveTest = async () => {
       description: `${testType.value === "pre" ? "前測" : "後測"}問卷 (${questions.value.length} 題)`,
     });
 
-    triggerToast("問卷已成功建立！", "success");
+    // 🌟 成功提示
+    await Swal.fire({
+      icon: "success",
+      title: "問卷已成功建立！",
+      timer: 1500,
+      showConfirmButton: false,
+    });
 
-    setTimeout(() => {
-      emit("created");
-      emit("close");
-    }, 1200);
+    emit("created");
+    emit("close");
   } catch (e) {
     console.error("Firebase 儲存錯誤:", e);
-    triggerToast("儲存失敗", "error");
+    Swal.fire({
+      icon: "error",
+      title: "儲存失敗",
+      text: "請檢查網路連線或權限設定",
+      confirmButtonColor: "#4a70a9",
+    });
   } finally {
     isLoading.value = false;
   }

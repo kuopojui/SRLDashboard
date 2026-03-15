@@ -94,14 +94,7 @@
         </div>
       </div>
 
-      <div class="TrTestAns-footer">
-        <button
-          class="btn btn-navy px-4 rounded-pill shadow-sm"
-          @click="$emit('close')"
-        >
-          確認並關閉
-        </button>
-      </div>
+      <div class="TrTestAns-footer"></div>
     </div>
   </div>
 </template>
