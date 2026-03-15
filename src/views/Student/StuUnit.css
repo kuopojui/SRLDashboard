@@ -27,7 +27,7 @@
 .srl-header {
   background: var(--navy) !important;
   color: white;
-  z-index: 1060;
+  z-index: 2000;
   border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 }
 
@@ -138,29 +138,100 @@
   padding-bottom: 30px;
 }
 
-/* 數據對比條 (Comparison Bar) */
+/* --- 數據對比條容器 --- */
+.chart-area {
+  position: relative;
+  border-bottom: 2px solid #f1f5f9; /* 地平線 */
+}
+
 .v-bar-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 60px;
+  width: 70px;
+  height: 100%; /* 🌟 關鍵：讓容器撐滿 160px，子元素 % 高度才有效 */
+  justify-content: flex-end; /* 讓內容靠底部對齊 */
+  position: relative;
 }
+
+/* --- 長條基礎樣式 --- */
 .v-bar {
-  width: 32px;
-  border-radius: 8px 8px 4px 4px;
-  transition: height 1s ease;
+  width: 28px;
+  border-radius: 8px 8px 2px 2px;
+  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  min-height: 4px; /* 即使 0% 也能看到一小截 */
 }
-.my-score {
-  background: var(--navy);
+
+/* 1. 個人得分柱子：深湛藍漸層 */
+.v-bar.my-score {
+  background: linear-gradient(180deg, #5c85c1 0%, #3a5a8a 100%) !important;
+  box-shadow: 0 4px 12px rgba(58, 90, 138, 0.2);
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.top-score {
-  background: #cbd5e1;
+
+/* 2. 領先平均柱子：翡翠綠漸層 */
+.v-bar.top-score {
+  background: linear-gradient(180deg, #66cc91 0%, #2d9d5f 100%) !important;
+  box-shadow: 0 4px 12px rgba(45, 157, 95, 0.15);
+  opacity: 0.9;
+  z-index: 1;
 }
+
+/* 3. 數值標籤 (Bar Value) - 浮在長條上方 */
 .bar-val {
+  position: absolute;
+  top: -32px; /* 固定在長條頂部上方 */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  border: 1px solid #f1f5f9;
+}
+
+.my-score .bar-val {
+  color: #3a5a8a !important;
+}
+.top-score .bar-val {
+  color: #2d9d5f !important;
+}
+
+/* 4. 長條圖下方標籤 */
+.bar-label {
+  margin-top: 12px;
   font-size: 0.8rem;
-  font-weight: 900;
-  color: var(--navy);
-  margin-bottom: 5px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* 5. 差距提示器 */
+.gap-indicator-v2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.gap-indicator-v2.is-positive {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+}
+
+.gap-indicator-v2.is-negative {
+  background-color: #fff5f5;
+  color: #bf4646;
 }
 
 /* AI 建議氣泡 */
@@ -417,8 +488,6 @@
   position: relative;
   overflow: hidden;
   text-decoration: none !important;
-
-  /* 2. 🌟 預設狀態 (未點擊)：米色質感底 */
   background-color: #f5f1e6 !important; /* 淺米色 */
   color: #4a70a9 !important; /* 湛藍字 */
   box-shadow: 0 4px 12px rgba(74, 112, 169, 0.1);
@@ -578,4 +647,216 @@
   background: white !important;
   border-top: 1px solid var(--border-color) !important;
   z-index: 10;
+}
+
+/* 🌟 調整側邊欄容器的層級與位置 */
+.StuUnit .sidebar-sticky-wrapper {
+  position: sticky;
+  /* 這裡的 top 建議設為 Header 的高度（例如 70px），防止貼死 */
+  top: 80px;
+  z-index: 1000; /* 低於 Header 的 2000 */
+}
+
+/* 確保卡片本身不帶有會衝突的 z-index */
+.StuUnit .toolbox-card,
+.StuUnit .note-card {
+  z-index: 1;
+}
+
+/* --- 教材清單容器 --- */
+.material-list-section .list-group {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* --- 單個教材項目基礎樣式 --- */
+.material-list-section .list-group-item {
+  border: 1px solid #f1f5f9;
+  background-color: #ffffff;
+  color: #efece3;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  margin-bottom: -1px; /* 消除雙重邊框 */
+}
+
+/* --- 🌟 Hover 懸停效果 --- */
+.material-list-section .list-group-item:hover {
+  background-color: #efece3 !important;
+  color: #4a70a9 !important;
+  padding-left: 1.5rem !important; /* 輕微向右位移，增加動態感 */
+  border-left: 4px solid #cbd5e1;
+}
+
+/* --- 🌟 Active 被選取狀態 --- */
+.material-list-section .list-group-item.active {
+  background-color: #efece3 !important; /* 淺海軍藍背景 */
+  border-color: #3a5a8a !important;
+  color: #4a70a9 !important; /* 強制海軍藍文字 */
+  border-left: 4px solid #3a5a8a !important; /* 選取時的左側強調線 */
+  z-index: 2; /* 確保選取的邊框顯示在最前 */
+}
+
+/* 圖示顏色微調 */
+.material-list-section .list-group-item i {
+  transition: transform 0.2s ease;
+}
+
+.material-list-section .list-group-item:hover i:first-child {
+  transform: scale(1.2); /* Hover 時圖示放大 */
+}
+
+/* 打勾圖示 (Check Icon) 的動畫 */
+.material-list-section .list-group-item .bi-check-circle-fill {
+  animation: swal2-show 0.3s; /* 借用 SweetAlert 的彈出動畫 */
+}
+
+/* --- 📱 行動裝置優化 --- */
+@media (max-width: 576px) {
+  .material-list-section .list-group-item:hover {
+    padding-left: 1rem !important; /* 手機版減少位移幅度 */
+  }
+
+  .material-list-section .list-group-item {
+    padding: 12px 15px !important;
+  }
+}
+
+/* --- 1. 三模式切換按鈕 (Small Button Group) --- */
+.btn-navy-sm {
+  background-color: var(--primary-navy) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--primary-navy);
+  font-size: 0.75rem;
+  padding: 2px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.btn-outline-navy-sm {
+  background-color: transparent !important;
+  color: var(--primary-navy) !important;
+  border: 1px solid var(--primary-navy);
+  font-size: 0.75rem;
+  padding: 2px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-navy-sm:hover {
+  background-color: var(--primary-navy-light) !important;
+}
+
+/* 修正 Bootstrap 按鈕群組的圓角問題 */
+.btn-group-sm > .btn:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group-sm > .btn:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group-sm > .btn:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+/* --- 2. 對照卡片與長條圖 --- */
+.comparison-card {
+  background: #ffffff;
+  border: 1px dashed rgba(74, 112, 169, 0.3); /* 柔和的海軍藍虛線框 */
+  transition: all 0.3s ease;
+}
+
+.comparison-card:hover {
+  border-style: solid;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 長條圖容器 */
+.v-bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+}
+
+/* 長條主體 */
+.v-bar {
+  width: 32px;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  /* 🌟 重要：高度切換時的動畫效果 */
+  transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  justify-content: center;
+}
+
+/* 個人得分柱子 */
+.my-score {
+  background: var(--primary-navy);
+  background: linear-gradient(
+    180deg,
+    var(--primary-navy) 0%,
+    var(--primary-navy-dark) 100%
+  );
+}
+
+/* 領先群柱子 */
+.top-score {
+  background: #e9ecef; /* 淺灰色代表參考對象 */
+  border: 1px solid #dee2e6;
+}
+
+/* 柱子上的數值標籤 */
+.bar-val {
+  position: absolute;
+  top: -25px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+/* 柱子下方的文字 */
+.bar-label {
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+/* --- 3. 差距指示器 (Gap Indicator) --- */
+.gap-indicator-v2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* 正向差距樣式 */
+.gap-indicator-v2.is-positive {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+}
+
+/* 負向差距樣式 */
+.gap-indicator-v2.is-negative {
+  background-color: #fff5f5;
+  color: var(--danger-red);
+}
+
+.gap-indicator-v2 i {
+  font-size: 1.1rem;
+}
+
+/* --- 4. 輔助類別 --- */
+.shadow-xs {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+.border-dashed-soft {
+  border: 1px dashed #dee2e6;
 }

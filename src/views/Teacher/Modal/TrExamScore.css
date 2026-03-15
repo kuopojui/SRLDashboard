@@ -20,6 +20,7 @@
 
 .TrExam .hw-item-row:hover {
   background: rgba(255, 255, 255, 0.4); /* 懸浮提亮感 */
+  padding-left: 15px; /* 輕微位移增加互動感 */
 }
 
 .TrExam .hw-type {
@@ -43,13 +44,13 @@
   margin-top: 4px;
 }
 
-/* 🌟 3. 湛藍虛線按鈕 (對接教材列表風格) */
+/* 🌟 3. 湛藍虛點按鈕 */
 .TrExam .btn-minimal-blue {
   background: transparent;
   color: #3a5a8a;
   border: 2px dashed #3a5a8a;
   border-radius: 50px;
-  padding: 8px 20px;
+  padding: 8px 24px;
   font-weight: 800;
   font-size: 0.9rem;
   transition: all 0.3s;
@@ -61,6 +62,7 @@
   background: #3a5a8a;
   color: #ffffff;
   border-style: solid;
+  box-shadow: 0 4px 12px rgba(58, 90, 138, 0.2);
 }
 
 /* 4. 極簡彈窗：米色質感 */
@@ -82,9 +84,12 @@
   background: #efece3; /* 與背景色一致 */
   width: 95%;
   max-width: 650px;
+  max-height: 85vh; /* 限制高度避免溢出 */
   border-radius: 35px;
   padding: 35px;
   box-shadow: 0 30px 60px rgba(74, 112, 169, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .TrExam .modal-head {
@@ -93,6 +98,13 @@
   align-items: flex-start;
   padding-bottom: 20px;
   border-bottom: 1.5px solid rgba(74, 112, 169, 0.1);
+}
+
+.TrExam .modal-body {
+  flex-grow: 1;
+  overflow-y: auto; /* 啟用垂直滾動 */
+  margin-top: 15px;
+  padding-right: 5px;
 }
 
 /* 5. 學生分數行 (Grid 排版) */
@@ -121,10 +133,11 @@
   background: #fff7ed;
   color: #ea580c; /* 橘色標記遲交 */
   border: 1px solid #ffedd5;
-  padding: 1px 6px;
+  padding: 1px 8px;
   border-radius: 4px;
   font-weight: 800;
   margin-top: 2px;
+  display: inline-block;
 }
 
 /* 6. 分數填寫：測驗專用格式 */
@@ -145,6 +158,7 @@
   color: #bf4646; /* 測驗分用磚紅強調 */
   outline: none;
   transition: 0.3s;
+  padding: 2px 0;
 }
 
 .TrExam .stu-score-input input:focus {
@@ -166,6 +180,7 @@
   font-size: 1.3rem;
   color: #3a5a8a;
   transition: all 0.2s;
+  cursor: pointer;
 }
 .TrExam .btn-close-red:hover {
   color: #bf4646;
@@ -178,10 +193,15 @@
   color: #3a5a8a;
   font-size: 1.25rem;
   transition: transform 0.2s;
+  cursor: pointer;
 }
 .TrExam .btn-view-eye-minimal:hover:not(:disabled) {
   transform: scale(1.2);
   color: #2563eb;
+}
+.TrExam .btn-view-eye-minimal:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
 }
 
 /* 8. 手機 RWD 適配 */
@@ -197,6 +217,28 @@
   }
   .TrExam .student-score-row {
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 15px;
+    padding: 20px 0;
   }
+  .TrExam .stu-score-input {
+    justify-content: flex-start;
+  }
+  .TrExam .btn-view-eye-minimal {
+    justify-self: end;
+  }
+}
+
+/* 9. 自定義滑塊 (燕麥風捲軸) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(58, 90, 138, 0.15);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(58, 90, 138, 0.3);
 }

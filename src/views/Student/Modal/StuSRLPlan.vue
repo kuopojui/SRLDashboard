@@ -24,7 +24,23 @@
               {{ unitData?.title || "載入中..." }}
             </h3>
 
+            <div
+              v-if="unitData?.goals"
+              class="teacher-goals-box p-3 rounded-4 mb-4 border-0 shadow-sm"
+            >
+              <h6 class="fw-bold text-navy mb-2 small">
+                <i class="bi bi-bullseye me-1"></i> 教師單元學習目標
+              </h6>
+              <div
+                class="text-secondary small lh-base"
+                style="white-space: pre-wrap"
+              >
+                {{ unitData.goals }}
+              </div>
+            </div>
+
             <p class="text-muted small mb-4 lh-base">
+              <i class="bi bi-info-circle-fill me-1 text-navy"></i>
               {{
                 unitData?.description ||
                 "本單元暫無詳細描述，請參考下方任務清單進行規劃。"

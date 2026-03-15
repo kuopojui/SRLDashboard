@@ -492,3 +492,23 @@ input[type="number"]::-webkit-outer-spin-button {
   border-left: 5px solid #4a70a9 !important; /* 左側海軍藍飾條 */
   z-index: 9999 !important;
 }
+
+/* 教師目標區塊：使用漸層背景增加質感 */
+.teacher-goals-box {
+  background: linear-gradient(135deg, #f0f4f9 0%, #ffffff 100%);
+  border: 1px solid rgba(58, 90, 138, 0.1) !important;
+}
+
+.teacher-goals-box h6 {
+  letter-spacing: 0.5px;
+}
+
+/* 確保引導描述的圖示顏色一致 */
+.text-navy {
+  color: #3a5a8a !important;
+}
+
+/* 改善文字行高以提升閱讀體驗 */
+.lh-base {
+  line-height: 1.6 !important;
+}

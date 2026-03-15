@@ -34,36 +34,41 @@
       <i class="bi bi-collection-play me-2"></i>學習單元清單
     </h6>
 
-    <div v-for="(unit, index) in schedule" :key="unit.id" class="mb-3">
-      <div
-        class="p-3 border rounded bg-white shadow-sm d-flex justify-content-between align-items-center"
-        @click="handleUnitClick(unit)"
-        style="cursor: pointer"
-      >
-        <div>
-          <span class="fw-bold">單元 {{ index + 1 }}: {{ unit.title }}</span>
-          <span
-            v-if="unitTraces[unit.id]?.isFinished"
-            class="ms-2 badge bg-primary text-white border-0 px-2"
-          >
-            <i class="bi bi-patch-check-fill me-1"></i>已完成
-          </span>
-          <template v-else>
+    <div v-for="(unit, index) in schedule" :key="unit.id">
+      <div v-if="unit.visible === true" class="mb-3">
+        <div
+          class="p-3 border rounded bg-white shadow-sm d-flex justify-content-between align-items-center"
+          @click="handleUnitClick(unit)"
+          style="cursor: pointer"
+        >
+          <div>
+            <span class="fw-bold">單元 {{ index + 1 }}: {{ unit.title }}</span>
+
             <span
-              v-if="unitPlans[unit.id]"
-              class="ms-2 badge bg-success-subtle text-success border border-success-subtle"
+              v-if="unitTraces[unit.id]?.isFinished"
+              class="ms-2 badge bg-primary text-white border-0 px-2"
             >
-              已預計 {{ unitPlans[unit.id].targetTime }} 分鐘
+              <i class="bi bi-patch-check-fill me-1"></i>單元已完成
             </span>
-            <span
-              v-else-if="activeFeatures.planning"
-              class="ms-2 badge bg-warning-subtle text-dark border border-warning-subtle"
-            >
-              需先完成規劃
-            </span>
-          </template>
+
+            <template v-else>
+              <span
+                v-if="unitPlans[unit.id]"
+                class="ms-2 badge bg-success-subtle text-success border border-success-subtle"
+              >
+                <i class="bi bi-calendar-check me-1"></i>已規劃
+              </span>
+              <span
+                v-else-if="activeFeatures.planning"
+                class="ms-2 badge bg-warning-subtle text-dark border border-warning-subtle"
+              >
+                <i class="bi bi-pencil me-1"></i>需先完成規劃
+              </span>
+            </template>
+          </div>
+
+          <i class="bi bi-arrow-right-circle text-primary opacity-75"></i>
         </div>
-        <i class="bi bi-arrow-right-circle text-primary opacity-75"></i>
       </div>
     </div>
 
@@ -206,10 +211,17 @@ const showActiveModal = ref(false);
 const activeTaskId = ref("");
 const activeTaskInitialData = ref({});
 
-// 🌟 核心：檢查是否完成所有課程單元 (用於解鎖後測)
+// 🌟 核心修正：檢查是否完成「資料庫中所有已創建」的課程單元
 const canTakePostTest = computed(() => {
-  if (schedule.value.length === 0) return false;
-  return schedule.value.every(
+  // 1. 取得資料庫中所有的單元清單 (不論隱藏與否)
+  const allUnits = schedule.value;
+
+  // 2. 如果單元清單還是空的，代表資料尚未載入或真的沒單元，不解鎖
+  if (allUnits.length === 0) return false;
+
+  // 3. 檢查「每一個」在 schedule 裡的單元是否都在 unitTraces 標記為 isFinished
+  // 這樣就算單元被隱藏 (visible: false)，學生若沒進去完成，後測就不會開
+  return allUnits.every(
     (unit) => unitTraces.value[unit.id]?.isFinished === true,
   );
 });
@@ -302,9 +314,12 @@ const handleExperimentTestClick = async (type) => {
 
 const handleUnitClick = (unit) => {
   const unitId = unit.id;
+  // 1. 檢查是否已完成總結（結案）
   const isFinished = !!unitTraces.value[unitId]?.isFinished;
-  const hasPlan = !!(unitPlans.value && unitPlans.value[unitId]?.targetTime);
+  // 2. 檢查是否已有規劃數據
+  const hasPlan = !!unitPlans.value[unitId];
 
+  // 情況 A：單元已總結完成 -> 直接進入單元檢視
   if (isFinished) {
     recordAction(props.courseId, "查看已完成單元", {
       unitId,
@@ -314,6 +329,7 @@ const handleUnitClick = (unit) => {
     return;
   }
 
+  // 情況 B：實驗組功能開啟且「尚未完成規劃」 -> 顯示規劃彈窗
   if (activeFeatures.value.planning && !hasPlan) {
     recordAction(props.courseId, "觸發學習規劃引導", {
       unitId,
@@ -322,82 +338,101 @@ const handleUnitClick = (unit) => {
     activeTaskId.value = unitId;
     activeTaskInitialData.value = { unitTitle: unit.title };
     showActiveModal.value = true;
-  } else {
+  }
+  // 情況 C：已經規劃過 或 非實驗組 -> 直接進入單元
+  else {
     recordAction(props.courseId, "點擊進入學習單元", {
       unitId,
       unitTitle: unit.title,
+      status: hasPlan ? "already_planned" : "normal_entry",
     });
     handleRedirectToUnit(unitId);
   }
 };
 
-const handleRedirectToUnit = async (unitId) => {
-  const currentUid = auth.currentUser?.uid;
-  if (!unitId || !props.courseId || !currentUid) return;
+// 🌟 補回跳轉至單元頁面的邏輯
+const handleRedirectToUnit = (unitId) => {
+  const currentUid = auth.currentUser?.uid || props.userId;
+  if (!unitId || !props.courseId || !currentUid) {
+    console.error("❌ 無法跳轉：缺少必要的參數", {
+      courseId: props.courseId,
+      unitId,
+      userId: currentUid,
+    });
+    return;
+  }
+
+  // 執行跳轉至 StuUnit 頁面
   router.push({
     name: "StuUnit",
-    params: { courseId: props.courseId, id: unitId, userId: currentUid },
+    params: {
+      courseId: props.courseId,
+      id: unitId,
+      userId: currentUid,
+    },
   });
 };
 
-const onTaskSubmitted = () => {
-  showActiveModal.value = false;
-};
-
+// --- 🌟 更新：onMounted 監聽路徑校準 ---
 onMounted(() => {
   if (!props.courseId) return;
   const uid = auth.currentUser?.uid || props.userId;
   const coursePath = `courses/${props.courseId}`;
 
-  // 1. 監聽單元清單
+  // 1. 監聽單元清單與可見性 (對標 JSON: courses/ID/units)
   onValue(dbRef(rtdb, `${coursePath}/units`), (snapshot) => {
     const data = snapshot.val() || {};
-    schedule.value = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+    // 🌟 修正：確保 visible 欄位被正確解析 (JSON 中 visible: true)
+    schedule.value = Object.entries(data).map(([id, val]) => ({
+      id,
+      ...val,
+      visible: val.visible !== false, // 只要不是明確寫 false，就預設為 true
+    }));
+
+    // 2. 同步監聽單元執行軌跡 (對標 JSON: units/ID/student_traces/UID)
+    const myTraces = {};
+    Object.entries(data).forEach(([uId, uVal]) => {
+      if (uVal.student_traces?.[uid]) {
+        myTraces[uId] = uVal.student_traces[uid];
+      }
+    });
+    unitTraces.value = myTraces;
   });
 
-  // 2. 監聽問卷定義 (根據 JSON 路徑)
+  // 3. 監聽前/後測問卷定義 (對標 JSON: experiment/test/pretest)
   onValue(dbRef(rtdb, `${coursePath}/experiment/test/pretest`), (s) => {
     const data = s.val();
-    if (data)
+    if (data) {
       preTestData.value = Object.entries(data).map(([id, v]) => ({
         id,
         ...v,
       }))[0];
+      // 🌟 關鍵修正：一拿到前測 ID，立刻去抓提交紀錄
+      checkTestSubmission(preTestData.value.id, "pre");
+    }
   });
+
   onValue(dbRef(rtdb, `${coursePath}/experiment/test/posttest`), (s) => {
     const data = s.val();
-    if (data)
+    if (data) {
       postTestData.value = Object.entries(data).map(([id, v]) => ({
         id,
         ...v,
       }))[0];
+      checkTestSubmission(postTestData.value.id, "post");
+    }
   });
 
   if (uid) {
-    // 3. 監聽問卷提交紀錄 (根據 JSON 路徑：experiment/submissions/{testId}/{uid})
-    onValue(dbRef(rtdb, `${coursePath}/experiment/submissions`), (snap) => {
-      const subs = snap.val() || {};
-      const preId = preTestData.value?.id;
-      const postId = postTestData.value?.id;
-      testRecords.value = {
-        pre: !!(preId && subs[preId]?.[uid]),
-        post: !!(postId && subs[postId]?.[uid]),
-      };
-    });
+    // 4. 監聽規劃紀錄 (對標 JSON: profiles/UID/srl/planning)
+    onValue(
+      dbRef(rtdb, `${coursePath}/profiles/${uid}/srl/planning`),
+      (snap) => {
+        unitPlans.value = snap.val() || {};
+      },
+    );
 
-    // 4. 監聽單元紀錄與 SRL 開關
-    onValue(dbRef(rtdb, `student_traces`), (snapshot) => {
-      const allTraces = snapshot.val() || {};
-      const myTraces = {};
-      Object.entries(allTraces).forEach(([key, val]) => {
-        if (key.startsWith(uid)) {
-          const unitId = key.split("_").pop();
-          myTraces[unitId] = val;
-        }
-      });
-      unitTraces.value = myTraces;
-    });
-
+    // 5. 監聽實驗組功能開關 (對標 JSON: experiment/groups/ID/features)
     onValue(dbRef(rtdb, `${coursePath}/profiles/${uid}`), (snap) => {
       const profile = snap.val();
       if (profile?.groupId) {
@@ -414,4 +449,13 @@ onMounted(() => {
     });
   }
 });
+
+// 🌟 新增輔助函數：解決前測顯示「未填寫」的時序問題
+const checkTestSubmission = (testId, type) => {
+  const uid = auth.currentUser?.uid || props.userId;
+  const path = `courses/${props.courseId}/experiment/submissions/${testId}/${uid}`;
+  onValue(dbRef(rtdb, path), (snap) => {
+    testRecords.value[type] = snap.exists();
+  });
+};
 </script>

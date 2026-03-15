@@ -4,65 +4,176 @@
   >
     <div
       v-if="!isStarted"
-      class="m-auto text-center py-5 px-4"
-      style="max-width: 600px"
+      class="m-auto py-5 px-4 w-100"
+      style="max-width: 550px"
     >
-      <div class="prepare-info border">
-        <i class="bi bi-patch-question text-navy display-1 mb-4"></i>
-        <h2 class="fw-bold text-navy mb-3">
-          {{ examData?.title || "載入中..." }}
-        </h2>
-        <div class="d-flex justify-content-center gap-2 mb-4">
-          <span class="badge rounded-pill bg-navy text-navy border px-3 py-2">
-            <i class="bi bi-clock me-1"></i>限時
-            {{ examData?.duration || 0 }} 分鐘
+      <div class="prepare-card p-5 text-center shadow-sm">
+        <div v-if="hasSubmitted" class="mb-4">
+          <span class="status-badge success">
+            <i class="bi bi-check-circle-fill me-2"></i>測驗任務已達成
           </span>
-          <span class="badge rounded-pill bg-light text-muted border px-3 py-2">
-            <i class="bi bi-list-ol me-1"></i>共
-            {{ examData?.questions?.length || 0 }} 題
-          </span>
+          <div class="mt-2 text-muted small">
+            嘗試次數：{{ submissionHistory?.attempts || 1 }} /
+            {{ examData?.maxAttempts || 1 }}
+          </div>
         </div>
-        <button
-          @click="handleStartExam"
-          class="btn btn-navy-pill btn-lg w-100 shadow-lg fw-bold"
-        >
-          進入正式測驗
-        </button>
-        <button @click="$emit('close')" class="btn btn-link text-muted mt-3">
+
+        <div v-if="isLockedByDeadline" class="alert alert-custom-danger mb-4">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          已截止且不開放遲交 ({{ formattedDeadline }})
+        </div>
+        <div v-else-if="isExpired" class="alert alert-custom-warning mb-4">
+          <i class="bi bi-clock-history me-2"></i>
+          逾期作答模式：作答將標記為「遲交」
+        </div>
+
+        <h2 class="fw-bold mb-4" style="color: var(--primary-navy)">
+          {{ examData?.title || "載入測驗中..." }}
+        </h2>
+
+        <div class="info-group d-flex justify-content-center gap-3 mb-5">
+          <div class="info-item">
+            <i class="bi bi-clock"></i> {{ examData?.duration || 0 }} 分鐘
+          </div>
+          <div class="info-item">
+            <i class="bi bi-list-ol"></i>
+            {{ examData?.questions?.length || 0 }} 題
+          </div>
+          <div class="info-item" :class="{ 'text-danger': isExpired }">
+            <i class="bi bi-calendar-event"></i> {{ formattedDeadline }}
+          </div>
+        </div>
+
+        <div v-if="canAttempt">
+          <button
+            @click="handleStartExam"
+            class="btn btn-primary-navy btn-lg w-100 mb-3"
+          >
+            {{ hasSubmitted ? "再次挑戰" : "開始正式測驗" }}
+          </button>
+        </div>
+        <div v-else class="locked-text mb-3">
+          <i class="bi bi-lock-fill me-1"></i>
+          {{ isLockedByDeadline ? "逾期作答功能已關閉" : "已達到最大作答次數" }}
+        </div>
+        <button @click="$emit('close')" class="btn btn-outline-link btn-sm">
           暫時返回教材
         </button>
       </div>
     </div>
 
-    <div v-else class="hw-main-container d-flex flex-grow-1 overflow-hidden">
-      <aside class="answer-sidebar d-none d-md-flex">
-        <div class="p-4 bg-dark text-white text-center shadow">
-          <div class="small opacity-75 mb-1">剩餘時間</div>
+    <div
+      v-else
+      class="exam-workspace d-flex flex-column flex-grow-1 overflow-hidden"
+    >
+      <header
+        class="exam-top-bar px-4 py-4 border-bottom d-flex justify-content-between align-items-center bg-white shadow-sm"
+      >
+        <div class="exam-title fw-bold text-primary-navy fs-4 truncate-text">
+          {{ examData?.title }}
+        </div>
+        <div class="d-flex align-items-center gap-3">
           <div
-            class="fs-2 fw-bold font-monospace"
-            :class="{ 'text-danger animate-pulse': remainingTime < 60 }"
+            class="timer-pill big-timer"
+            :class="{ warning: remainingTime < 60 }"
           >
-            {{ formattedTime }}
+            <i class="bi bi-clock-history me-2"></i>{{ formattedTime }}
+          </div>
+          <button @click="$emit('close')" class="btn-close fs-5"></button>
+        </div>
+      </header>
+
+      <main
+        class="exam-main-content flex-grow-1 overflow-auto bg-white custom-scrollbar d-flex flex-column"
+      >
+        <div class="container py-5 flex-grow-1" style="max-width: 800px">
+          <div class="q-label mb-2">Question {{ currentIndex + 1 }}</div>
+          <h4 class="question-text mb-5">{{ currentQuestion?.question }}</h4>
+
+          <div class="answer-area">
+            <div
+              v-if="currentQuestion?.type === 'multipleChoice'"
+              class="options-list"
+            >
+              <div
+                v-for="(opt, oIdx) in currentQuestion.options"
+                :key="oIdx"
+                class="option-item d-flex align-items-center mb-3"
+                :class="{ 'active-option': userAnswers[currentIndex] === oIdx }"
+                @click="userAnswers[currentIndex] = oIdx"
+              >
+                <div class="option-label me-3">
+                  {{ String.fromCharCode(65 + oIdx) }}
+                </div>
+                <div class="option-text flex-grow-1">{{ opt }}</div>
+                <i
+                  v-if="userAnswers[currentIndex] === oIdx"
+                  class="bi bi-check-lg text-primary-navy ms-2"
+                ></i>
+              </div>
+            </div>
+
+            <div
+              v-else-if="currentQuestion?.type === 'multiSelect'"
+              class="options-list"
+            >
+              <div
+                v-for="(opt, oIdx) in currentQuestion.options"
+                :key="oIdx"
+                class="option-item d-flex align-items-center mb-3"
+                :class="{
+                  'active-option': (userAnswers[currentIndex] || []).includes(
+                    oIdx,
+                  ),
+                }"
+                @click="handleMultiSelect(oIdx)"
+              >
+                <div class="option-label me-3">
+                  {{ String.fromCharCode(65 + oIdx) }}
+                </div>
+                <div class="option-text flex-grow-1">{{ opt }}</div>
+                <div class="ms-2">
+                  <i
+                    v-if="(userAnswers[currentIndex] || []).includes(oIdx)"
+                    class="bi bi-check-square-fill text-primary-navy fs-5"
+                  ></i>
+                  <i v-else class="bi bi-square text-muted fs-5"></i>
+                </div>
+              </div>
+            </div>
+
+            <div
+              v-else-if="currentQuestion?.type === 'shortAnswer'"
+              class="short-answer-box"
+            >
+              <textarea
+                v-model="userAnswers[currentIndex]"
+                class="form-control custom-textarea"
+                rows="6"
+                placeholder="請在此輸入您的回答..."
+              ></textarea>
+            </div>
           </div>
         </div>
-        <div class="flex-grow-1 overflow-auto p-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <label class="small fw-bold text-muted">題目導覽</label>
-            <span class="badge bg-light text-navy"
-              >{{ Object.keys(userAnswers).length }} /
-              {{ examData?.questions?.length }}</span
-            >
-          </div>
-          <div class="answer-grid">
+
+        <div class="question-nav-minimal border-top bg-light-subtle">
+          <div
+            class="question-nav-scroll d-flex justify-content-center gap-1 py-2"
+          >
             <div
               v-for="(q, idx) in examData?.questions"
               :key="idx"
               @click="currentIndex = idx"
               :class="[
-                'answer-status-box',
+                'nav-dot-sm',
                 {
                   active: currentIndex === idx,
-                  completed: userAnswers[idx] !== undefined,
+                  done:
+                    userAnswers[idx] !== undefined &&
+                    userAnswers[idx] !== '' &&
+                    (Array.isArray(userAnswers[idx])
+                      ? userAnswers[idx].length > 0
+                      : true),
                 },
               ]"
             >
@@ -70,165 +181,40 @@
             </div>
           </div>
         </div>
-        <div class="p-4 border-top">
-          <button
-            @click="confirmSubmit"
-            class="btn btn-navy w-100 rounded-pill py-2 fw-bold"
-          >
-            提交試卷
-          </button>
-        </div>
-      </aside>
+      </main>
 
-      <main
-        class="question-workspace flex-grow-1 d-flex flex-column overflow-hidden"
-      >
+      <footer class="exam-bottom-bar border-top bg-light p-3">
         <div
-          class="d-md-none p-2 bg-dark text-white d-flex justify-content-between align-items-center px-3 flex-shrink-0"
-        >
-          <span class="small"
-            ><i class="bi bi-clock me-1"></i>{{ formattedTime }}</span
-          >
-          <span class="small"
-            >{{ currentIndex + 1 }} / {{ examData?.questions?.length }}</span
-          >
-        </div>
-
-        <header
-          class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white flex-shrink-0"
-        >
-          <div class="d-flex align-items-center">
-            <span class="fw-bold text-navy me-3"
-              >題目 {{ currentIndex + 1 }}</span
-            >
-            <div
-              class="progress d-none d-sm-flex"
-              style="height: 6px; width: 120px"
-            >
-              <div
-                class="progress-bar bg-navy"
-                :style="{
-                  width:
-                    ((currentIndex + 1) / (examData?.questions?.length || 1)) *
-                      100 +
-                    '%',
-                }"
-              ></div>
-            </div>
-          </div>
-          <button @click="$emit('close')" class="btn-close"></button>
-        </header>
-
-        <div
-          class="q-content p-4 p-md-5 flex-grow-1 overflow-auto bg-white custom-scrollbar"
-        >
-          <h4 class="fw-bold mb-4 text-dark" style="line-height: 1.6">
-            {{ currentQuestion?.question }}
-          </h4>
-
-          <div class="answer-area">
-            <div
-              v-if="currentQuestion?.type === 'multipleChoice'"
-              class="options-list d-grid gap-3 mb-4"
-            >
-              <label
-                v-for="(opt, oIdx) in currentQuestion?.options"
-                :key="oIdx"
-                class="option-item card p-3 border-2 transition-all cursor-pointer shadow-sm"
-                :class="{ 'active-option': userAnswers[currentIndex] === oIdx }"
-              >
-                <input
-                  type="radio"
-                  class="d-none"
-                  v-model="userAnswers[currentIndex]"
-                  :value="oIdx"
-                />
-                <div class="d-flex align-items-center">
-                  <span class="option-label me-3">{{
-                    String.fromCharCode(65 + oIdx)
-                  }}</span>
-                  <span class="fw-medium text-secondary-emphasis text-wrap">{{
-                    opt
-                  }}</span>
-                </div>
-              </label>
-            </div>
-
-            <div
-              v-else-if="currentQuestion?.type === 'multiSelect'"
-              class="options-list d-grid gap-3 mb-4"
-            >
-              <label
-                v-for="(opt, oIdx) in currentQuestion?.options"
-                :key="oIdx"
-                class="option-item card p-3 border-2 transition-all cursor-pointer shadow-sm"
-                :class="{
-                  'active-option': (userAnswers[currentIndex] || []).includes(
-                    oIdx,
-                  ),
-                }"
-              >
-                <input
-                  type="checkbox"
-                  class="d-none"
-                  :checked="(userAnswers[currentIndex] || []).includes(oIdx)"
-                  @change="handleMultiSelect(oIdx)"
-                />
-                <div class="d-flex align-items-center">
-                  <span class="option-label me-3">{{
-                    String.fromCharCode(65 + oIdx)
-                  }}</span>
-                  <span class="fw-medium text-secondary-emphasis text-wrap">{{
-                    opt
-                  }}</span>
-                </div>
-              </label>
-            </div>
-
-            <div
-              v-else-if="currentQuestion?.type === 'shortAnswer'"
-              class="short-answer-area mb-4"
-            >
-              <textarea
-                v-model="userAnswers[currentIndex]"
-                class="form-control border-2 p-3 rounded-4 shadow-sm"
-                rows="6"
-                placeholder="請輸入您的答案..."
-              ></textarea>
-            </div>
-          </div>
-        </div>
-
-        <footer
-          class="p-3 p-md-4 border-top d-flex justify-content-between align-items-center bg-light flex-shrink-0"
+          class="container-fluid d-flex justify-content-between align-items-center"
+          style="max-width: 800px"
         >
           <button
             @click="currentIndex--"
             :disabled="currentIndex === 0"
-            class="btn btn-outline-secondary px-4 rounded-pill"
+            class="btn btn-nav-pill-outline"
           >
-            <i class="bi bi-chevron-left me-1"></i>上一題
+            <i class="bi bi-chevron-left me-1"></i
+            ><span class="d-none d-sm-inline">上一題</span>
           </button>
 
-          <div class="d-flex gap-2">
-            <button
-              v-if="currentIndex < examData?.questions?.length - 1"
-              @click="currentIndex++"
-              class="btn btn-primary px-4 rounded-pill shadow"
-            >
-              下一題<i class="bi bi-chevron-right ms-1"></i>
-            </button>
+          <button
+            @click="confirmSubmit"
+            class="btn btn-submit-navy px-5 py-2 fw-bold shadow-sm"
+          >
+            提交測驗
+          </button>
 
-            <button
-              v-else
-              @click="confirmSubmit"
-              class="btn btn-success px-5 rounded-pill shadow-sm"
-            >
-              提交正式測驗
-            </button>
-          </div>
-        </footer>
-      </main>
+          <button
+            v-if="currentIndex < examData?.questions?.length - 1"
+            @click="currentIndex++"
+            class="btn btn-nav-pill-outline"
+          >
+            <span class="d-none d-sm-inline me-1">下一題</span
+            ><i class="bi bi-chevron-right"></i>
+          </button>
+          <div v-else style="width: 90px"></div>
+        </div>
+      </footer>
     </div>
   </div>
 </template>
@@ -237,7 +223,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { rtdb } from "../../../firebase/config";
 import { ref as dbRef, get, update, serverTimestamp } from "firebase/database";
-import { getAuth } from "firebase/auth"; // 🌟 引入 Auth 取得 uid
+import { getAuth } from "firebase/auth";
 import Swal from "sweetalert2";
 import "./StuExam.css";
 import { recordStudentAction as recordAction } from "../../../utils/logger.js";
@@ -250,15 +236,19 @@ const props = defineProps({
 });
 const emit = defineEmits(["close"]);
 
-// 狀態管理
+// --- 1. 狀態管理 ---
 const examData = ref(null);
+const submissionHistory = ref(null);
 const isLoading = ref(false);
 const isStarted = ref(false);
 const currentIndex = ref(0);
 const userAnswers = ref({});
 const remainingTime = ref(0);
+const now = ref(Date.now());
 let timer = null;
+let nowInterval = null;
 
+// --- 2. 計算屬性 (含截止與遲交邏輯) ---
 const formattedTime = computed(() => {
   const m = Math.floor(remainingTime.value / 60);
   const s = remainingTime.value % 60;
@@ -269,37 +259,154 @@ const currentQuestion = computed(
   () => examData.value?.questions?.[currentIndex.value],
 );
 
+// 格式化截止日期
+const formattedDeadline = computed(() => {
+  if (!examData.value?.deadline) return "無期限";
+  return new Date(examData.value.deadline).toLocaleString("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+});
+
+// 判斷是否過期
+const isExpired = computed(() => {
+  if (!examData.value?.deadline) return false;
+  return now.value > new Date(examData.value.deadline).getTime();
+});
+
+// 🌟 判斷是否鎖定 (過期且教師「不允許」遲交)
+const isLockedByDeadline = computed(() => {
+  return isExpired.value && !examData.value?.allowLate;
+});
+
+const hasSubmitted = computed(() => !!submissionHistory.value);
+
+// 綜合判斷是否可以開始測驗
+const canAttempt = computed(() => {
+  if (isLockedByDeadline.value) return false; // 逾期且不准遲交則鎖定
+  if (!hasSubmitted.value) return true;
+  const max = examData.value?.maxAttempts || 1;
+  const current = submissionHistory.value?.attempts || 1;
+  return current < max;
+});
+
+// --- 3. 初始化讀取 ---
 const fetchExamDetail = async () => {
   if (!props.examId) return;
   isLoading.value = true;
+  const uid = getAuth().currentUser?.uid;
+
   try {
-    const path = `courses/${props.courseId}/exams/${props.examId}`;
-    const snap = await get(dbRef(rtdb, path));
-    if (snap.exists()) {
-      examData.value = snap.val();
+    const examPath = `courses/${props.courseId}/exams/${props.examId}`;
+    const examSnap = await get(dbRef(rtdb, examPath));
+    if (examSnap.exists()) {
+      examData.value = examSnap.val();
       remainingTime.value = (examData.value.duration || 10) * 60;
     }
+
+    if (uid) {
+      // 確保路徑與 StuUnit 一致：courses/{courseId}/units/{unitId}/student_traces/{uid}
+      const tracePath = `courses/${props.courseId}/units/${props.unitId}/student_traces/${uid}`;
+      const traceSnap = await get(dbRef(rtdb, tracePath));
+      if (traceSnap.exists()) {
+        const data = traceSnap.val();
+        if (data.examId === props.examId && data.status === "submitted") {
+          submissionHistory.value = data;
+        }
+      }
+    }
   } catch (error) {
-    console.error("🔥 讀取失敗:", error);
+    console.error("🔥 讀取測驗環境失敗:", error);
   } finally {
     isLoading.value = false;
   }
 };
 
+// --- 4. 執行與提交邏輯 ---
 const handleStartExam = () => {
   isStarted.value = true;
-
-  // 🌟 紀錄：正式開始測驗
-  recordAction(props.courseId, "開始執行單元測驗", {
+  recordAction(props.courseId, `開始執行單元測驗：${examData.value?.title}`, {
     unitId: props.unitId,
     examId: props.examId,
-    examTitle: examData.value?.title,
   });
 
   timer = setInterval(() => {
     if (remainingTime.value > 0) remainingTime.value--;
     else autoSubmit();
   }, 1000);
+};
+
+const submitExam = async () => {
+  if (timer) clearInterval(timer);
+
+  let totalScore = 0;
+  let totalErrorCount = 0;
+  const questions = examData.value.questions;
+  const uid = getAuth().currentUser?.uid;
+
+  questions.forEach((q, idx) => {
+    const userAnswer = userAnswers.value[idx];
+    const point = q.point || 100 / questions.length;
+    if (
+      userAnswer === undefined ||
+      userAnswer === null ||
+      (Array.isArray(userAnswer) && userAnswer.length === 0)
+    ) {
+      totalErrorCount++;
+      return;
+    }
+    if (q.type === "multipleChoice") {
+      if (userAnswer === q.finalAnswer) totalScore += point;
+      else totalErrorCount++;
+    } else if (q.type === "multiSelect") {
+      const correct = q.finalAnswer || [];
+      const isCorrect =
+        JSON.stringify([...userAnswer].sort()) ===
+        JSON.stringify([...correct].sort());
+      if (isCorrect) totalScore += point;
+      else totalErrorCount++;
+    } else if (q.type === "shortAnswer") {
+      if (userAnswer?.trim() === q.refAnswer?.trim()) totalScore += point;
+      else totalErrorCount++;
+    }
+  });
+
+  const finalScore = Math.round(totalScore);
+
+  try {
+    if (uid) {
+      const tracePath = `courses/${props.courseId}/units/${props.unitId}/student_traces/${uid}`;
+      await update(dbRef(rtdb, tracePath), {
+        currentScore: finalScore,
+        errorCount: totalErrorCount,
+        lastActive: serverTimestamp(),
+        status: "submitted",
+        examId: props.examId,
+        attempts: (submissionHistory.value?.attempts || 0) + 1,
+      });
+
+      await recordAction(props.courseId, "提交單元測驗結果", {
+        unitId: props.unitId,
+        examId: props.examId,
+        score: finalScore,
+        isLate: isExpired.value,
+      });
+    }
+
+    // 🌟 修正：不顯示得分，改為狀態提示
+    await Swal.fire({
+      title: isExpired.value ? "測驗已提交 (遲交)" : "測驗已提交",
+      text: "您的作答結果已成功上傳，請回到單元繼續學習。",
+      icon: "success",
+      confirmButtonColor: "#4a70a9",
+    });
+    emit("close");
+  } catch (error) {
+    Swal.fire("錯誤", "成績儲存失敗", "error");
+  }
 };
 
 const handleMultiSelect = (oIdx) => {
@@ -320,7 +427,7 @@ const confirmSubmit = async () => {
     text:
       unanswered > 0
         ? `尚有 ${unanswered} 題未作答！`
-        : "提交後將紀錄成績並無法修改。",
+        : "提交後將完成紀錄，無法再次修改答案。",
     icon: "question",
     showCancelButton: true,
     confirmButtonColor: "#4a70a9",
@@ -335,92 +442,15 @@ const autoSubmit = () => {
   submitExam();
 };
 
-const submitExam = async () => {
-  if (timer) clearInterval(timer);
-
-  let totalScore = 0;
-  let totalErrorCount = 0;
-  const questions = examData.value.questions;
-  const uid = getAuth().currentUser?.uid; // 🌟 取得目前使用者 ID
-
-  questions.forEach((q, idx) => {
-    const userAnswer = userAnswers.value[idx];
-    const questionPoint = q.point || 100 / questions.length;
-
-    if (
-      userAnswer === undefined ||
-      userAnswer === null ||
-      (Array.isArray(userAnswer) && userAnswer.length === 0)
-    ) {
-      totalErrorCount++;
-      return;
-    }
-
-    if (q.type === "multipleChoice") {
-      if (userAnswer === q.finalAnswer) totalScore += questionPoint;
-      else totalErrorCount++;
-    } else if (q.type === "multiSelect") {
-      const correctAnswers = q.finalAnswer || [];
-      const optionsCount = q.options.length;
-      let correctOptionsInTask = 0;
-      for (let i = 0; i < optionsCount; i++) {
-        if (correctAnswers.includes(i) === userAnswer.includes(i))
-          correctOptionsInTask++;
-      }
-      totalScore += (correctOptionsInTask / optionsCount) * questionPoint;
-      if (correctOptionsInTask !== optionsCount) totalErrorCount++;
-    } else if (q.type === "shortAnswer") {
-      if (userAnswer?.trim() === q.refAnswer?.trim())
-        totalScore += questionPoint;
-      else totalErrorCount++;
-    }
-  });
-
-  const finalRoundedScore = Math.round(totalScore);
-
-  try {
-    // 🌟 1. 更新課程內的學生 Trace (狀態追蹤)
-    // 路徑移入課程節點內：courses/{courseId}/users/{uid}/trace/{unitId}
-    if (uid) {
-      const tracePath = `courses/${props.courseId}/users/${uid}/trace/${props.unitId}`;
-      await update(dbRef(rtdb, tracePath), {
-        currentScore: finalRoundedScore,
-        errorCount: totalErrorCount,
-        lastActive: serverTimestamp(),
-        status: "submitted",
-        examId: props.examId,
-      });
-
-      // 🌟 2. 同步紀錄詳細行為 Log (合併紀錄)
-      await recordAction(props.courseId, "提交單元測驗結果", {
-        unitId: props.unitId,
-        examId: props.examId,
-        examTitle: examData.value?.title,
-        score: finalRoundedScore,
-        errors: totalErrorCount,
-        timeUsedSeconds: examData.value.duration * 60 - remainingTime.value,
-      });
-    }
-
-    await Swal.fire({
-      title: "測驗完成！",
-      html: `您的得分：<b style="font-size: 1.5rem; color: #4a70a9;">${finalRoundedScore}</b> 分<br>未完全答對：${totalErrorCount} 題`,
-      icon: "success",
-      confirmButtonText: "回到單元內容",
-    });
-
-    emit("close");
-  } catch (error) {
-    console.error("🔥 同步失敗:", error);
-    Swal.fire("錯誤", "成績儲存失敗，請檢查網路連線。", "error");
-  }
-};
-
 onMounted(() => {
   if (props.isOpen) fetchExamDetail();
+  nowInterval = setInterval(() => {
+    now.value = Date.now();
+  }, 60000);
 });
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
+  if (nowInterval) clearInterval(nowInterval);
 });
 </script>
