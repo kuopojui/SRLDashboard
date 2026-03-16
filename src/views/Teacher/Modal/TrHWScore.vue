@@ -73,7 +73,7 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from "vue";
 import { rtdb as db } from "../../../firebase/config";
-import { ref as dbRef, onValue, set, get } from "firebase/database";
+import { ref as dbRef, onValue, set, get, update } from "firebase/database";
 import Swal from "sweetalert2";
 import "./TrHWScore.css";
 
@@ -139,26 +139,41 @@ const openModal = async (assignment) => {
     const submissions = submissionsSnap.val() || {};
     const scores = scoresSnap.val() || {};
 
-    // 解析截止時間戳
     const deadlineTS = assignment.deadline
       ? new Date(assignment.deadline).getTime()
       : null;
 
     studentList.value = Object.entries(profiles).map(([uid, p]) => {
       const sub = submissions[uid] || null;
-      const submittedAt = sub?.submittedAt || null;
+      const scoreRecord = scores[uid] || null;
 
-      // 🌟 遲交判定
+      // 🌟 核心修正：判定是否繳交
+      // 線上模式：看是否在 submissions 節點有資料
+      // 線下模式：看是否在 scores 節點有 status === 'submitted' 或已有分數
+      let isSubmitted = false;
+      let submittedAt = null;
+
+      if (assignment.isOffline) {
+        isSubmitted =
+          scoreRecord?.status === "submitted" ||
+          scoreRecord?.score !== undefined;
+        submittedAt = scoreRecord?.updatedAt || null;
+      } else {
+        isSubmitted = !!sub;
+        submittedAt = sub?.submittedAt || null;
+      }
+
+      // 遲交判定
       const isLate =
         deadlineTS && submittedAt ? submittedAt > deadlineTS : false;
 
       return {
         uid,
         displayName: p.displayName || "匿名學生",
-        submitted: !!sub,
+        submitted: isSubmitted,
         isLate,
         answers: sub?.answers || [],
-        score: scores[uid]?.score || 0,
+        score: scoreRecord?.score || 0,
       };
     });
 
@@ -222,25 +237,78 @@ const formatAnswer = (question, ans) => {
 
 // 4. 存檔分數
 const handleScoreChange = async (uid, score) => {
-  const path = `courses/${props.courseId}/assignments/${currentItem.value.id}/scores/${uid}`;
+  if (!currentItem.value) return;
+
+  const assignmentId = currentItem.value.id;
+  const path = `courses/${props.courseId}/assignments/${assignmentId}/scores/${uid}`;
+
   try {
-    await set(dbRef(db, path), {
+    // 🌟 使用 update 而非 set，避免覆蓋掉學生可能已存在的其他欄位
+    // 同時強制寫入 status: "submitted"，確保看板能正確統計
+    await update(dbRef(db, path), {
       score: Number(score),
+      status: "submitted", // 🌟 確保線下作業給分後，狀態轉為已繳交
       updatedAt: Date.now(),
     });
 
-    // 🌟 輕量級 Toast 通知
+    // 🌟 額外優化：同步更新該單元的 P75 (前25%) 統計數據
+    // 這樣學生的儀表板折線圖指標才會跟著連動
+    updateAssignmentStats(assignmentId);
+
+    // 輕量級 Toast 通知
     Swal.fire({
       icon: "success",
-      title: "分數已同步",
+      title: "成績已同步",
       toast: true,
       position: "top-end",
       timer: 1500,
       showConfirmButton: false,
-      backdrop: false, // 確保沒有黑色遮罩
+      backdrop: false,
     });
   } catch (error) {
-    Swal.fire("儲存失敗", error.message, "error");
+    console.error("儲存失敗:", error);
+    Swal.fire({
+      icon: "error",
+      title: "儲存失敗",
+      text: error.message,
+      toast: true,
+      position: "top-end",
+      timer: 3000,
+    });
+  }
+};
+
+// 🌟 輔助函數：更新該功課項目的領先群指標
+const updateAssignmentStats = async (hwId) => {
+  try {
+    const scoresSnap = await get(
+      dbRef(db, `courses/${props.courseId}/assignments/${hwId}/scores`),
+    );
+    if (scoresSnap.exists()) {
+      const data = Object.values(scoresSnap.val());
+      const scores = data
+        .map((d) => d.score)
+        .filter((s) => typeof s === "number")
+        .sort((a, b) => b - a);
+
+      if (scores.length > 0) {
+        const topCount = Math.max(1, Math.ceil(scores.length * 0.25));
+        const topAvg = Math.round(
+          scores.slice(0, topCount).reduce((a, b) => a + b, 0) / topCount,
+        );
+
+        // 將計算好的前25%平均值存入 stats 節點
+        await update(
+          dbRef(db, `courses/${props.courseId}/assignments/${hwId}/stats`),
+          {
+            topAverage: topAvg,
+            lastUpdated: Date.now(),
+          },
+        );
+      }
+    }
+  } catch (err) {
+    console.warn("統計數據更新失敗", err);
   }
 };
 

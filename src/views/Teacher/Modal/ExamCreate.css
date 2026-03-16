@@ -279,3 +279,61 @@
   background: #cbd5e1;
   border-radius: 10px;
 }
+
+/* 可以在這裡加入線下模式專屬的微調樣式 */
+/* --- 🌟 線下模式設定區塊優化 --- */
+.offline-setup-box {
+  background-color: #f0f4f9; /* 極淺湛藍背景 */
+  border: 2px dashed var(--navy) !important; /* 改為湛藍色虛線 */
+  border-radius: 24px;
+  padding: 40px 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 加入一個淡淡的背景圖示浮水印感 */
+.offline-setup-box::before {
+  content: "\f4c4"; /* Bootstrap Icons: person-workspace */
+  font-family: "bootstrap-icons";
+  position: absolute;
+  font-size: 8rem;
+  color: var(--navy);
+  opacity: 0.03;
+  right: -20px;
+  bottom: -20px;
+  pointer-events: none;
+}
+
+.offline-setup-box h6 {
+  color: var(--navy);
+  letter-spacing: 0.5px;
+  margin-top: 10px;
+}
+
+.offline-setup-box .input-group {
+  box-shadow: 0 10px 25px rgba(74, 112, 169, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.offline-setup-box .input-group-text {
+  background-color: var(--navy);
+  color: white;
+  border: none;
+  font-size: 0.85rem;
+}
+
+.offline-setup-box .form-control {
+  border: 1px solid #e2e8f0;
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 1.1rem;
+}
+
+/* 🌟 選項卡片在選中狀態下的發光效果 */
+.setting-card.border-primary {
+  background-color: #ffffff !important;
+  border: 2px solid var(--navy) !important;
+  box-shadow: 0 10px 20px rgba(74, 112, 169, 0.08);
+}

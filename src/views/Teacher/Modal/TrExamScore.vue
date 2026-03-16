@@ -115,26 +115,22 @@ onMounted(() => {
   });
 });
 
-// --- 2. 打開名單並即時監聽單元軌跡 ---
+// --- 2. 打開名單並即時監聽 ---
 const openModal = async (exam) => {
   currentItem.value = exam;
   isLoading.value = true;
   showModal.value = true;
 
-  // 取得該測驗所屬的單元 ID (若無則使用預設)
-  const unitId = exam.unitId || "-OnlpYzB9HKzzvAtYhma";
-
   const profilesRef = dbRef(db, `courses/${props.courseId}/profiles`);
+  const unitId = exam.unitId || "-OnlpYzB9HKzzvAtYhma";
   const tracesRef = dbRef(
     db,
     `courses/${props.courseId}/units/${unitId}/student_traces`,
   );
 
-  // 監聽學生個人資料
   activeListeners.profiles = onValue(profilesRef, (pSnap) => {
     const profiles = pSnap.val() || {};
 
-    // 監聽單元內的學生作答軌跡
     activeListeners.traces = onValue(tracesRef, (tSnap) => {
       const allTraces = tSnap.val() || {};
       const deadlineTS = exam.deadline
@@ -143,30 +139,50 @@ const openModal = async (exam) => {
 
       const list = Object.entries(profiles).map(([uid, p]) => {
         const trace = allTraces[uid] || null;
+        const isThisExam = trace && trace.examId === exam.id;
 
-        // 判定邏輯：依據 status 或 currentScore 是否存在
-        const isSubmitted =
-          trace?.status === "submitted" || trace?.currentScore !== undefined;
-        const submittedAt = trace?.lastActive || null;
+        // 🌟 核心防閃爍邏輯：
+        // 1. 找到目前畫面上該學生的現有資料
+        const existingStu = studentList.value.find((s) => s.uid === uid);
+
+        // 2. 取得資料庫最新的分數
+        const dbScore = isThisExam ? (trace.currentScore ?? 0) : 0;
+
+        // 3. 判定分數：
+        // 如果這個學生已經在畫面上，我們保留目前的 score (避免輸入時被 DB 的舊資料跳回 0)
+        // 除非 dbScore 跟本地不一樣且本地沒有在「被修改中」的狀態（通常由 @change 處理完畢）
+        const finalScore = existingStu ? existingStu.score : dbScore;
 
         return {
           uid,
           displayName: p.displayName || "學生",
-          submitted: isSubmitted,
-          isLate: deadlineTS && submittedAt ? submittedAt > deadlineTS : false,
-          score: trace?.currentScore ?? 0,
-          answers: trace?.answers || [],
-          lastActive: submittedAt,
+          submitted:
+            isThisExam &&
+            (trace.status === "submitted" || trace.currentScore !== undefined),
+          isLate:
+            deadlineTS && trace?.lastActive
+              ? trace.lastActive > deadlineTS
+              : false,
+          score: finalScore, // 🌟 使用保留的分數，不再強制變回 0
+          answers: isThisExam ? trace.answers || [] : [],
+          lastActive: trace?.lastActive,
         };
       });
 
-      // 排序：已交(含遲交)在前
-      studentList.value = list.sort((a, b) => b.submitted - a.submitted);
+      // 🌟 排序邏輯優化：
+      // 如果 studentList 已經有資料，代表老師正在操作，這時我們只更新數值，不重新排序。
+      // 避免老師輸入到一半，學生的位置因為「未交變已交」突然噴走。
+      if (studentList.value.length === 0) {
+        studentList.value = list.sort((a, b) => b.submitted - a.submitted);
+      } else {
+        // 更新數據但保持原本的順序
+        studentList.value = list;
+      }
+
       isLoading.value = false;
     });
   });
 };
-
 // --- 3. 顯示作答詳情 (Swal) ---
 const viewDetails = (stu) => {
   if (!stu.submitted || !currentItem.value.questions) return;
@@ -221,41 +237,70 @@ const formatVal = (q, val) => {
   return val;
 };
 
-// --- 4. 分數手動存檔並觸發 SRL 領先平均計算 ---
+// --- 4. 分數手動存檔：綁定 Exam ID ---
 const saveTestScore = async (uid, score) => {
-  const unitId = currentItem.value.unitId || "-OnlpYzB9HKzzvAtYhma";
-  const traceScorePath = `courses/${props.courseId}/units/${unitId}/student_traces/${uid}/currentScore`;
+  if (!currentItem.value) return;
+
+  const examId = currentItem.value.id;
+  const unitId = currentItem.value.unitId;
+
+  // 🌟 建立專屬路徑：優先存入 exams/{examId}/scores/{uid}
+  // 這樣不同考試的成績就會完全分開
+  let targetPath = `courses/${props.courseId}/exams/${examId}/scores/${uid}`;
+
+  // 如果您希望同時同步回單元軌跡（選做）
+  let tracePath = unitId
+    ? `courses/${props.courseId}/units/${unitId}/student_traces/${uid}`
+    : null;
 
   try {
-    await set(dbRef(db, traceScorePath), Number(score));
+    const updateData = {
+      score: Number(score),
+      updatedAt: Date.now(),
+    };
 
-    // 自動更新 P75 平均 (用於學生端儀表板)
-    const tracesSnap = await get(
-      dbRef(db, `courses/${props.courseId}/units/${unitId}/student_traces`),
+    // 1. 存入考試專屬節點
+    await update(dbRef(db, targetPath), updateData);
+
+    // 2. 如果有綁定單元，同步更新單元內的 currentScore
+    if (tracePath) {
+      await update(dbRef(db, tracePath), { currentScore: Number(score) });
+    }
+
+    // 3. 更新該場考試的統計數據 (P75)
+    const allScoresSnap = await get(
+      dbRef(db, `courses/${props.courseId}/exams/${examId}/scores`),
     );
-    if (tracesSnap.exists()) {
-      const data = Object.values(tracesSnap.val());
-      const scores = data.map((d) => d.currentScore || 0).sort((a, b) => b - a);
+    if (allScoresSnap.exists()) {
+      const scores = Object.values(allScoresSnap.val())
+        .map((d) => d.score || 0)
+        .sort((a, b) => b - a);
+
       const topCount = Math.max(1, Math.ceil(scores.length * 0.25));
       const topAvg = Math.round(
         scores.slice(0, topCount).reduce((a, b) => a + b, 0) / topCount,
       );
 
+      // 存入該考試專屬的統計
       await update(
-        dbRef(db, `courses/${props.courseId}/units/${unitId}/stats`),
-        { topAverage: topAvg },
+        dbRef(db, `courses/${props.courseId}/exams/${examId}/stats`),
+        {
+          topAverage: topAvg,
+          lastUpdated: Date.now(),
+        },
       );
     }
 
     Swal.fire({
       icon: "success",
-      title: "成績已同步",
+      title: "成績已分別儲存",
       toast: true,
       position: "top-end",
       timer: 1500,
       showConfirmButton: false,
     });
   } catch (error) {
+    console.error(error);
     Swal.fire("錯誤", "無法存檔", "error");
   }
 };

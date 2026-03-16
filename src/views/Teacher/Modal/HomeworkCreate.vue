@@ -5,7 +5,8 @@
     >
       <div class="ex-modal-header">
         <h3 class="modal-title-navy">
-          <i class="bi bi-journal-text me-2"></i>建立新作業
+          <i class="bi bi-journal-text me-2"></i
+          >{{ form.isOffline ? "建立線下作業" : "建立新作業" }}
         </h3>
         <button
           type="button"
@@ -30,16 +31,16 @@
               v-model="form.title"
               type="text"
               class="ex-input-field"
-              placeholder="例如：單元一 單字練習"
+              placeholder="例如：單元一 實作練習"
               required
             />
           </div>
 
           <div class="row g-3 mb-4">
-            <div class="col-md-7 col-12">
-              <label class="ex-label-small text-secondary fw-bold mb-2"
-                >截止日期與時間</label
-              >
+            <div :class="form.isOffline ? 'col-12' : 'col-md-7 col-12'">
+              <label class="ex-label-small text-secondary fw-bold mb-2">
+                {{ form.isOffline ? "回報期限" : "截止日期與時間" }}
+              </label>
               <input
                 v-model="form.deadline"
                 type="datetime-local"
@@ -47,7 +48,11 @@
                 required
               />
             </div>
-            <div class="col-md-5 col-12 d-flex align-items-end">
+
+            <div
+              class="col-md-5 col-12 d-flex align-items-end"
+              v-if="!form.isOffline"
+            >
               <div class="late-toggle-box w-100">
                 <span class="small fw-bold text-navy">允許遲交</span>
                 <div class="form-check form-switch m-0">
@@ -62,51 +67,87 @@
           </div>
 
           <div class="row g-3 mb-4">
-            <div class="col-md-6 col-12">
+            <div class="col-md-4 col-12">
               <div
                 class="setting-card p-3 border rounded-4 bg-light d-flex justify-content-between align-items-center"
+                :class="{ 'border-primary shadow-sm': form.isOffline }"
               >
                 <div>
                   <span class="small fw-bold text-navy d-block"
-                    >提交後可修改</span
-                  >
-                  <small class="text-muted" style="font-size: 0.7rem"
-                    >截止前允許學生更新答案</small
+                    >線下作業模式</span
                   >
                 </div>
                 <div class="form-check form-switch m-0">
                   <input
                     class="form-check-input"
                     type="checkbox"
-                    v-model="form.allowEditAfterSubmit"
+                    v-model="form.isOffline"
                   />
                 </div>
               </div>
             </div>
-            <div class="col-md-6 col-12">
+
+            <div class="col-md-4 col-12" v-if="form.isOffline">
               <div
-                class="setting-card p-3 border rounded-4 bg-light d-flex justify-content-between align-items-center"
+                class="setting-card p-3 border rounded-4 bg-white d-flex justify-content-between align-items-center"
               >
-                <div>
-                  <span class="small fw-bold text-navy d-block">自動批改</span>
-                  <small class="text-muted" style="font-size: 0.7rem"
-                    >提交後立即顯示分數(限選擇題)</small
-                  >
-                </div>
+                <span class="small fw-bold text-navy">允許遲交</span>
                 <div class="form-check form-switch m-0">
                   <input
                     class="form-check-input"
                     type="checkbox"
-                    v-model="form.autoGrading"
+                    v-model="form.allowLate"
                   />
                 </div>
               </div>
             </div>
+
+            <template v-if="!form.isOffline">
+              <div class="col-md-4 col-12">
+                <div
+                  class="setting-card p-3 border rounded-4 bg-light d-flex justify-content-between align-items-center"
+                >
+                  <span class="small fw-bold text-navy">提交後可修改</span>
+                  <div class="form-check form-switch m-0">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      v-model="form.allowEditAfterSubmit"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 col-12">
+                <div
+                  class="setting-card p-3 border rounded-4 bg-light d-flex justify-content-between align-items-center"
+                >
+                  <span class="small fw-bold text-navy">自動批改</span>
+                  <div class="form-check form-switch m-0">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      v-model="form.autoGrading"
+                    />
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
 
           <hr class="ex-divider my-4" />
 
-          <div class="ex-question-list">
+          <div
+            v-if="form.isOffline"
+            class="offline-setup-box p-4 border rounded-4 bg-light text-center mb-4"
+          >
+            <i
+              class="bi bi-person-workspace fs-1 text-secondary mb-2 d-block"
+            ></i>
+            <h6 class="fw-bold text-navy">線下作業設定</h6>
+            <p class="small text-muted mb-3">學生將在現實寫完後回報完成</p>
+          </div>
+
+          <div v-else class="ex-question-list">
             <div
               v-for="(q, idx) in questions"
               :key="idx"
@@ -160,7 +201,6 @@
                       placeholder="輸入關鍵字以供 AI 批改參考"
                     />
                   </div>
-
                   <div v-else class="options-container">
                     <label class="xx-small fw-bold text-navy mb-2 d-block"
                       >選項與正確答案設定</label
@@ -180,7 +220,6 @@
                         :placeholder="'選項 ' + i"
                         required
                       />
-
                       <input
                         v-if="q.type === 'multipleChoice'"
                         type="radio"
@@ -201,19 +240,20 @@
                 </div>
               </div>
             </div>
+            <button
+              type="button"
+              class="btn-add-dashed-full mb-4"
+              @click="addQuestion"
+            >
+              <i class="bi bi-plus-lg me-2"></i> 新增題目
+            </button>
           </div>
-
-          <button
-            type="button"
-            class="btn-add-dashed-full mb-4"
-            @click="addQuestion"
-          >
-            <i class="bi bi-plus-lg me-2"></i> 新增題目
-          </button>
         </div>
 
         <div class="ex-modal-footer">
-          <button type="submit" class="ex-btn-navy-action">確認發佈作業</button>
+          <button type="submit" class="ex-btn-navy-action">
+            確認發佈{{ form.isOffline ? "線下作業" : "作業" }}
+          </button>
         </div>
       </form>
     </div>
@@ -235,9 +275,10 @@ const form = reactive({
   description: "",
   deadline: "",
   allowLate: false,
-  // 🌟 新增開關屬性
-  allowEditAfterSubmit: false, // 提交後可修改 (預設關閉)
-  autoGrading: true, // 自動批改 (預設開啟)
+  allowEditAfterSubmit: false,
+  autoGrading: true,
+  isOffline: false, // 🌟 新增：是否為線下模式
+  offlineTotalScore: 100, // 🌟 新增：線下模式滿分預設 100
 });
 
 const questions = ref([]);
@@ -245,16 +286,10 @@ const questions = ref([]);
 // 🌟 鎖定背景捲動
 onMounted(() => {
   document.body.style.overflow = "hidden";
-  if (window.innerWidth < 768) {
-    document.body.style.position = "fixed";
-    document.body.style.width = "100%";
-  }
 });
 
 onUnmounted(() => {
   document.body.style.overflow = "";
-  document.body.style.position = "";
-  document.body.style.width = "";
 });
 
 const emitClose = () => emit("close");
@@ -277,30 +312,46 @@ const handleTypeChange = (q) => {
 };
 
 const createHomework = async () => {
-  if (questions.value.length === 0) {
+  if (!form.isOffline && questions.value.length === 0) {
     Swal.fire("提醒", "請至少新增一個題目", "warning");
     return;
   }
 
   try {
-    const processedQuestions = questions.value.map((q) => {
-      const base = { type: q.type, question: q.question };
-      if (q.type === "shortAnswer") return { ...base, refAnswer: q.refAnswer };
-      if (q.type === "multipleChoice")
-        return { ...base, options: q.options.slice(0, 4), answer: q.answer };
-      return {
-        ...base,
-        options: q.options.slice(0, 5),
-        multiAnswers: q.multiAnswers,
-      };
-    });
-
     const homeworkData = {
-      ...form, // 🌟 包含新增的設定
-      questions: processedQuestions,
+      title: form.title,
+      deadline: form.deadline,
+      allowLate: form.allowLate,
+      isOffline: form.isOffline,
       createdAt: Date.now(),
       courseId: props.courseId,
     };
+
+    if (form.isOffline) {
+      // 🌟 線下模式數據
+      homeworkData.totalScore = Number(form.offlineTotalScore) || 100;
+      homeworkData.questions = [];
+      homeworkData.autoGrading = false;
+      homeworkData.allowEditAfterSubmit = false;
+    } else {
+      // 🌟 線上模式數據
+      homeworkData.autoGrading = form.autoGrading;
+      homeworkData.allowEditAfterSubmit = form.allowEditAfterSubmit;
+      homeworkData.questions = questions.value.map((q) => {
+        const base = { type: q.type, question: q.question };
+        if (q.type === "shortAnswer")
+          return { ...base, refAnswer: q.refAnswer };
+        if (q.type === "multipleChoice")
+          return { ...base, options: q.options.slice(0, 4), answer: q.answer };
+        return {
+          ...base,
+          options: q.options.slice(0, 5),
+          multiAnswers: q.multiAnswers,
+        };
+      });
+      // 線上模式總分由學生診斷看板根據題目點數計算，或在此處統一
+      homeworkData.totalScore = 100;
+    }
 
     const newAssignmentRef = push(
       dbRef(db, `courses/${props.courseId}/assignments`),
@@ -309,7 +360,7 @@ const createHomework = async () => {
 
     Swal.fire({
       icon: "success",
-      title: "作業發佈成功",
+      title: form.isOffline ? "線下作業發佈成功" : "作業發佈成功",
       showConfirmButton: false,
       timer: 1500,
     });

@@ -48,23 +48,29 @@
       </button>
     </div>
 
-    <div class="StuDashboard-grid">
-      <div class="StuDashboard-chart-card shadow-sm p-4">
-        <h6 class="StuDashboard-chart-header text-navy">
+    <div class="StuDashboard-flex-column gap-4">
+      <div class="StuDashboard-chart-card shadow-sm p-4 mb-4">
+        <h6 class="StuDashboard-chart-header text-navy fw-bold">
           <i class="bi bi-graph-up me-2"></i>功課成績對照
-          <small class="text-muted">(個人 vs 全班)</small>
+          <small class="text-muted ms-1">(個人 vs 組內指標)</small>
         </h6>
-        <div class="StuDashboard-canvas-box mt-3">
+        <div
+          class="StuDashboard-canvas-box mt-3"
+          style="position: relative; height: 350px"
+        >
           <canvas id="hwCompareChart"></canvas>
         </div>
       </div>
 
-      <div class="StuDashboard-chart-card shadow-sm p-4">
-        <h6 class="StuDashboard-chart-header text-navy">
+      <div class="StuDashboard-chart-card shadow-sm p-4 mb-4">
+        <h6 class="StuDashboard-chart-header text-navy fw-bold">
           <i class="bi bi-pencil-square me-2"></i>考試成績對照
-          <small class="text-muted">(個人 vs 全班)</small>
+          <small class="text-muted ms-1">(個人 vs 組內指標)</small>
         </h6>
-        <div class="StuDashboard-canvas-box mt-3">
+        <div
+          class="StuDashboard-canvas-box mt-3"
+          style="position: relative; height: 350px"
+        >
           <canvas id="examCompareChart"></canvas>
         </div>
       </div>
@@ -78,7 +84,6 @@
       >
         <div
           class="StuDashboard-modal-box shadow-lg animate__animated animate__zoomIn"
-          style="width: 95%; max-width: 650px"
         >
           <div
             class="StuDashboard-modal-header d-flex justify-content-between align-items-center p-4"
@@ -89,12 +94,10 @@
               </div>
               <h5 class="m-0 fw-900 text-navy">班級積分排行榜</h5>
             </div>
-
             <button class="btn-close-minimal" @click="showRankModal = false">
               <i class="bi bi-x-lg"></i>
             </button>
           </div>
-
           <div class="StuDashboard-modal-body p-3 p-md-4 custom-scrollbar">
             <StuRank :course-id="props.courseId" />
           </div>
@@ -112,8 +115,6 @@ import { getAuth } from "firebase/auth";
 import { Chart, registerables } from "chart.js";
 import StuRank from "./Modal/StuRank.vue";
 import "./StuDashboard.css";
-
-// 🌟 引入統一的紀錄工具
 import { recordStudentAction } from "../../utils/logger.js";
 
 Chart.register(...registerables);
@@ -125,19 +126,54 @@ const courseId = props.courseId;
 const showRankModal = ref(false);
 const discussionCount = ref(0);
 const performanceSummary = ref({ hw: [], exam: [] });
-const pageEnterTime = ref(null); // 🌟 用於計算停留時間
+const groupMemberIds = ref([]);
+const pageEnterTime = ref(null);
 
-// 湛藍主題色變數
 const THEME_NAVY = "#4a70a9";
-
 let hwChartInstance = null;
 let examChartInstance = null;
 
-// --- 計算均分 ---
+// --- 🌟 1. 統計計算邏輯 (修正：包含真實 0 分與樣本防呆) ---
+const calculateGroupStats = (scores) => {
+  // 注意：scores 傳入前應已過濾掉「未繳交者」，保留含 0 在內的真實分數
+  if (!scores || scores.length === 0) return { median: 0, top25Avg: 0 };
+
+  const validScores = scores
+    .filter((s) => typeof s === "number" && !isNaN(s))
+    .sort((a, b) => a - b);
+
+  const len = validScores.length;
+  if (len === 0) return { median: 0, top25Avg: 0 };
+
+  // 計算中位數
+  const mid = Math.floor(len / 2);
+  const median =
+    len % 2 !== 0
+      ? validScores[mid]
+      : (validScores[mid - 1] + validScores[mid]) / 2;
+
+  // 計算領先指標 (前 25%)
+  let top25Avg = 0;
+  if (len < 4) {
+    // 樣本不足 4 人時，前 25% 平均即為該組目前最高分
+    top25Avg = validScores[len - 1];
+  } else {
+    const topCount = Math.max(1, Math.ceil(len * 0.25));
+    const topScores = [...validScores].sort((a, b) => b - a).slice(0, topCount);
+    top25Avg = topScores.reduce((a, b) => a + b, 0) / topScores.length;
+  }
+
+  return {
+    median: Math.round(median),
+    top25Avg: Math.round(top25Avg),
+  };
+};
+
+// --- 🌟 補回缺失的平均分計算 (用於儀表板卡片顯示) ---
 const avgHwScore = computed(() => {
   const scores = performanceSummary.value.hw
     .map((i) => i.score)
-    .filter((v) => v !== null);
+    .filter((v) => typeof v === "number");
   return scores.length
     ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
     : 0;
@@ -146,17 +182,21 @@ const avgHwScore = computed(() => {
 const avgExamScore = computed(() => {
   const scores = performanceSummary.value.exam
     .map((i) => i.score)
-    .filter((v) => v !== null);
+    .filter((v) => typeof v === "number");
   return scores.length
     ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
     : 0;
 });
 
-// --- 圖表繪製核心 ---
-const updateChart = async (id, labels, myScores, color) => {
+// --- 🌟 2. 圖表繪製核心 ---
+const updateChart = async (id, labels, myScores, medians, topAvgs, color) => {
   await nextTick();
   const ctx = document.getElementById(id);
   if (!ctx) return;
+
+  if (id === "hwCompareChart" && hwChartInstance) hwChartInstance.destroy();
+  if (id === "examCompareChart" && examChartInstance)
+    examChartInstance.destroy();
 
   const data = {
     labels,
@@ -168,91 +208,165 @@ const updateChart = async (id, labels, myScores, color) => {
         backgroundColor: color + "15",
         tension: 0.3,
         fill: true,
-        pointRadius: 4,
-        pointBackgroundColor: "#ffffff",
-        pointBorderColor: color,
-        pointBorderWidth: 2,
-        borderWidth: 2.5,
+        borderWidth: 3,
+        pointRadius: 5,
+        zIndex: 10,
+      },
+      {
+        label: "組內中位數",
+        data: medians,
+        borderColor: "#94a3b8", // 灰色
+        borderDash: [5, 5],
+        pointRadius: 0,
+        fill: false,
+        tension: 0.1,
+      },
+      {
+        label: "組內前 25% 平均",
+        data: topAvgs,
+        borderColor: "#fbbf24", // 金色
+        borderDash: [2, 2],
+        pointRadius: 0,
+        fill: false,
+        tension: 0.1,
       },
     ],
   };
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: { min: 0, max: 100, ticks: { color: "#94a3b8" } },
-      x: { ticks: { color: "#94a3b8" } },
+  const newChart = new Chart(ctx, {
+    type: "line",
+    data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true, position: "bottom" } },
+      scales: {
+        y: {
+          min: 0,
+          max: 100,
+          ticks: { stepSize: 20, color: "#94a3b8" },
+          grid: { color: "#f1f5f9" },
+        },
+        x: { ticks: { color: "#94a3b8" } },
+      },
     },
-  };
+  });
 
-  let instance = id === "hwCompareChart" ? hwChartInstance : examChartInstance;
-
-  if (instance) {
-    instance.data = data;
-    instance.update();
-  } else {
-    const newChart = new Chart(ctx, {
-      type: "line",
-      data,
-      options: chartOptions,
-    });
-    if (id === "hwCompareChart") hwChartInstance = newChart;
-    else examChartInstance = newChart;
-  }
+  if (id === "hwCompareChart") hwChartInstance = newChart;
+  else examChartInstance = newChart;
 };
 
+// --- 🌟 3. 初始化與監聽邏輯 ---
 onMounted(() => {
   const auth = getAuth();
   const uid = auth.currentUser?.uid;
   if (!uid) return;
 
-  // 🌟 紀錄 1: 進入儀表板
   pageEnterTime.value = Date.now();
   recordStudentAction(courseId, "進入學習診斷儀表板");
 
-  // 1. 監聽功課數據
+  // A. 識別組別成員
+  onValue(dbRef(db, `courses/${courseId}/profiles`), (snap) => {
+    const profiles = snap.val() || {};
+    const myGroupId = profiles[uid]?.groupId;
+    if (myGroupId) {
+      groupMemberIds.value = Object.keys(profiles).filter(
+        (k) => profiles[k].groupId === myGroupId,
+      );
+    }
+  });
+
+  // B. 處理功課分數 (Assignments)
   onValue(dbRef(db, `courses/${courseId}/assignments`), (snap) => {
     if (!snap.exists()) return;
-    const data = snap.val();
-    const processedHw = Object.entries(data)
-      .map(([id, val]) => ({
-        title: val.title || "未命名功課",
-        score:
-          val.scores?.[uid]?.score !== undefined ? val.scores[uid].score : null,
-      }))
-      .filter((i) => i.score !== null);
-    performanceSummary.value.hw = processedHw;
-    updateChart(
-      "hwCompareChart",
-      processedHw.map((i) => i.title),
-      processedHw.map((i) => i.score),
-      THEME_NAVY,
-    );
+    const assignmentsData = snap.val();
+    const hwList = [];
+
+    Object.entries(assignmentsData).forEach(([id, data]) => {
+      const myScore = data.scores?.[uid]?.score;
+      if (myScore === undefined) return;
+
+      // 🌟 判定組員是否繳交：有 status 或已給分則納入統計
+      const groupScores = groupMemberIds.value
+        .map((mId) => {
+          const record = data.scores?.[mId];
+          const hasSubmitted =
+            record?.status === "submitted" || record?.score !== undefined;
+          return hasSubmitted ? Number(record.score) || 0 : null;
+        })
+        .filter((s) => s !== null);
+
+      const { median, top25Avg } = calculateGroupStats(groupScores);
+
+      hwList.push({
+        title: data.title || "功課",
+        score: myScore,
+        median,
+        top25Avg,
+        createdAt: data.createdAt || 0,
+      });
+    });
+
+    hwList.sort((a, b) => a.createdAt - b.createdAt);
+    performanceSummary.value.hw = hwList;
+    if (hwList.length > 0) {
+      updateChart(
+        "hwCompareChart",
+        hwList.map((i) => i.title),
+        hwList.map((i) => i.score),
+        hwList.map((i) => i.median),
+        hwList.map((i) => i.top25Avg),
+        THEME_NAVY,
+      );
+    }
   });
 
-  // 2. 監聽考試數據
+  // C. 處理測驗分數 (Exams)
   onValue(dbRef(db, `courses/${courseId}/exams`), (snap) => {
     if (!snap.exists()) return;
-    const data = snap.val();
-    const processedExam = Object.entries(data)
-      .map(([id, val]) => ({
-        title: val.title || "未命名考試",
-        score:
-          val.scores?.[uid]?.score !== undefined ? val.scores[uid].score : null,
-      }))
-      .filter((i) => i.score !== null);
-    performanceSummary.value.exam = processedExam;
-    updateChart(
-      "examCompareChart",
-      processedExam.map((i) => i.title),
-      processedExam.map((i) => i.score),
-      THEME_NAVY,
-    );
+    const examsData = snap.val();
+    const examList = [];
+
+    Object.entries(examsData).forEach(([id, data]) => {
+      const myScore = data.scores?.[uid]?.score;
+      if (myScore === undefined) return;
+
+      // 🌟 判定組員是否繳交
+      const groupScores = groupMemberIds.value
+        .map((mId) => {
+          const record = data.scores?.[mId];
+          const hasSubmitted =
+            record?.status === "submitted" || record?.score !== undefined;
+          return hasSubmitted ? Number(record.score) || 0 : null;
+        })
+        .filter((s) => s !== null);
+
+      const { median, top25Avg } = calculateGroupStats(groupScores);
+
+      examList.push({
+        title: data.title || "測驗",
+        score: myScore,
+        median,
+        top25Avg,
+        createdAt: data.createdAt || 0,
+      });
+    });
+
+    examList.sort((a, b) => a.createdAt - b.createdAt);
+    performanceSummary.value.exam = examList;
+    if (examList.length > 0) {
+      updateChart(
+        "examCompareChart",
+        examList.map((i) => i.title),
+        examList.map((i) => i.score),
+        examList.map((i) => i.median),
+        examList.map((i) => i.top25Avg),
+        "#6366f1",
+      );
+    }
   });
 
-  // 3. 監聽討論參與
+  // D. 討論參與監聽
   onValue(dbRef(db, `courses/${courseId}/discussions`), (snap) => {
     if (!snap.exists()) {
       discussionCount.value = 0;
@@ -271,29 +385,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  const uid = getAuth().currentUser?.uid;
-  // 🌟 紀錄 2: 離開儀表板時紀錄總停留秒數
-  if (uid && pageEnterTime.value) {
-    const stayDuration = Math.round((Date.now() - pageEnterTime.value) / 1000);
-    recordStudentAction(courseId, "離開學習診斷儀表板", {
-      total_stay_seconds: stayDuration,
-    });
-  }
-
   if (hwChartInstance) hwChartInstance.destroy();
   if (examChartInstance) examChartInstance.destroy();
 });
-
-// 🌟 紀錄 3: 排行榜點擊紀錄
-const handleOpenRank = () => {
-  showRankModal.value = true;
-  const uid = getAuth().currentUser?.uid;
-  recordStudentAction(courseId, "點擊查看排行榜", {
-    from_card: "performance_summary",
-  });
-};
-
-const handleCloseRank = () => {
-  showRankModal.value = false;
-};
 </script>
