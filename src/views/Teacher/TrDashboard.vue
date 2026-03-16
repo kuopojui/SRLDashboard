@@ -184,9 +184,10 @@ onMounted(() => {
 
     // 更新基本資料
     students.value = data.profiles ? Object.keys(data.profiles) : [];
-    experimentGroups.value = data.experiment?.groups
-      ? Object.values(data.experiment.groups)
-      : [];
+
+    // 🌟 核心修正：直接傳入物件，保留組別 ID (Key)
+    // 這樣 TrList 裡面的 Object.entries(props.groups) 才能抓到正確的 ID
+    experimentGroups.value = data.experiment?.groups || {};
 
     nextTick(() => {
       // 1. 活動趨勢 (多線條折線圖)

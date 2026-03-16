@@ -24,12 +24,7 @@
             />
           </div>
 
-          <button
-            type="button"
-            class="btn-close-red"
-            @click="$emit('close')"
-            title="關閉"
-          >
+          <button type="button" class="btn-close-red" @click="$emit('close')">
             ✕
           </button>
         </div>
@@ -63,7 +58,7 @@
               >
                 <div class="student-info-section">
                   <div class="student-name">
-                    {{ element.realName || element.displayName || "未命名" }}
+                    {{ element.realName || "未具名" }}
                   </div>
                   <div class="student-id-tag">
                     <i class="bi bi-hash"></i>
@@ -73,18 +68,20 @@
 
                 <div class="student-action-section">
                   <button
+                    v-if="hasSRLPermission(element.groupId)"
+                    class="btn-action-pill srl"
+                    @click.stop="openSRLDetail(element)"
+                  >
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>SRL 歷程</span>
+                  </button>
+
+                  <button
                     class="btn-action-pill logs"
-                    @click.stop="downloadLog(element, 'action')"
+                    @click.stop="downloadOperationLog(element)"
                   >
                     <i class="bi bi-file-earmark-arrow-down"></i>
                     <span>操作紀錄</span>
-                  </button>
-                  <button
-                    class="btn-action-pill ai-chat"
-                    @click.stop="downloadLog(element, 'ai')"
-                  >
-                    <i class="bi bi-robot"></i>
-                    <span>AI 對話</span>
                   </button>
                 </div>
               </div>
@@ -99,144 +96,226 @@
         }}
       </div>
     </div>
+
+    <TrSRL
+      v-if="showSRLModal"
+      :student="selectedStudent"
+      :courseId="courseId"
+      @close="showSRLModal = false"
+    />
   </div>
 </template>
+
 <script setup>
 import { ref, watch, onMounted } from "vue";
 import draggable from "vuedraggable";
 import { rtdb } from "../../../firebase/config";
 import { ref as dbRef, onValue, update, get } from "firebase/database";
-import Swal from "sweetalert2"; // 🌟 引入 Swal 以對應你的全域質感
+import Swal from "sweetalert2";
+import TrSRL from "./TrSRL.vue";
 import "./TrList.css";
 
 const props = defineProps({
   courseId: String,
-  groups: Array,
+  groups: [Array, Object],
 });
 
 const emit = defineEmits(["close"]);
 
 // --- 狀態定義 ---
 const isLocked = ref(true);
+const isUpdating = ref(false); // 🌟 防呆：防止重複點擊/拖拽寫入
 const searchQuery = ref("");
 const students = ref([]);
 const localGroupedData = ref([]);
+const groupConfigs = ref({});
 
-// --- 邏輯 1：搜尋過濾 ---
-const isMatchSearch = (s) => {
-  const q = searchQuery.value.toLowerCase().trim();
-  if (!q) return true;
-  const name = (s.realName || s.displayName || "").toLowerCase();
-  const id = (s.studentId || "").toLowerCase();
-  return name.includes(q) || id.includes(q);
-};
+const showSRLModal = ref(false);
+const selectedStudent = ref(null);
 
-// --- 邏輯 2：數據重組 (將學生分配到組別) ---
-watch(
-  [students, () => props.groups],
-  () => {
-    // 初始化列表：確保包含「未分組」
-    const list = [
-      { id: "unassigned", name: "未分組學生", members: [] },
-      ...(props.groups || []).map((g) => ({ ...g, members: [] })),
-    ];
+// --- 🌟 封裝一個重組函數，加入多層防呆機制 ---
+const refreshLocalGroupedData = () => {
+  // 1. 正規化組別資料 (處理 props.groups 可能為空或格式不對的情況)
+  const groupsArray = !props.groups
+    ? []
+    : Array.isArray(props.groups)
+      ? props.groups
+      : Object.entries(props.groups).map(([id, g]) => ({
+          id: String(id).trim(),
+          ...g,
+        }));
 
-    // 分配學生到各組
-    students.value.forEach((s) => {
-      const target = list.find((g) => g.id === (s.groupId || "unassigned"));
-      if (target) target.members.push(s);
-    });
+  // 2. 初始化看板結構 (確保結構固定，避免渲染閃爍)
+  const list = [
+    { id: "unassigned", name: "未分組學生", members: [] },
+    ...groupsArray.map((g) => ({
+      id: g.id ? String(g.id).trim() : "error_id",
+      name: g.name || "未命名組別",
+      members: [],
+    })),
+  ];
 
-    localGroupedData.value = list;
-  },
-  { immediate: true, deep: true },
-);
+  // 3. 將學生分配到組別 (加入 sid 防呆)
+  students.value.forEach((s) => {
+    // 強制轉換為字串比對，排除 undefined/null
+    const sid = s.groupId ? String(s.groupId).trim() : "unassigned";
+    const target = list.find((g) => g.id === sid);
 
-// --- 邏輯 3：即時更新 Firebase 分組狀態 ---
-const handleMove = async (evt, newGroupId) => {
-  // 僅處理「加入」某個組別的事件
-  if (evt.added) {
-    const student = evt.added.element;
-    const gid = newGroupId === "unassigned" ? null : newGroupId;
-
-    try {
-      await update(
-        dbRef(rtdb, `courses/${props.courseId}/profiles/${student.uid}`),
-        {
-          groupId: gid,
-        },
-      );
-      // 成功時不一定要彈窗，保持流暢感，或使用小型 Toast
-    } catch (err) {
-      Swal.fire("更新失敗", "無法儲存分組異動", "error");
-    }
-  }
-};
-
-// --- 邏輯 4：資料監聽 ---
-onMounted(() => {
-  if (!props.courseId) return;
-
-  onValue(dbRef(rtdb, `courses/${props.courseId}/profiles`), (snap) => {
-    const data = snap.val();
-    if (data) {
-      students.value = Object.values(data);
+    if (target) {
+      target.members.push(s);
     } else {
-      students.value = [];
+      list[0].members.push(s);
+    }
+  });
+
+  localGroupedData.value = list;
+};
+
+// --- 1. 跨節點資料整合監聽 ---
+onMounted(() => {
+  if (!props.courseId) {
+    console.error("未傳入 courseId");
+    return;
+  }
+
+  // 監聽組別配置 (加入安全檢查)
+  onValue(
+    dbRef(rtdb, `courses/${props.courseId}/experiment/groups`),
+    (snap) => {
+      const data = snap.val();
+      groupConfigs.value = data || {};
+      refreshLocalGroupedData();
+    },
+  );
+
+  // 同時抓取課程名單與全域使用者資料
+  onValue(dbRef(rtdb, `courses/${props.courseId}/profiles`), async (snap) => {
+    const courseProfiles = snap.val() || {};
+    try {
+      // 🌟 防呆：一次性獲取 users 以減少 Request 次數並處理報錯
+      const usersSnap = await get(dbRef(rtdb, `users`));
+      const allUsers = usersSnap.val() || {};
+
+      const studentList = Object.entries(courseProfiles).map(([uid, data]) => {
+        const userGlobal = allUsers[uid] || {};
+        const userProfile = userGlobal.profile || {};
+
+        return {
+          uid,
+          groupId: data.groupId ? String(data.groupId).trim() : "unassigned",
+          realName: userProfile.realName || userGlobal.displayName || "未具名",
+          studentId: userProfile.studentId || "無學號",
+        };
+      });
+      students.value = studentList;
+      refreshLocalGroupedData();
+    } catch (err) {
+      console.error("載入名單錯誤:", err);
+      // 可視需求加入 Swal 提示
     }
   });
 });
 
-// --- 邏輯 5：日誌下載 (CSV/JSON) ---
-const downloadLog = async (student, type) => {
-  const path =
-    type === "action"
-      ? `logs/operations/${student.uid}`
-      : `logs/aiChat/${student.uid}`;
+// --- 監聽器 (加入深度監聽防呆) ---
+watch(
+  [students, () => props.groups],
+  () => {
+    refreshLocalGroupedData();
+  },
+  { immediate: true, deep: true },
+);
 
-  try {
-    const snap = await get(dbRef(rtdb, `courses/${props.courseId}/${path}`));
+// --- SRL 權限判斷 (加入 config 存在性檢查) ---
+const hasSRLPermission = (groupId) => {
+  if (!groupId || groupId === "unassigned") return false;
+  const config = groupConfigs.value[groupId];
+  if (!config || !config.features) return false;
+  return config.features.planning || config.features.reflection;
+};
 
-    if (!snap.exists()) {
-      return Swal.fire({
-        icon: "info",
-        title: "提示",
-        text: "該學生目前尚無相關紀錄",
-        confirmButtonColor: "#3a5a8a",
-      });
+// --- 🌟 拖拽存檔 (加入狀態鎖定，防止網路延遲導致的重複寫入) ---
+const handleMove = async (evt, newGroupId) => {
+  if (evt.added && !isUpdating.value) {
+    isUpdating.value = true;
+    const student = evt.added.element;
+    const gid = newGroupId === "unassigned" ? null : String(newGroupId);
+
+    try {
+      await update(
+        dbRef(rtdb, `courses/${props.courseId}/profiles/${student.uid}`),
+        { groupId: gid },
+      );
+      // 本地同步，確保 UI 不跳動
+      student.groupId = gid || "unassigned";
+    } catch (err) {
+      console.error("更新失敗:", err);
+      Swal.fire("同步失敗", "網路異常，請稍後再試", "error");
+      refreshLocalGroupedData(); // 復原本地狀態
+    } finally {
+      isUpdating.value = false;
     }
+  }
+};
+
+// --- 🌟 操作紀錄下載 (優化：處理 null 資料與特殊字元) ---
+const downloadOperationLog = async (student) => {
+  const path = `courses/${props.courseId}/logs/${student.uid}`;
+  try {
+    const snap = await get(dbRef(rtdb, path));
+    if (!snap.exists()) return Swal.fire("提示", "該學員目前尚無紀錄", "info");
 
     const data = snap.val();
-    let blob, filename;
+    const studentName = student.realName || "未知學員";
 
-    if (type === "action") {
-      // 操作紀錄：轉為 CSV
-      const csv =
-        "\ufeff時間,類別,內容\n" +
-        Object.values(data)
-          .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-          .map(
-            (l) =>
-              `${new Date(l.timestamp || l.time).toLocaleString()},${l.action || "動作"},${l.content || l.typeLabel || ""}`,
-          )
-          .join("\n");
-      blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-      filename = `${student.realName || student.displayName}_操作紀錄.csv`;
-    } else {
-      // AI 對話：轉為 JSON
-      blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
-      filename = `${student.realName || student.displayName}_AI對話.json`;
-    }
+    const csvHeader = "\ufeff人物,時間,做了什麼\n";
+    const csvRows = Object.values(data)
+      .filter((l) => l && l.timestamp) // 🌟 防呆：排除髒資料
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .map((l) => {
+        const time = new Date(l.timestamp).toLocaleString();
+        const action = l.action || "執行動作";
+        let detailStr = "";
 
+        // 安全存取細節內容
+        if (l.details) {
+          const detail = l.details;
+          if (detail.unitTitle) detailStr = ` (單元: ${detail.unitTitle})`;
+          else if (detail.materialTitle)
+            detailStr = ` (教材: ${detail.materialTitle})`;
+        }
+        return `"${studentName}","${time}","${action}${detailStr}"`;
+      })
+      .join("\n");
+
+    const blob = new Blob([csvHeader + csvRows], {
+      type: "text/csv;charset=utf-8",
+    });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = filename;
+
+    // 🌟 防呆：過濾檔名特殊字元
+    const safeName = studentName.replace(/[\\/:*?"<>|]/g, "_");
+    link.download = `${safeName}_操作紀錄.csv`;
+
     link.click();
-    URL.revokeObjectURL(link.href);
+    URL.revokeObjectURL(link.href); // 釋放記憶體
   } catch (err) {
-    Swal.fire("下載失敗", "讀取資料庫時發生錯誤", "error");
+    console.error("下載報錯:", err);
+    Swal.fire("錯誤", "下載過程中發生問題", "error");
   }
+};
+
+const isMatchSearch = (s) => {
+  const q = searchQuery.value.toLowerCase().trim();
+  if (!q) return true;
+  const name = (s.realName || "").toLowerCase();
+  const id = (s.studentId || "").toLowerCase();
+  return name.includes(q) || id.includes(q);
+};
+
+const openSRLDetail = (student) => {
+  if (!student || !student.uid) return;
+  selectedStudent.value = student;
+  showSRLModal.value = true;
 };
 </script>
