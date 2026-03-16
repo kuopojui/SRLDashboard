@@ -139,3 +139,41 @@ export const AiService = {
     }
   },
 };
+
+// src/services/aiService.js (範例)
+
+/**
+ * 生成教師儀表板的智慧分析報告
+ * @param {Object} classStats - 包含班級統計數據的物件
+ */
+export const generateTeacherDashboardReport = async (classStats) => {
+  // 定義系統角色與指令
+  const systemPrompt = `你是一位專業的教育數據分析師與教學顧問。請根據提供的數據，為教師撰寫一份班級學習分析報告。`;
+
+  // 構造發送給 AI 的內容
+  const userContent = `
+    請根據以下數據，提供一段約 150-200 字的繁體中文分析報告：
+    
+    【班級數據摘要】
+    - 班級總人數：${classStats.totalStudents} 人
+    - 24小時內平均活躍次數：${classStats.avgActivity} 次
+    - 最新功課：「${classStats.hw?.title || "無"}」的繳交率：${classStats.hw?.rate || 0}%
+    - 最新測驗：「${classStats.exam?.title || "無"}」的平均分：${classStats.exam?.avg || 0} 分 (繳交率 ${classStats.exam?.rate || 0}%)
+    - 討論區最熱門主題：「${classStats.hotTopic?.title || "無"}」，目前有 ${classStats.hotTopic?.msgCount || 0} 則留言。
+
+    【撰寫要求】
+    1. 針對數據進行「現況總結」、「異常警示（如有）」及「後續教學建議」。
+    2. 語氣請保持專業、客觀且具備支持性。
+    3. 務必使用繁體中文，格式清晰。
+  `;
+
+  try {
+    // 🌟 修正：將原本的 callAiApi 改為您檔案中定義的 askOpenAI
+    // 並傳入 (systemPrompt, userContent, maxTokens)
+    const response = await askOpenAI(systemPrompt, userContent, 500);
+    return response;
+  } catch (error) {
+    console.error("AI 教師報告生成失敗:", error);
+    return "目前無法生成分析報告，請稍後再試。";
+  }
+};
