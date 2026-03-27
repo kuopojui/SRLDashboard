@@ -472,6 +472,7 @@ const deleteUnit = async (unitKey) => {
 };
 
 // 將資源「寫入」特定單元 (透過選取 Bar)
+// 將資源「寫入」特定單元
 const addToUnit = async (itemId, unitKey, type) => {
   const unit = units.value.find((u) => u.firebaseKey === unitKey);
   if (!unit) return;
@@ -481,26 +482,35 @@ const addToUnit = async (itemId, unitKey, type) => {
 
   if (!currentList.includes(itemId)) {
     currentList.push(itemId);
-    const path = `courses/${props.courseId}/units/${unitKey}/${typeKey}`;
-    await set(dbRef(db, path), currentList);
 
-    // 成功提示
-    Swal.fire({
-      icon: "success",
-      title: "分配成功",
-      toast: true,
-      position: "top-end",
-      timer: 2000,
-      showConfirmButton: false,
-      // 🌟 加入以下設定來徹底移除遮罩
-      backdrop: false, // 強制關閉背景遮罩
-      showClass: {
-        popup: "animate__animated animate__fadeInRight animate__faster", // 使用自訂動畫避免閃爍
-      },
-      hideClass: {
-        popup: "animate__animated animate__fadeOutRight animate__faster",
-      },
-    });
+    // 1. 在單元節點增加資源 ID
+    const unitPath = `courses/${props.courseId}/units/${unitKey}/${typeKey}`;
+
+    // 🌟 2. 新增：在資源節點 (exams 或 assignments) 補上 unitId 定位
+    // 這樣老師端打開成績表時，才能精準定位到這個單元的 student_traces
+    const resourcePath = `courses/${props.courseId}/${typeKey}/${itemId}`;
+
+    try {
+      await Promise.all([
+        // 更新單元內容
+        set(dbRef(db, unitPath), currentList),
+        // 🌟 核心修正：讓資源知道自己屬於哪個單元
+        update(dbRef(db, resourcePath), { unitId: unitKey }),
+      ]);
+
+      Swal.fire({
+        icon: "success",
+        title: "分配成功",
+        toast: true,
+        position: "top-end",
+        timer: 2000,
+        showConfirmButton: false,
+        backdrop: false,
+      });
+    } catch (error) {
+      console.error("分配失敗:", error);
+      Swal.fire("錯誤", "分配資源失敗", "error");
+    }
   } else {
     Swal.fire({ icon: "info", title: "該項目已存在於此單元" });
   }

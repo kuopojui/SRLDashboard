@@ -5,7 +5,11 @@
         <h5 class="fw-bold text-success mb-0">
           <i class="bi bi-award me-2"></i>學習後測問卷
         </h5>
-        <div class="small text-muted">完成度：{{ progress.toFixed(0) }}%</div>
+        <div class="small text-muted">
+          已完成：{{ answeredCount }} / {{ questions.length }} ({{
+            progress.toFixed(0)
+          }}%)
+        </div>
       </div>
       <div class="progress mt-3 mx-auto container p-0" style="height: 6px">
         <div
@@ -22,16 +26,27 @@
             v-for="(q, idx) in questions"
             :key="idx"
             class="question-card p-4 mb-4 rounded-4 shadow-sm bg-light"
-            :class="{ 'answered-card': answers[idx] }"
+            :class="{
+              'answered-card':
+                answers[idx] !== '' && answers[idx] !== undefined,
+            }"
           >
             <h6 class="fw-bold mb-4">{{ idx + 1 }}. {{ q.text }}</h6>
+
             <div
-              v-if="q.type === 'likert5'"
-              class="likert-container d-flex justify-content-between px-md-5"
+              v-if="q.type.startsWith('likert')"
+              class="likert-container d-flex justify-content-between px-md-4"
             >
-              <div v-for="n in 5" :key="n" class="likert-option text-center">
+              <div
+                v-for="n in parseInt(q.type.replace('likert', '')) ||
+                q.scale ||
+                5"
+                :key="n"
+                class="likert-option text-center"
+              >
                 <input
                   type="radio"
+                  :name="'post' + idx"
                   v-model="answers[idx]"
                   :value="n"
                   class="form-check-input mb-2"
@@ -39,11 +54,13 @@
                 <label class="d-block small text-muted">{{ n }}</label>
               </div>
             </div>
+
             <textarea
-              v-else
+              v-else-if="q.type === 'essay' || q.type === 'text'"
               v-model="answers[idx]"
               class="form-control border-0 rounded-3"
               rows="3"
+              placeholder="請輸入您的回答..."
             ></textarea>
           </div>
 
@@ -52,7 +69,13 @@
             :disabled="!isComplete || loading"
             @click="submit"
           >
-            完成學習任務並提交
+            {{
+              loading
+                ? "儲存中..."
+                : isComplete
+                  ? "完成學習任務並提交"
+                  : "請回答所有題目"
+            }}
           </button>
         </div>
       </div>

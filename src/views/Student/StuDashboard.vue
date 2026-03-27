@@ -2,6 +2,7 @@
   <div
     class="StuDashboard StuDashboard-container animate__animated animate__fadeIn"
   >
+    <!-- 1. 頂部數據統計卡片 -->
     <div class="StuDashboard-stats-wrapper mb-4">
       <div
         class="StuDashboard-stats-card shadow-sm p-4 d-flex align-items-center justify-content-between"
@@ -32,22 +33,25 @@
           </div>
         </div>
 
+        <!-- 桌機版排行榜按鈕 -->
         <button
           @click="handleOpenRank"
-          class="StuDashboard-btn-rank shadow-sm d-none d-md-flex"
+          class="StuDashboard-btn-rank shadow-sm d-none d-md-flex align-items-center"
         >
-          <i class="bi bi-trophy-fill me-2"></i>查看排行榜
+          <i class="bi bi-trophy-fill me-2 text-warning"></i>查看排行榜
         </button>
       </div>
 
+      <!-- 手機版排行榜按鈕 -->
       <button
         @click="handleOpenRank"
         class="StuDashboard-btn-rank w-100 mt-3 d-md-none shadow-sm"
       >
-        <i class="bi bi-trophy-fill me-2"></i>查看排行榜
+        <i class="bi bi-trophy-fill me-2 text-warning"></i>查看排行榜
       </button>
     </div>
 
+    <!-- 2. 成績對照圖表區 -->
     <div class="StuDashboard-flex-column gap-4">
       <div class="StuDashboard-chart-card shadow-sm p-4 mb-4">
         <h6 class="StuDashboard-chart-header text-navy fw-bold">
@@ -76,31 +80,71 @@
       </div>
     </div>
 
+    <!-- 3. 排行榜彈窗 (Modal) -->
     <Transition name="modal-fade">
       <div
         v-if="showRankModal"
         class="StuDashboard-modal-overlay"
-        @click.self="showRankModal = false"
+        @click.self="handleCloseRank"
       >
         <div
-          class="StuDashboard-modal-box shadow-lg animate__animated animate__zoomIn"
+          class="StuDashboard-modal-box shadow-lg animate__animated animate__zoomIn animate__faster"
         >
+          <!-- 彈窗頭部 -->
+          <!-- 彈窗頭部 -->
           <div
-            class="StuDashboard-modal-header d-flex justify-content-between align-items-center p-4"
+            class="StuDashboard-modal-header d-flex justify-content-between align-items-center p-4 border-bottom"
           >
-            <div class="d-flex align-items-center">
-              <div class="modal-icon-badge me-3">
-                <i class="bi bi-trophy-fill text-warning"></i>
+            <div class="d-flex align-items-center overflow-hidden">
+              <div
+                class="modal-icon-badge me-3 shadow-sm d-flex align-items-center justify-content-center bg-white border rounded-circle"
+                style="width: 48px; height: 48px"
+              >
+                <i class="bi bi-trophy-fill text-warning fs-4"></i>
               </div>
-              <h5 class="m-0 fw-900 text-navy">班級積分排行榜</h5>
+              <div class="overflow-hidden">
+                <div class="modal-header-title-group">
+                  <h5 class="m-0 fw-900 text-navy text-truncate">
+                    班級積分排行榜
+                  </h5>
+                  <span
+                    class="Strank-mode-badge-mini"
+                    :class="{ 'is-anonymous': rankAnonymousStatus }"
+                  >
+                    <i
+                      :class="
+                        rankAnonymousStatus
+                          ? 'bi bi-incognito'
+                          : 'bi bi-person-check'
+                      "
+                    ></i>
+                    {{ rankAnonymousStatus ? "匿名模式" : "實名模式" }}
+                  </span>
+                </div>
+                <p class="text-muted small mb-0 d-none d-sm-block">
+                  根據功課與考試總分即時計算
+                </p>
+              </div>
             </div>
-            <button class="btn-close-minimal" @click="showRankModal = false">
+            <button class="btn-close-minimal ms-2" @click="handleCloseRank">
               <i class="bi bi-x-lg"></i>
             </button>
           </div>
-          <div class="StuDashboard-modal-body p-3 p-md-4 custom-scrollbar">
-            <StuRank :course-id="props.courseId" />
+
+          <!-- 彈窗主體 (StuRank 組件) -->
+          <div
+            class="StuDashboard-modal-body p-0 custom-scrollbar"
+            style="max-height: 70vh; overflow-y: auto"
+          >
+            <!-- 🌟 加入 @update-is-anonymous 監聽 -->
+            <StuRank
+              :course-id="props.courseId"
+              @update-is-anonymous="handleRankAnonUpdate"
+            />
           </div>
+
+          <!-- 彈窗底部 -->
+          <div class="p-3 bg-light text-center rounded-bottom-4"></div>
         </div>
       </div>
     </Transition>
@@ -128,10 +172,34 @@ const discussionCount = ref(0);
 const performanceSummary = ref({ hw: [], exam: [] });
 const groupMemberIds = ref([]);
 const pageEnterTime = ref(null);
+const rankAnonymousStatus = ref(true);
 
 const THEME_NAVY = "#4a70a9";
 let hwChartInstance = null;
 let examChartInstance = null;
+
+// --- 🌟 新增：排行榜控制邏輯 ---
+const handleOpenRank = () => {
+  showRankModal.value = true;
+  // 鎖定背景捲動 (防止彈窗開啟時後方頁面還能滑動)
+  document.body.style.overflow = "hidden";
+
+  // 行為追蹤紀錄
+  recordStudentAction(courseId, "查看積分排行榜");
+};
+
+const handleCloseRank = () => {
+  showRankModal.value = false;
+  // 恢復背景捲動
+  document.body.style.overflow = "auto";
+};
+
+// 額外檢查：在元件卸載時確保捲動恢復正常
+onUnmounted(() => {
+  document.body.style.overflow = "auto";
+  if (hwChartInstance) hwChartInstance.destroy();
+  if (examChartInstance) examChartInstance.destroy();
+});
 
 // --- 🌟 1. 統計計算邏輯 (修正：包含真實 0 分與樣本防呆) ---
 const calculateGroupStats = (scores) => {
@@ -388,4 +456,9 @@ onUnmounted(() => {
   if (hwChartInstance) hwChartInstance.destroy();
   if (examChartInstance) examChartInstance.destroy();
 });
+
+const handleRankAnonUpdate = (status) => {
+  console.log("收到匿名狀態更新:", status);
+  rankAnonymousStatus.value = status;
+};
 </script>

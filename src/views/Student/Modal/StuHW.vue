@@ -45,6 +45,15 @@
 
         <div v-if="canAttempt">
           <button
+            v-if="hwData?.isOffline"
+            @click="confirmOfflineSubmit"
+            class="btn btn-success btn-lg w-100 mb-3 shadow-sm"
+          >
+            <i class="bi bi-file-earmark-check me-2"></i>我已完成線下作業
+          </button>
+
+          <button
+            v-else
             @click="handleStartHw"
             class="btn btn-primary-navy btn-lg w-100 mb-3"
           >
@@ -236,17 +245,22 @@ const currentIndex = ref(0);
 const userAnswers = ref({});
 const now = ref(Date.now());
 let nowInterval = null;
+const taskSubmissionRecord = ref(null);
 
 // --- 計算屬性 ---
 const currentQuestion = computed(
   () => hwData.value?.questions?.[currentIndex.value],
 );
 
-const hasSubmitted = computed(() => traceData.value?.hwStatus === "submitted");
+// 🌟 修正：從獨立紀錄判斷是否繳交
+const hasSubmitted = computed(() => {
+  return taskSubmissionRecord.value?.status === "submitted";
+});
 
+// 🌟 修正：顯示該作業真正的繳交日期
 const submissionDate = computed(() => {
-  if (!traceData.value?.lastActive) return "";
-  return new Date(traceData.value.lastActive).toLocaleDateString();
+  if (!taskSubmissionRecord.value?.updatedAt) return "";
+  return new Date(taskSubmissionRecord.value.updatedAt).toLocaleDateString();
 });
 
 const formattedDeadline = computed(() => {
@@ -258,6 +272,23 @@ const formattedDeadline = computed(() => {
     minute: "2-digit",
   });
 });
+
+// 🌟 新增：線下作業確認邏輯
+const confirmOfflineSubmit = async () => {
+  const result = await Swal.fire({
+    title: "確認完成線下作業？",
+    text: "點擊確認後，系統將標記您已完成此項實體任務，請等待老師評分。",
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#28a745",
+    confirmButtonText: "是的，我已完成",
+    cancelButtonText: "取消",
+  });
+
+  if (result.isConfirmed) {
+    submitHW(); // 線下作業直接執行提交
+  }
+};
 
 const isExpired = computed(() => {
   if (!hwData.value?.deadline) return false;
@@ -282,21 +313,29 @@ const isQuestionAnswered = (idx) => {
   );
 };
 
-// --- 邏輯函數 ---
+// --- 邏輯函數更新 ---
 const fetchHWDetail = async () => {
   if (!props.taskId) return;
   const uid = auth.currentUser?.uid;
 
   try {
-    // 1. 讀取作業題目 (assignments 節點)
+    // 1. 讀取作業題目 (此處對標 assignments 節點)
     const hwPath = `courses/${props.courseId}/assignments/${props.taskId}`;
     const hwSnap = await get(dbRef(rtdb, hwPath));
     if (hwSnap.exists()) {
       hwData.value = hwSnap.val();
     }
 
-    // 2. 讀取個人學習軌跡
     if (uid) {
+      // 2. 🌟 核心更新：讀取此作業的「獨立繳交紀錄」
+      // 這樣才不會因為單元內有其他作業，導致 hasSubmitted 判斷錯誤
+      const recordPath = `courses/${props.courseId}/assignments/${props.taskId}/scores/${uid}`;
+      const recordSnap = await get(dbRef(rtdb, recordPath));
+      if (recordSnap.exists()) {
+        taskSubmissionRecord.value = recordSnap.val();
+      }
+
+      // 3. 讀取個人學習軌跡 (保留用於同步單元整體的學習狀態)
       const tracePath = `courses/${props.courseId}/units/${props.unitId}/student_traces/${uid}`;
       const traceSnap = await get(dbRef(rtdb, tracePath));
       if (traceSnap.exists()) {
@@ -328,54 +367,79 @@ const submitHW = async () => {
   let rawScore = 0;
   let errorCount = 0;
   const uid = auth.currentUser?.uid;
-  const questions = hwData.value?.questions || [];
 
-  // 自動評分邏輯 (與 Exam 一致)
-  questions.forEach((q, idx) => {
-    const uAns = userAnswers.value[idx];
-    const qPoint = q.point || 100 / questions.length;
-    if (!isQuestionAnswered(idx)) {
-      errorCount++;
-      return;
-    }
+  // 🌟 修正點 1：如果是線上作業且有題目，才執行計分
+  if (!hwData.value?.isOffline && hwData.value?.questions) {
+    const questions = hwData.value.questions;
+    questions.forEach((q, idx) => {
+      const uAns = userAnswers.value[idx];
+      const qPoint = q.point || 100 / questions.length;
+      if (!isQuestionAnswered(idx)) {
+        errorCount++;
+        return;
+      }
+      if (q.type === "multiSelect") {
+        const correct = q.finalAnswer || [];
+        if (
+          JSON.stringify([...uAns].sort()) ===
+          JSON.stringify([...correct].sort())
+        )
+          rawScore += qPoint;
+        else errorCount++;
+      } else if (q.type === "multipleChoice") {
+        if (uAns === q.finalAnswer) rawScore += qPoint;
+        else errorCount++;
+      } else if (uAns?.trim()) {
+        rawScore += qPoint;
+      } else {
+        errorCount++;
+      }
+    });
+  }
 
-    if (q.type === "multiSelect") {
-      const correct = q.finalAnswer || [];
-      const isMatch =
-        JSON.stringify([...uAns].sort()) ===
-        JSON.stringify([...correct].sort());
-      if (isMatch) rawScore += qPoint;
-      else errorCount++;
-    } else if (q.type === "multipleChoice") {
-      if (uAns === q.finalAnswer) rawScore += qPoint;
-      else errorCount++;
-    } else {
-      // 簡答題暫以有填寫即給分，或依 refAnswer 判定
-      if (uAns?.trim()) rawScore += qPoint;
-      else errorCount++;
-    }
-  });
+  const finalScore = Math.round(rawScore);
 
   try {
     if (uid) {
+      // 🌟 修正點 2：定義獨立存檔路徑
       const tracePath = `courses/${props.courseId}/units/${props.unitId}/student_traces/${uid}`;
-      await update(dbRef(rtdb, tracePath), {
-        hwScore: Math.round(rawScore),
-        hwStatus: "submitted",
-        lastActive: serverTimestamp(),
-      });
+      const hwScorePath = `courses/${props.courseId}/assignments/${props.taskId}/scores/${uid}`;
 
-      recordAction(props.courseId, "提交單元作業結果", {
-        unitId: props.unitId,
-        taskId: props.taskId,
-        score: Math.round(rawScore),
+      const updateData = {
+        score: finalScore,
+        status: "submitted",
+        answers: userAnswers.value || {},
         isLate: isExpired.value,
-      });
+        isOffline: hwData.value?.isOffline || false,
+        updatedAt: serverTimestamp(),
+      };
+
+      // 🌟 使用 Promise.all 同時寫入，解決覆蓋問題
+      await Promise.all([
+        update(dbRef(rtdb, tracePath), {
+          hwScore: finalScore,
+          hwStatus: "submitted",
+          lastActive: serverTimestamp(),
+        }),
+        update(dbRef(rtdb, hwScorePath), updateData),
+      ]);
+
+      recordAction(
+        props.courseId,
+        `提交${hwData.value?.isOffline ? "線下" : "單元"}作業結果`,
+        {
+          unitId: props.unitId,
+          taskId: props.taskId,
+          score: finalScore,
+        },
+      );
     }
 
     await Swal.fire({
-      title: isExpired.value ? "作業已繳交 (遲交)" : "作業已繳交",
-      text: "老師將會閱覽您的作答內容。",
+      title: "作業已繳交",
+      text: hwData.value?.isOffline
+        ? "已標記線下任務完成。"
+        : "老師將會閱覽您的成果。",
       icon: "success",
       confirmButtonColor: "#4a70a9",
     });
@@ -384,7 +448,6 @@ const submitHW = async () => {
     Swal.fire("錯誤", "存檔失敗", "error");
   }
 };
-
 const confirmSubmit = async () => {
   const unanswered =
     (hwData.value?.questions?.length || 0) -

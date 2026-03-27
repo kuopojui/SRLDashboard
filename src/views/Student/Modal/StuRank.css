@@ -1,131 +1,214 @@
-/* ==========================================================================
-   🏆 StuRank 學習積分排行榜 - 極簡湛藍版
-   ========================================================================== */
+/* StuRank.css */
+.Strank-container {
+  --navy-primary: #4a70a9;
+  --navy-light: #f0f7ff;
+  --gold: #fbbf24;
+  --text-main: #1e293b;
+  --text-muted: #94a3b8;
+  --bg-light: #f8fafc;
+  background-color: #efece3;
+}
 
-/* 1. 標頭方塊 */
-.icon-box-navy {
+/* 1. 選單排版 */
+.Strank-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.Strank-select-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  margin-left: 5px;
+  text-transform: uppercase;
+}
+
+.Strank-custom-select {
+  width: 100%;
+  border: 2px solid #f1f5f9;
+  background: white;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--navy-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.Strank-custom-select.highlight {
+  border-color: rgba(74, 112, 169, 0.2);
+}
+
+/* 2. 捲動列表 */
+.Strank-scroll-area {
+  max-height: 50vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding: 5px;
+}
+
+/* 自定義捲軸 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+/* 3. 卡片設計 */
+.Strank-card {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background: white;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 本人突顯樣式 */
+.Strank-card.is-me {
+  border: 2px solid var(--navy-primary);
+  background: var(--navy-light);
+  transform: scale(1.01);
+  box-shadow: 0 4px 15px rgba(74, 112, 169, 0.1);
+  z-index: 2;
+}
+
+.Strank-card.is-top3 {
+  background: linear-gradient(to right, #ffffff, var(--bg-light));
+}
+
+/* 4. 元件細節 */
+.Strank-rank-badge {
+  width: 30px;
+  min-width: 30px;
+  font-weight: 900;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.Strank-rank-badge.rank-1 {
+  color: var(--gold);
+  font-size: 1.3rem;
+}
+
+.Strank-avatar {
   width: 40px;
   height: 40px;
-  background: #4a70a9;
-  color: white;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(74, 112, 169, 0.2);
-}
-
-.badge-anonymous-pill {
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 5px 14px;
-  border-radius: 50px;
-  border: 1.5px dashed #4a70a9; /* 🌟 同步全站虛線 */
-  color: #4a70a9;
-}
-
-/* 🌟 2. 核心佈局：防止崩潰的關鍵 */
-.rank-item {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  background: white;
-  padding: 14px 18px;
-  margin-bottom: 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(74, 112, 169, 0.08);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.rank-item.is-me {
-  border: 1.5px solid #4a70a9;
-  background: rgba(74, 112, 169, 0.03);
-}
-
-/* 3. 名次、頭像 (禁止壓縮) */
-.rank-number {
-  flex: 0 0 30px;
-  font-family: "Inter", sans-serif;
-  font-weight: 900;
-  color: #94a3b8;
-  text-align: center;
-}
-.rank-number.top-1 {
-  color: #fbbf24;
-  font-size: 1.4rem;
-}
-.rank-number.top-2 {
-  color: #cbd5e1;
-}
-.rank-number.top-3 {
-  color: #d97706;
-}
-
-.avatar-wrapper {
-  flex: 0 0 45px;
-}
-
-.avatar-circle {
-  width: 42px;
-  height: 42px;
-  background: #f8fafc;
-  color: #4a70a9;
+  min-width: 40px;
   border-radius: 50%;
+  background: var(--navy-primary);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  border: 2px solid transparent;
+  font-weight: 800;
+  margin: 0 10px;
 }
 
-.ring-1 {
-  border-color: #fbbf24 !important;
-}
-.ring-2 {
-  border-color: #cbd5e1 !important;
-}
-.ring-3 {
-  border-color: #d97706 !important;
+.Strank-info-box {
+  flex-grow: 1;
+  min-width: 0;
 }
 
-/* 4. 積分 (Baseline 對齊) */
-.score-box {
-  flex: 0 0 75px;
+.Strank-user-name {
+  font-weight: 750;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 150px;
+}
+
+.Strank-me-tag {
+  background: var(--navy-primary);
+  color: white;
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.Strank-progress-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.Strank-progress-bar {
+  height: 100%;
+  background: var(--navy-primary);
+  transition: width 0.8s ease-out;
+}
+
+.Strank-value-box {
   text-align: right;
+  min-width: 60px;
+  margin-left: 10px;
 }
 
-.score-value {
-  font-size: 1.3rem;
+.Strank-value-number {
+  font-size: 1.2rem;
   font-weight: 900;
-  color: #4a70a9;
+  color: var(--navy-primary);
   line-height: 1;
 }
 
-.score-label {
-  font-size: 0.6rem;
-  font-weight: 800;
-  color: #94a3b8;
-  margin-top: 2px;
+.Strank-value-unit {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
-/* 5. 進度條 */
-.progress-container {
-  height: 6px;
-  background: #f1f5f9;
-  border-radius: 50px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: #4a70a9;
-  border-radius: 50px;
+/* 5. RWD 響應式優化 */
+@media (max-width: 576px) {
+  .Strank-card {
+    padding: 10px;
+  }
+  .Strank-avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    margin: 0 8px;
+    font-size: 0.9rem;
+  }
+  .Strank-user-name {
+    max-width: 90px;
+    font-size: 0.85rem;
+  }
+  .Strank-value-number {
+    font-size: 1.1rem;
+  }
+  .Strank-rank-badge {
+    width: 25px;
+    min-width: 25px;
+    font-size: 0.9rem;
+  }
+  /* 手機版隱藏 Progress Bar 避免畫面過擠 */
+  .Strank-progress-track {
+    display: none !important;
+  }
 }
 
-.badge-me {
-  background: #4a70a9;
-  color: white;
-  font-size: 10px;
-  padding: 1px 8px;
-  border-radius: 50px;
+/* 動畫 */
+.Strank-list-move,
+.Strank-list-enter-active {
+  transition: all 0.4s ease;
+}
+.Strank-list-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
 }

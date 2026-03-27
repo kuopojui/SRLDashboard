@@ -1,150 +1,323 @@
 <template>
-  <div class="StuRank border-0">
-    <div class="d-flex align-items-center justify-content-between mb-4 px-1">
-      <div class="d-flex align-items-center">
-        <div class="icon-box-navy me-3">
-          <i class="bi bi-trophy-fill"></i>
+  <div class="Strank-container">
+    <!-- 1. 頂部控制區 (移除模式標籤，僅保留選單) -->
+    <div class="Strank-header-section mb-3">
+      <div class="row g-2">
+        <div class="col-6">
+          <div class="Strank-select-group">
+            <label class="Strank-select-label">數據類別</label>
+            <select v-model="filter.category" class="Strank-custom-select">
+              <option value="assignment">📝 作業成績</option>
+              <option value="exam">⏱️ 考試成績</option>
+              <option value="time">⌛ 學習時數</option>
+            </select>
+          </div>
         </div>
-        <h5 class="fw-900 m-0 text-navy">學習積分排行榜</h5>
+        <div class="col-6">
+          <div class="Strank-select-group">
+            <label class="Strank-select-label">特定項目</label>
+            <select
+              v-model="filter.subItem"
+              class="Strank-custom-select highlight"
+            >
+              <option value="average">整體平均</option>
+              <optgroup label="單項內容">
+                <option
+                  v-for="item in subItemOptions"
+                  :key="item.id"
+                  :value="item.id"
+                >
+                  {{ item.title }}
+                </option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
       </div>
-
-      <span
-        class="badge-anonymous-pill"
-        :class="{ 'is-active': isAnonymousMode }"
-      >
-        <i
-          :class="
-            isAnonymousMode ? 'bi bi-incognito me-1' : 'bi bi-person-check me-1'
-          "
-        ></i>
-        {{ isAnonymousMode ? "匿名模式" : "實名模式" }}
-      </span>
     </div>
 
-    <div class="rank-list custom-scrollbar">
-      <transition-group name="list-stagger" tag="div">
+    <!-- 2. 排行榜列表 (具備自動定位) -->
+    <div class="Strank-scroll-area custom-scrollbar" ref="scrollContainer">
+      <div v-if="loading" class="Strank-loading-box">
+        <div class="spinner-border Strank-spinner"></div>
+      </div>
+
+      <transition-group
+        v-else
+        name="Strank-list"
+        tag="div"
+        class="Strank-list-group"
+      >
         <div
           v-for="(student, index) in sortedRank"
           :key="student.uid"
-          class="rank-item"
-          :class="{ 'is-me': student.uid === currentUser?.uid }"
+          :ref="
+            (el) => {
+              if (student.uid === currentUser?.uid) myRankEl = el;
+            }
+          "
+          class="Strank-card"
+          :class="{
+            'is-me': student.uid === currentUser?.uid,
+            'is-top3': index < 3,
+          }"
         >
-          <div class="rank-number" :class="'top-' + (index + 1)">
-            {{ index + 1 }}
+          <!-- 排名序號 -->
+          <div class="Strank-rank-badge" :class="'rank-' + (index + 1)">
+            <span v-if="index === 0">🥇</span>
+            <span v-else-if="index === 1">🥈</span>
+            <span v-else-if="index === 2">🥉</span>
+            <span v-else>{{ index + 1 }}</span>
           </div>
 
-          <div class="avatar-wrapper mx-2 mx-md-3">
-            <div class="avatar-circle" :class="'ring-' + (index + 1)">
+          <!-- 頭像 -->
+          <div class="Strank-avatar-wrapper">
+            <div class="Strank-avatar" :class="'tier-' + (index + 1)">
               {{ getAvatarText(student) }}
             </div>
           </div>
 
-          <div class="flex-grow-1 min-w-0">
-            <div class="d-flex align-items-center gap-2 mb-1">
-              <span class="fw-800 text-navy text-truncate">
-                {{ getDisplayName(student) }}
-              </span>
-              <span v-if="student.uid === currentUser?.uid" class="badge-me">
-                我
-              </span>
+          <!-- 中間資訊 -->
+          <div class="Strank-info-box">
+            <div class="Strank-name-row">
+              <span class="Strank-user-name">{{
+                getDisplayName(student)
+              }}</span>
+              <span
+                v-if="student.uid === currentUser?.uid"
+                class="Strank-me-tag"
+                >本人</span
+              >
             </div>
-            <div class="progress-container">
+            <!-- 使用 Bootstrap 內建類別：背景灰色、高度、圓角、手機版隱藏 (d-sm-block) -->
+            <div
+              class="progress d-none d-sm-flex mt-2"
+              style="
+                height: 6px;
+                background-color: #e2e8f0;
+                border-radius: 10px;
+              "
+            >
               <div
-                class="progress-fill"
-                :style="{ width: student.progress + '%' }"
+                class="progress-bar"
+                role="progressbar"
+                :style="{
+                  width: getProgressWidth(student.displayValue) + '%',
+                  backgroundColor: '#4a70a9',
+                  transition: 'width 0.8s ease',
+                }"
+                :aria-valuenow="student.displayValue"
+                aria-valuemin="0"
+                aria-valuemax="100"
               ></div>
             </div>
           </div>
 
-          <div class="ms-3 text-end score-box">
-            <div class="score-value">{{ student.score || 0 }}</div>
-            <div class="score-label">POINTS</div>
+          <!-- 分數數值 -->
+          <div class="Strank-value-box">
+            <div class="Strank-value-number">{{ student.displayValue }}</div>
+            <div class="Strank-value-unit">
+              {{ filter.category === "time" ? "MINS" : "PTS" }}
+            </div>
           </div>
         </div>
       </transition-group>
-
-      <div v-if="sortedRank.length === 0" class="empty-state">
-        <i class="bi bi-person-dash"></i>
-        <p>尚無積分資料</p>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { rtdb as db } from "../../../firebase/config";
-import { ref as dbRef, onValue } from "firebase/database";
+import { ref as dbRef, onValue, get } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import "./StuRank.css";
 
 const props = defineProps({ courseId: String });
 const auth = getAuth();
 const currentUser = auth.currentUser;
 
-const rankData = ref([]);
-const isAnonymousMode = ref(true); // 預設開啟匿名以保護隱私
+// 定義 emit
+const emit = defineEmits(["update-is-anonymous"]);
 
-onMounted(() => {
-  if (!props.courseId) return;
+const loading = ref(true);
+const isAnonymousMode = ref(true);
+const filter = ref({ category: "assignment", subItem: "average" });
 
-  // 1. 監聽課程設定：確認老師是否開啟了「匿名排行榜」
-  onValue(
-    dbRef(db, `courses/${props.courseId}/settings/isAnonymous`),
-    (snap) => {
-      isAnonymousMode.value = snap.val() ?? true;
-    },
+const scrollContainer = ref(null);
+const myRankEl = ref(null);
+
+const rawData = ref({ profiles: {}, assignments: {}, exams: {}, units: {} });
+
+const scrollToMe = async () => {
+  await nextTick();
+  if (myRankEl.value && scrollContainer.value) {
+    myRankEl.value.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+};
+
+const subItemOptions = computed(() => {
+  const dataMap = {
+    assignment: rawData.value.assignments || {},
+    exam: rawData.value.exams || {},
+    time: rawData.value.units || {},
+  };
+  return Object.entries(dataMap[filter.value.category] || {}).map(
+    ([id, d]) => ({ id, title: d.title }),
   );
+});
 
-  // 2. 監聽學生成績資料 (路徑：courses/ID/members)
-  onValue(dbRef(db, `courses/${props.courseId}/members`), (snap) => {
-    if (!snap.exists()) {
-      rankData.value = [];
-      return;
+watch(
+  () => filter.value.category,
+  () => {
+    filter.value.subItem = "average";
+  },
+);
+
+watch([() => filter.value.subItem, loading], ([sub, load]) => {
+  if (!load) setTimeout(scrollToMe, 500);
+});
+
+const fetchData = async () => {
+  if (!props.courseId || !currentUser) return;
+  loading.value = true;
+
+  try {
+    // 1. 獲取個人 Profile 以取得組別 ID
+    const myProfileSnap = await get(
+      dbRef(db, `courses/${props.courseId}/profiles/${currentUser.uid}`),
+    );
+
+    const myProfileData = myProfileSnap.val();
+    const myGroupId = myProfileData?.groupId;
+
+    // 🌟 修正：將匿名設定監聽移入 fetchData 內部，確保 myGroupId 已定義
+    if (myGroupId) {
+      const anonPath = `courses/${props.courseId}/experiment/groups/${myGroupId}/features/isLeaderboardAnonymous`;
+      onValue(dbRef(db, anonPath), (snap) => {
+        const val = snap.val() ?? true;
+        isAnonymousMode.value = val;
+        // 將狀態傳給父組件 StuDashboard
+        emit("update-is-anonymous", val);
+      });
+    } else {
+      // 若無組別資訊，預設傳回匿名
+      emit("update-is-anonymous", true);
     }
-    const data = snap.val();
-    rankData.value = Object.entries(data).map(([uid, val]) => ({
-      uid,
-      // 儲存原始資料，顯示邏輯由 function 統一處理
-      displayName: val.displayName || val.realName || "學習者",
-      score: val.totalScore || 0,
-      progress: val.learningProgress || 0,
-    }));
-  });
-});
 
-/**
- * 🏆 排序邏輯：根據分數從高到低排序
- */
+    // 2. 抓取所有資料庫節點
+    const [pSnap, aSnap, eSnap, uSnap] = await Promise.all([
+      get(dbRef(db, `courses/${props.courseId}/profiles`)),
+      get(dbRef(db, `courses/${props.courseId}/assignments`)),
+      get(dbRef(db, `courses/${props.courseId}/exams`)),
+      get(dbRef(db, `courses/${props.courseId}/units`)),
+    ]);
+
+    rawData.value = {
+      profiles: pSnap.val() || {},
+      assignments: aSnap.val() || {},
+      exams: eSnap.val() || {},
+      units: uSnap.val() || {},
+    };
+  } catch (err) {
+    console.error("排行榜抓取失敗:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
 const sortedRank = computed(() => {
-  return [...rankData.value].sort((a, b) => b.score - a.score);
+  // 1. 基礎防護：若 filter 或 rawData 尚未準備好，直接回傳空陣列
+  if (!filter.value || !rawData.value) return [];
+
+  const { category, subItem } = filter.value;
+  const profiles = rawData.value.profiles || {};
+
+  return (
+    Object.entries(profiles)
+      .map(([uid, p]) => {
+        let value = 0;
+
+        // 🌟 作業成績處理
+        if (category === "assignment") {
+          const assignments = rawData.value.assignments || {};
+          if (subItem === "average") {
+            const scores = Object.values(assignments)
+              .map((a) => a.scores?.[uid]?.score)
+              .filter((v) => v !== undefined && v !== null);
+            value = scores.length
+              ? scores.reduce((a, b) => a + b, 0) / scores.length
+              : 0;
+          } else {
+            value = assignments[subItem]?.scores?.[uid]?.score || 0;
+          }
+        }
+
+        // 🌟 考試成績處理
+        else if (category === "exam") {
+          const exams = rawData.value.exams || {};
+          if (subItem === "average") {
+            const scores = Object.values(exams)
+              .map((e) => e.scores?.[uid]?.score)
+              .filter((v) => v !== undefined && v !== null);
+            value = scores.length
+              ? scores.reduce((a, b) => a + b, 0) / scores.length
+              : 0;
+          } else {
+            value = exams[subItem]?.scores?.[uid]?.score || 0;
+          }
+        }
+
+        // 🌟 學習時間處理
+        else if (category === "time") {
+          const units = rawData.value.units || {};
+          if (subItem === "average") {
+            value = Object.values(units).reduce(
+              (acc, u) =>
+                acc + (u.student_traces?.[uid]?.totalElapsedTimeMins || 0),
+              0,
+            );
+          } else {
+            value =
+              units[subItem]?.student_traces?.[uid]?.totalElapsedTimeMins || 0;
+          }
+        }
+
+        // 回傳標準化對象
+        return {
+          uid,
+          displayName: p?.displayName || "學習者",
+          displayValue: Math.round(value),
+        };
+      })
+      // 排序：分數高者在前
+      .sort((a, b) => b.displayValue - a.displayValue)
+  );
 });
 
-/**
- * 🔒 姓名顯示邏輯：
- * 1. 如果是本人，顯示真實姓名。
- * 2. 如果是匿名模式，顯示「隱名組員」。
- * 3. 否則顯示真實姓名。
- */
-const getDisplayName = (student) => {
-  if (student.uid === currentUser?.uid) return student.displayName;
-  return isAnonymousMode.value ? "隱名組員" : student.displayName;
+const getProgressWidth = (val) => {
+  const max =
+    filter.value.category === "time"
+      ? filter.value.subItem === "average"
+        ? 300
+        : 60
+      : 100;
+  return Math.min((val / max) * 100, 100);
 };
 
-/**
- * 🔒 頭像文字顯示邏輯：
- * 1. 如果是本人，顯示名字首字。
- * 2. 如果是匿名模式，統一顯示「匿」。
- * 3. 否則顯示名字首字。
- */
-const getAvatarText = (student) => {
-  if (student.uid === currentUser?.uid)
-    return student.displayName.substring(0, 1);
-
-  return isAnonymousMode.value ? "匿" : student.displayName.substring(0, 1);
+const getDisplayName = (s) => {
+  if (s.uid === currentUser?.uid) return s.displayName;
+  return isAnonymousMode.value
+    ? `匿名同學 (${s.uid.substring(s.uid.length - 4).toUpperCase()})`
+    : s.displayName;
 };
+
+const getAvatarText = (s) =>
+  s.uid === currentUser?.uid || !isAnonymousMode.value
+    ? s.displayName.charAt(0)
+    : "?";
+
+onMounted(fetchData);
+
+defineExpose({ scrollContainer, myRankEl });
 </script>
-
-<style scoped>
-/* 引入外部 CSS 以保持簡潔 */
-@import "./StuRank.css";
-</style>

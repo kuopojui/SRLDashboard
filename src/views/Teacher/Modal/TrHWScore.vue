@@ -118,70 +118,60 @@ const openModal = async (assignment) => {
   studentList.value = [];
   lockScroll();
 
-  try {
-    const [profileSnap, submissionsSnap, scoresSnap] = await Promise.all([
-      get(dbRef(db, `courses/${props.courseId}/profiles`)),
-      get(
-        dbRef(
-          db,
-          `courses/${props.courseId}/assignments/${assignment.id}/submissions`,
-        ),
-      ),
-      get(
-        dbRef(
-          db,
-          `courses/${props.courseId}/assignments/${assignment.id}/scores`,
-        ),
-      ),
-    ]);
+  const profilesRef = dbRef(db, `courses/${props.courseId}/profiles`);
+  const scoresRef = dbRef(
+    db,
+    `courses/${props.courseId}/assignments/${assignment.id}/scores`,
+  );
+  const unitId = assignment.unitId || "-OnlpYzB9HKzzvAtYhma"; // 確保拿到對應的單元 ID
+  const tracesRef = dbRef(
+    db,
+    `courses/${props.courseId}/units/${unitId}/student_traces`,
+  );
 
-    const profiles = profileSnap.val() || {};
-    const submissions = submissionsSnap.val() || {};
-    const scores = scoresSnap.val() || {};
+  // 🌟 使用巢狀監聽，確保資料即時跳動
+  onValue(profilesRef, (pSnap) => {
+    const profiles = pSnap.val() || {};
 
-    const deadlineTS = assignment.deadline
-      ? new Date(assignment.deadline).getTime()
-      : null;
+    onValue(scoresRef, (sSnap) => {
+      const scores = sSnap.val() || {};
 
-    studentList.value = Object.entries(profiles).map(([uid, p]) => {
-      const sub = submissions[uid] || null;
-      const scoreRecord = scores[uid] || null;
+      onValue(tracesRef, (tSnap) => {
+        const allTraces = tSnap.val() || {};
+        const deadlineTS = assignment.deadline
+          ? new Date(assignment.deadline).getTime()
+          : null;
 
-      // 🌟 核心修正：判定是否繳交
-      // 線上模式：看是否在 submissions 節點有資料
-      // 線下模式：看是否在 scores 節點有 status === 'submitted' 或已有分數
-      let isSubmitted = false;
-      let submittedAt = null;
+        const list = Object.entries(profiles).map(([uid, p]) => {
+          const scoreRecord = scores[uid] || null;
+          const trace = allTraces[uid] || null;
 
-      if (assignment.isOffline) {
-        isSubmitted =
-          scoreRecord?.status === "submitted" ||
-          scoreRecord?.score !== undefined;
-        submittedAt = scoreRecord?.updatedAt || null;
-      } else {
-        isSubmitted = !!sub;
-        submittedAt = sub?.submittedAt || null;
-      }
+          // 🌟 核心修正：判定是否繳交 (對標您學生端的雙路徑寫入)
+          // 只要獨立成績區有紀錄，或是單元軌跡顯示已提交，皆視為已繳
+          const isSubmitted = !!scoreRecord || trace?.hwStatus === "submitted";
 
-      // 遲交判定
-      const isLate =
-        deadlineTS && submittedAt ? submittedAt > deadlineTS : false;
+          const submittedAt =
+            scoreRecord?.updatedAt || trace?.lastActive || null;
+          const isLate =
+            deadlineTS && submittedAt ? submittedAt > deadlineTS : false;
 
-      return {
-        uid,
-        displayName: p.displayName || "匿名學生",
-        submitted: isSubmitted,
-        isLate,
-        answers: sub?.answers || [],
-        score: scoreRecord?.score || 0,
-      };
+          return {
+            uid,
+            displayName: p.displayName || "匿名學生",
+            submitted: isSubmitted,
+            isLate,
+            // 🌟 優先讀取 scores 節點的分數，這才是該作業的「獨立成績」
+            score: scoreRecord?.score ?? (trace?.hwScore || 0),
+            answers: scoreRecord?.answers || [], // 讀取學生端存入的詳細答案
+          };
+        });
+
+        // 排序：已繳交的在前
+        studentList.value = list.sort((a, b) => b.submitted - a.submitted);
+        showModal.value = true;
+      });
     });
-
-    showModal.value = true;
-  } catch (error) {
-    console.error("讀取數據失敗:", error);
-    unlockScroll();
-  }
+  });
 };
 
 const closeModal = () => {
@@ -240,41 +230,43 @@ const handleScoreChange = async (uid, score) => {
   if (!currentItem.value) return;
 
   const assignmentId = currentItem.value.id;
-  const path = `courses/${props.courseId}/assignments/${assignmentId}/scores/${uid}`;
+  const unitId = currentItem.value.unitId; // 確保 assignment 資料中有帶 unitId
+
+  // 路徑 1: 該作業獨立成績
+  const hwScorePath = `courses/${props.courseId}/assignments/${assignmentId}/scores/${uid}`;
+  // 路徑 2: 單元學習軌跡 (同步儀表板用)
+  const tracePath = `courses/${props.courseId}/units/${unitId}/student_traces/${uid}`;
 
   try {
-    // 🌟 使用 update 而非 set，避免覆蓋掉學生可能已存在的其他欄位
-    // 同時強制寫入 status: "submitted"，確保看板能正確統計
-    await update(dbRef(db, path), {
+    const updateData = {
       score: Number(score),
-      status: "submitted", // 🌟 確保線下作業給分後，狀態轉為已繳交
+      status: "submitted",
       updatedAt: Date.now(),
-    });
+    };
 
-    // 🌟 額外優化：同步更新該單元的 P75 (前25%) 統計數據
-    // 這樣學生的儀表板折線圖指標才會跟著連動
+    // 🌟 同時更新兩個地方
+    await Promise.all([
+      update(dbRef(db, hwScorePath), updateData),
+      update(dbRef(db, tracePath), {
+        hwScore: Number(score),
+        hwStatus: "submitted",
+        lastActive: Date.now(),
+      }),
+    ]);
+
+    // 更新領先群統計 (P75)
     updateAssignmentStats(assignmentId);
 
-    // 輕量級 Toast 通知
     Swal.fire({
       icon: "success",
-      title: "成績已同步",
+      title: "成績已同步至儀表板",
       toast: true,
       position: "top-end",
       timer: 1500,
       showConfirmButton: false,
-      backdrop: false,
     });
   } catch (error) {
     console.error("儲存失敗:", error);
-    Swal.fire({
-      icon: "error",
-      title: "儲存失敗",
-      text: error.message,
-      toast: true,
-      position: "top-end",
-      timer: 3000,
-    });
   }
 };
 

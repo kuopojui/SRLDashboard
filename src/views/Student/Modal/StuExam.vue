@@ -46,6 +46,15 @@
 
         <div v-if="canAttempt">
           <button
+            v-if="examData?.isOffline"
+            @click="confirmOfflineSubmit"
+            class="btn btn-success btn-lg w-100 mb-3 shadow-sm"
+          >
+            <i class="bi bi-file-earmark-check me-2"></i>我已完成線下測驗
+          </button>
+
+          <button
+            v-else
             @click="handleStartExam"
             class="btn btn-primary-navy btn-lg w-100 mb-3"
           >
@@ -293,6 +302,23 @@ const canAttempt = computed(() => {
   return current < max;
 });
 
+// 🌟 新增：線下測驗確認邏輯
+const confirmOfflineSubmit = async () => {
+  const result = await Swal.fire({
+    title: "確認完成線下測驗？",
+    text: "點擊確認後，系統將標記您已參與此項實體任務，請等待老師評分。",
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#28a745",
+    confirmButtonText: "是的，我已完成",
+    cancelButtonText: "取消",
+  });
+
+  if (result.isConfirmed) {
+    submitExam(); // 線下測驗不需要進入 isStarted = true，直接執行提交
+  }
+};
+
 // --- 3. 初始化讀取 ---
 const fetchExamDetail = async () => {
   if (!props.examId) return;
@@ -344,68 +370,102 @@ const submitExam = async () => {
 
   let totalScore = 0;
   let totalErrorCount = 0;
-  const questions = examData.value.questions;
   const uid = getAuth().currentUser?.uid;
 
-  questions.forEach((q, idx) => {
-    const userAnswer = userAnswers.value[idx];
-    const point = q.point || 100 / questions.length;
-    if (
-      userAnswer === undefined ||
-      userAnswer === null ||
-      (Array.isArray(userAnswer) && userAnswer.length === 0)
-    ) {
-      totalErrorCount++;
-      return;
-    }
-    if (q.type === "multipleChoice") {
-      if (userAnswer === q.finalAnswer) totalScore += point;
-      else totalErrorCount++;
-    } else if (q.type === "multiSelect") {
-      const correct = q.finalAnswer || [];
-      const isCorrect =
-        JSON.stringify([...userAnswer].sort()) ===
-        JSON.stringify([...correct].sort());
-      if (isCorrect) totalScore += point;
-      else totalErrorCount++;
-    } else if (q.type === "shortAnswer") {
-      if (userAnswer?.trim() === q.refAnswer?.trim()) totalScore += point;
-      else totalErrorCount++;
-    }
-  });
+  // 🌟 修正重點 1：判斷是否為線上測驗且有題目，才執行計分迴圈
+  // 這樣如果是線下測驗 (isOffline: true)，就不會執行 questions.forEach 導致報錯
+  if (!examData.value?.isOffline && examData.value?.questions) {
+    const questions = examData.value.questions;
+    questions.forEach((q, idx) => {
+      const userAnswer = userAnswers.value[idx];
+      const point = q.point || 100 / questions.length;
+
+      if (
+        userAnswer === undefined ||
+        userAnswer === null ||
+        (Array.isArray(userAnswer) && userAnswer.length === 0)
+      ) {
+        totalErrorCount++;
+        return;
+      }
+
+      if (q.type === "multipleChoice") {
+        if (userAnswer === q.finalAnswer) totalScore += point;
+        else totalErrorCount++;
+      } else if (q.type === "multiSelect") {
+        const correct = q.finalAnswer || [];
+        const isCorrect =
+          JSON.stringify([...userAnswer].sort()) ===
+          JSON.stringify([...correct].sort());
+        if (isCorrect) totalScore += point;
+        else totalErrorCount++;
+      } else if (q.type === "shortAnswer") {
+        if (userAnswer?.trim() === q.refAnswer?.trim()) totalScore += point;
+        else totalErrorCount++;
+      }
+    });
+  }
 
   const finalScore = Math.round(totalScore);
 
   try {
     if (uid) {
+      // 🌟 定義路徑
       const tracePath = `courses/${props.courseId}/units/${props.unitId}/student_traces/${uid}`;
-      await update(dbRef(rtdb, tracePath), {
-        currentScore: finalScore,
+      const examScorePath = `courses/${props.courseId}/exams/${props.examId}/scores/${uid}`;
+
+      // 準備存檔內容
+      const updateData = {
+        score: finalScore,
         errorCount: totalErrorCount,
         lastActive: serverTimestamp(),
         status: "submitted",
         examId: props.examId,
-        attempts: (submissionHistory.value?.attempts || 0) + 1,
-      });
-
-      await recordAction(props.courseId, "提交單元測驗結果", {
-        unitId: props.unitId,
-        examId: props.examId,
-        score: finalScore,
+        answers: userAnswers.value || {}, // 🌟 避免 undefined
         isLate: isExpired.value,
-      });
+        isOffline: examData.value?.isOffline || false, // 🌟 紀錄是否為線下
+        updatedAt: serverTimestamp(),
+      };
+
+      // 🌟 同時寫入兩處
+      await Promise.all([
+        update(dbRef(rtdb, tracePath), {
+          currentScore: finalScore,
+          errorCount: totalErrorCount,
+          lastActive: serverTimestamp(),
+          status: "submitted",
+          examId: props.examId,
+          attempts: (submissionHistory.value?.attempts || 0) + 1,
+        }),
+        update(dbRef(rtdb, examScorePath), updateData),
+      ]);
+
+      // 紀錄 Log 行為
+      await recordAction(
+        props.courseId,
+        `提交${examData.value?.isOffline ? "線下" : "單元"}測驗結果`,
+        {
+          unitId: props.unitId,
+          examId: props.examId,
+          score: finalScore,
+          isLate: isExpired.value,
+        },
+      );
     }
 
-    // 🌟 修正：不顯示得分，改為狀態提示
     await Swal.fire({
-      title: isExpired.value ? "測驗已提交 (遲交)" : "測驗已提交",
-      text: "您的作答結果已成功上傳，請回到單元繼續學習。",
+      title: "提交成功",
+      text: examData.value?.isOffline
+        ? "已紀錄您的線下作業完成狀態，請等待老師評分。"
+        : "您的作答結果已成功分別存儲，老師將可查閱您的獨立成績。",
       icon: "success",
       confirmButtonColor: "#4a70a9",
     });
+
     emit("close");
   } catch (error) {
-    Swal.fire("錯誤", "成績儲存失敗", "error");
+    console.error("🔥 成績存儲失敗:", error);
+    Swal.fire("錯誤", "成績儲存失敗，請檢查網路連線", "error");
   }
 };
 
@@ -420,8 +480,18 @@ const handleMultiSelect = (oIdx) => {
 };
 
 const confirmSubmit = async () => {
-  const unanswered =
-    examData.value.questions.length - Object.keys(userAnswers.value).length;
+  // 🌟 核心修正：新增防呆檢查
+  // 如果 examData 還沒載入（null）或是沒有 questions 屬性，直接攔截不執行
+  if (!examData.value || !examData.value.questions) {
+    console.error("測驗資料尚未載入完成");
+    return;
+  }
+
+  // 使用選擇性鏈結 ?. 確保安全讀取，並處理 userAnswers 可能為空的狀況
+  const totalQuestions = examData.value.questions.length;
+  const answeredCount = Object.keys(userAnswers.value || {}).length;
+  const unanswered = totalQuestions - answeredCount;
+
   const result = await Swal.fire({
     title: "確定提交？",
     text:
@@ -434,7 +504,10 @@ const confirmSubmit = async () => {
     confirmButtonText: "正式提交",
     cancelButtonText: "繼續檢查",
   });
-  if (result.isConfirmed) submitExam();
+
+  if (result.isConfirmed) {
+    submitExam();
+  }
 };
 
 const autoSubmit = () => {

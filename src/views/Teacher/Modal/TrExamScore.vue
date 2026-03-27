@@ -121,65 +121,66 @@ const openModal = async (exam) => {
   isLoading.value = true;
   showModal.value = true;
 
+  // 1. 取得全班名冊
   const profilesRef = dbRef(db, `courses/${props.courseId}/profiles`);
+  // 2. 🌟 取得測驗正式成績 (JSON 中的 exams/{id}/scores)
+  const examScoresRef = dbRef(
+    db,
+    `courses/${props.courseId}/exams/${exam.id}/scores`,
+  );
+  // 3. 取得學生作答軌跡 (為了拿 answers 和判定是否提交過)
   const unitId = exam.unitId || "-OnlpYzB9HKzzvAtYhma";
   const tracesRef = dbRef(
     db,
     `courses/${props.courseId}/units/${unitId}/student_traces`,
   );
 
-  activeListeners.profiles = onValue(profilesRef, (pSnap) => {
+  onValue(profilesRef, (pSnap) => {
     const profiles = pSnap.val() || {};
 
-    activeListeners.traces = onValue(tracesRef, (tSnap) => {
-      const allTraces = tSnap.val() || {};
-      const deadlineTS = exam.deadline
-        ? new Date(exam.deadline).getTime()
-        : null;
+    onValue(examScoresRef, (sSnap) => {
+      const formalScores = sSnap.val() || {}; // 這是路徑 1 的資料
 
-      const list = Object.entries(profiles).map(([uid, p]) => {
-        const trace = allTraces[uid] || null;
-        const isThisExam = trace && trace.examId === exam.id;
+      onValue(tracesRef, (tSnap) => {
+        const allTraces = tSnap.val() || {}; // 這是路徑 2 的資料
+        const deadlineTS = exam.deadline
+          ? new Date(exam.deadline).getTime()
+          : null;
 
-        // 🌟 核心防閃爍邏輯：
-        // 1. 找到目前畫面上該學生的現有資料
-        const existingStu = studentList.value.find((s) => s.uid === uid);
+        const list = Object.entries(profiles).map(([uid, p]) => {
+          // 抓取該生在該測驗的正式紀錄
+          const formalRecord = formalScores[uid];
+          // 抓取該生在該單元的作答紀錄
+          const trace = allTraces[uid];
+          const isThisExam = trace && trace.examId === exam.id;
 
-        // 2. 取得資料庫最新的分數
-        const dbScore = isThisExam ? (trace.currentScore ?? 0) : 0;
+          // 🌟 判定分數優先級：正式成績 > 暫存成績 > 0
+          const finalScore = formalRecord
+            ? (formalRecord.score ?? 0)
+            : isThisExam
+              ? (trace.currentScore ?? 0)
+              : 0;
 
-        // 3. 判定分數：
-        // 如果這個學生已經在畫面上，我們保留目前的 score (避免輸入時被 DB 的舊資料跳回 0)
-        // 除非 dbScore 跟本地不一樣且本地沒有在「被修改中」的狀態（通常由 @change 處理完畢）
-        const finalScore = existingStu ? existingStu.score : dbScore;
+          return {
+            uid,
+            displayName: p.displayName || "學生",
+            // 🌟 判定繳交：正式成績有紀錄 OR 軌跡狀態為 submitted
+            submitted:
+              formalRecord !== undefined ||
+              (isThisExam && trace.status === "submitted"),
+            isLate:
+              deadlineTS &&
+              (formalRecord?.updatedAt || trace?.lastActive) > deadlineTS,
+            score: finalScore,
+            answers: isThisExam
+              ? trace.answers || []
+              : formalRecord?.answers || [],
+          };
+        });
 
-        return {
-          uid,
-          displayName: p.displayName || "學生",
-          submitted:
-            isThisExam &&
-            (trace.status === "submitted" || trace.currentScore !== undefined),
-          isLate:
-            deadlineTS && trace?.lastActive
-              ? trace.lastActive > deadlineTS
-              : false,
-          score: finalScore, // 🌟 使用保留的分數，不再強制變回 0
-          answers: isThisExam ? trace.answers || [] : [],
-          lastActive: trace?.lastActive,
-        };
-      });
-
-      // 🌟 排序邏輯優化：
-      // 如果 studentList 已經有資料，代表老師正在操作，這時我們只更新數值，不重新排序。
-      // 避免老師輸入到一半，學生的位置因為「未交變已交」突然噴走。
-      if (studentList.value.length === 0) {
         studentList.value = list.sort((a, b) => b.submitted - a.submitted);
-      } else {
-        // 更新數據但保持原本的順序
-        studentList.value = list;
-      }
-
-      isLoading.value = false;
+        isLoading.value = false;
+      });
     });
   });
 };

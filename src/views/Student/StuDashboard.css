@@ -182,3 +182,109 @@
     padding-left: 10px;
   }
 }
+
+/* StuDashboard 排行榜彈窗專屬 RWD 樣式 */
+
+/* 1. 彈窗外殼基礎 RWD */
+.StuDashboard-modal-box {
+  width: 95%;
+  max-width: 800px; /* 桌面端寬度 */
+  margin: 20px auto;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 2. 標頭區域設計 */
+.StuDashboard-modal-header {
+  background: white;
+  z-index: 10;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* 標題與標籤的排版 */
+.modal-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap; /* 手機版標籤自動換行 */
+}
+
+/* 3. 迷你模式標籤 (外殼用) */
+.Strank-mode-badge-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.Strank-mode-badge-mini.is-anonymous {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
+  box-shadow: 0 2px 4px rgba(225, 29, 72, 0.05);
+}
+
+/* 4. 手機版 RWD 調整 (Media Queries) */
+@media (max-width: 576px) {
+  .StuDashboard-modal-box {
+    width: 100%;
+    height: 100%; /* 手機版全螢幕感 */
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .StuDashboard-modal-header {
+    padding: 1rem !important;
+  }
+
+  .modal-icon-badge {
+    width: 35px;
+    height: 35px;
+    min-width: 35px;
+    margin-right: 10px !important;
+  }
+
+  .modal-icon-badge i {
+    font-size: 1.2rem !important;
+  }
+
+  .StuDashboard-modal-header h5 {
+    font-size: 1rem;
+  }
+
+  /* 彈窗主體高度調整，確保在手機版有足夠捲動空間 */
+  .StuDashboard-modal-body {
+    max-height: calc(100vh - 120px) !important;
+  }
+}
+
+/* 5. 關閉按鈕樣式 */
+.btn-close-minimal {
+  background: #f8fafc;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.btn-close-minimal:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  transform: rotate(90deg);
+}

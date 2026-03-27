@@ -24,15 +24,24 @@
             v-for="(q, idx) in questions"
             :key="idx"
             class="question-card p-4 mb-4 rounded-4 shadow-sm bg-light"
-            :class="{ 'answered-card': answers[idx] }"
+            :class="{
+              'answered-card':
+                answers[idx] !== '' && answers[idx] !== undefined,
+            }"
           >
             <h6 class="fw-bold mb-4 text-dark">{{ idx + 1 }}. {{ q.text }}</h6>
 
             <div
-              v-if="q.type === 'likert5'"
-              class="likert-container d-flex justify-content-between px-md-5"
+              v-if="q.type.startsWith('likert')"
+              class="likert-container d-flex justify-content-between px-md-3"
             >
-              <div v-for="n in 5" :key="n" class="likert-option text-center">
+              <div
+                v-for="n in q.scale ||
+                parseInt(q.type.replace('likert', '')) ||
+                5"
+                :key="n"
+                class="likert-option text-center"
+              >
                 <input
                   type="radio"
                   :name="'pre' + idx"
@@ -40,12 +49,16 @@
                   :value="n"
                   class="form-check-input mb-2"
                 />
-                <label class="d-block small text-muted">{{ n }}</label>
+                <label
+                  class="d-block small text-muted"
+                  style="font-size: 10px"
+                  >{{ n }}</label
+                >
               </div>
             </div>
 
             <textarea
-              v-else
+              v-else-if="q.type === 'essay' || q.type === 'text'"
               v-model="answers[idx]"
               class="form-control border-0 rounded-3"
               rows="3"
