@@ -1,49 +1,74 @@
 <template>
   <div class="StuCourse CoursePage d-flex min-vh-100">
-    <aside class="CoursePage-sidebar d-none d-lg-flex flex-column py-4 shadow">
+    <!-- 1. 側邊欄：移除 d-none，改用 :class 控制移動端滑入 -->
+    <aside
+      class="CoursePage-sidebar d-flex flex-column py-4 shadow"
+      :class="{ 'mobile-open': isSidebarOpen }"
+    >
       <div class="sidebar-brand px-4 mb-5">
-        <h5 class="fw-bold text-white mb-0">
+        <h5 class="fw-bold text-white mb-0 text-nowrap">
           <i class="bi bi-mortarboard me-2"></i>學生學習中心
         </h5>
       </div>
 
       <nav class="flex-grow-1 px-2">
-        <div class="CoursePage-nav-item active">
+        <!-- 1. 我的課程：直接設為 false 關閉側邊欄即可 -->
+        <div
+          class="CoursePage-nav-item active"
+          @click="isSidebarOpen = false"
+          style="cursor: pointer"
+        >
           <i class="bi bi-book-half me-3"></i>我的課程
         </div>
+
+        <!-- 2. 帳號設定：傳入 'profile' 觸發 Script 中的 handleOpenProfile -->
         <div
           class="CoursePage-nav-item"
-          @click="handleOpenProfile"
+          @click="handleNavAction('profile')"
           style="cursor: pointer"
         >
           <i class="bi bi-person-circle me-3"></i>帳號設定
         </div>
       </nav>
 
-      <StuProfile
-        v-if="showProfileModal && studentData.uid"
-        :uid="studentData.uid"
-        :courseId="null"
-        @close="showProfileModal = false"
-      />
-
       <div class="mt-auto px-3">
-        <button class="btn btn-logout w-100 rounded-pill" @click="handleLogout">
+        <!-- 3. 登出系統：傳入 'logout' 觸發 Script 中的 handleLogout -->
+        <button
+          class="btn btn-logout w-100 rounded-pill"
+          @click="handleNavAction('logout')"
+        >
           <i class="bi bi-box-arrow-left me-2"></i>登出系統
         </button>
       </div>
     </aside>
 
+    <!-- 2. 手機版遮罩：選單開啟時顯示，點擊遮罩關閉選單 -->
+    <div
+      v-if="isSidebarOpen"
+      class="sidebar-overlay d-lg-none"
+      @click="toggleSidebar"
+    ></div>
+
     <main class="flex-grow-1 d-flex flex-column">
-      <header class="mobile-header d-lg-none p-3 shadow-sm text-white">
+      <!-- 3. Mobile Header (僅在 lg 以下寬度顯示) -->
+      <header
+        class="mobile-header d-lg-none p-3 shadow-sm text-white sticky-top"
+      >
         <div class="d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold">學生學習中心</h6>
-          <button class="hamburger-btn" @click="toggleSidebar">
+          <button
+            class="hamburger-btn border-0 bg-transparent"
+            :class="{ active: isSidebarOpen }"
+            @click="toggleSidebar"
+          >
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
           </button>
         </div>
       </header>
 
+      <!-- 主要標題區域 -->
       <section class="container-fluid px-4 pt-4 pb-2">
         <div
           class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4"
@@ -54,6 +79,7 @@
               歡迎回來，今天也要繼續加油學習喔！
             </p>
           </div>
+          <!-- 桌機版顯示加入課程按鈕 -->
           <button
             class="btn btn-navy shadow-sm rounded-pill px-4 py-2 d-none d-md-block"
             @click="promptJoinCode"
@@ -63,8 +89,10 @@
         </div>
       </section>
 
+      <!-- 課程列表滾動區域 -->
       <section class="course-scroll-area container-fluid px-4 pb-5">
         <div class="row g-4">
+          <!-- 課程卡片循環 -->
           <div
             class="col-12 col-md-6 col-xl-4"
             v-for="course in joinedCourses"
@@ -78,7 +106,7 @@
                 <div class="avatar-circle-navy">
                   {{ course.title?.substring(0, 1) || "?" }}
                 </div>
-                <div class="flex-grow-1">
+                <div class="flex-grow-1 overflow-hidden">
                   <h5 class="fw-bold text-navy mb-0 text-truncate">
                     {{ course.title }}
                   </h5>
@@ -89,14 +117,9 @@
                   </div>
                 </div>
               </div>
-
               <div class="text-line-clamp text-secondary small mb-3">
-                {{
-                  course.description ||
-                  "點擊進入課程儀表板，開始你的自我調節學習旅程。"
-                }}
+                {{ course.description || "開始你的自我調節學習旅程。" }}
               </div>
-
               <div
                 class="d-flex justify-content-between align-items-center border-top pt-3"
               >
@@ -113,25 +136,33 @@
             </div>
           </div>
 
+          <!-- 空狀態：尚未加入任何課程 -->
           <div
             v-if="joinedCourses.length === 0"
-            class="col-12 text-center py-5 mt-5"
+            class="col-12 text-center py-5 mt-5 opacity-50"
           >
-            <div class="opacity-50">
-              <i class="bi bi-journal-plus display-1"></i>
-              <p class="mt-3 fs-5">尚未加入任何課程，請向老師索取 6 位代碼</p>
-              <button
-                class="btn btn-navy rounded-pill px-4"
-                @click="promptJoinCode"
-              >
-                立即加入
-              </button>
-            </div>
+            <i class="bi bi-journal-plus display-1"></i>
+            <p class="mt-3 fs-5">尚未加入任何課程，請向老師索取 6 位代碼</p>
+            <button
+              class="btn btn-navy rounded-pill px-4"
+              @click="promptJoinCode"
+            >
+              立即加入
+            </button>
           </div>
         </div>
       </section>
     </main>
 
+    <!-- 個人設定 Modal 放在最外層，確保 z-index 層級能正確覆蓋所有組件 -->
+    <StuProfile
+      v-if="showProfileModal && studentData.uid"
+      :uid="studentData.uid"
+      :courseId="null"
+      @close="showProfileModal = false"
+    />
+
+    <!-- 手機版右下角懸浮按鈕：方便快速加入新課程 -->
     <button class="create-course-btn d-md-none" @click="promptJoinCode">
       <i class="bi bi-plus-lg fs-3"></i>
     </button>
@@ -158,6 +189,30 @@ import StuProfile from "./Modal/StuProfile.vue";
 
 const router = useRouter();
 const joinedCourses = ref([]);
+const isSidebarOpen = ref(false);
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+  // 防止手機版選單開啟時背景頁面還能捲動
+  if (isSidebarOpen.value) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+};
+
+const handleNavAction = (type) => {
+  // 1. 關閉側邊欄
+  isSidebarOpen.value = false;
+  document.body.style.overflow = "";
+
+  // 2. 執行對應動作
+  if (type === "profile") {
+    handleOpenProfile();
+  } else if (type === "logout") {
+    handleLogout();
+  }
+};
 
 /* --- 1. 核心處理：兩階段驗證課程碼與分組碼 --- */
 // 🌟 必須先定義此函式，避免 promptJoinCode 呼叫時出現 ReferenceError
