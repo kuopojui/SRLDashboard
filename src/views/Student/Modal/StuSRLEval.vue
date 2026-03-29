@@ -114,31 +114,50 @@
         </div>
       </section>
 
-      <section class="reflect-card mb-4">
-        <label class="section-label-v2"
-          ><i class="bi bi-robot me-2"></i>5. AI 導師調整建議</label
-        >
+      <!-- 🌟 關鍵修正：確保 props 被正確訪問，並利用 v-if 達成徹底的開關切換 -->
+      <section v-if="srlSession?.aiAdvice" class="reflect-card mb-4">
+        <label class="section-label-v2">
+          <i class="bi bi-robot me-2"></i>5. AI 導師調整建議
+        </label>
+
         <div class="ai-suggestion-fixed-box p-4 shadow-sm">
+          <!-- 1. AI 正在運算時的狀態 (Skeleton / Spinner) -->
           <div
             v-if="isAiLoading"
             class="h-100 d-flex align-items-center justify-content-center"
           >
-            <span class="ai-loading-text"
-              ><i class="bi bi-stars me-2"></i>AI 導師正在分析您的表現...</span
-            >
+            <div class="text-center">
+              <div
+                class="spinner-border spinner-border-sm text-primary mb-2"
+                role="status"
+              ></div>
+              <div class="ai-loading-text">
+                <i class="bi bi-stars me-2"></i>AI 導師正在分析您的表現...
+              </div>
+            </div>
           </div>
+
+          <!-- 2. AI 運算完成後的顯示區 -->
           <div
             v-else
             class="h-100 d-flex flex-column animate__animated animate__fadeIn"
           >
             <div class="ai-scroll-content custom-scrollbar pe-2">
-              <p class="text-pre-wrap">
-                {{ aiAdviceText || "完成反思後自動生成建議。" }}
+              <!-- 判斷是否有內容，若沒內容顯示引導文字 -->
+              <p v-if="aiAdviceText" class="text-pre-wrap">
+                {{ aiAdviceText }}
+              </p>
+              <p v-else class="text-muted italic small">
+                請點選上方的「執行歸因」與「策略評分」，AI
+                將為您生成個人化調節建議。
               </p>
             </div>
+
+            <!-- 重新分析按鈕：只有在有內容時顯示更合理，或維持常駐 -->
             <button
               @click="handleRefreshAi"
               class="btn btn-refresh-ai-sm mt-2 w-auto align-self-start"
+              :disabled="isAiLoading"
             >
               <i class="bi bi-arrow-clockwise"></i> 重新分析
             </button>
@@ -210,13 +229,14 @@ const isFormComplete = computed(() => {
 // --- 🌟 Log 1：進入頁面 ---
 onMounted(() => {
   if (props.isOpen) {
-    const logMsg = `🚀 [System Log] 進入 Stage 4 反思頁面 | 預計: ${props.plannedMins}m, 實際: ${props.actualMins}m`;
-    console.log(logMsg);
     recordAction(props.srlSession?.courseId, "進入 Stage 4 反思頁面", {
       planned: props.plannedMins,
       actual: props.actualMins,
     });
-    generateAiAdvice();
+    // 🌟 修正：只有在 AI 開啟時才主動生成建議
+    if (props.srlSession?.aiAdvice) {
+      generateAiAdvice();
+    }
   }
 });
 
@@ -316,7 +336,19 @@ watch(otherAttributionText, (newVal) => {
 
 // --- AI 生成邏輯 ---
 const generateAiAdvice = async () => {
+  // 🌟 核心修正 1：更徹底的物理阻斷
+  // 如果開關關閉，不僅不執行請求，還要把可能殘留的文字清空
+  if (!props.srlSession?.aiAdvice) {
+    aiAdviceText.value = "";
+    isAiLoading.value = false;
+    return;
+  }
+
+  // 防止重複請求
   if (isAiLoading.value) return;
+
+  // 🌟 優化：在分析開始前先清空舊的 AI 文字，讓學生知道正在重新生成
+  aiAdviceText.value = "";
   isAiLoading.value = true;
 
   try {
@@ -329,8 +361,7 @@ const generateAiAdvice = async () => {
       labels +
       (otherAttributionText.value ? ` (${otherAttributionText.value})` : "");
 
-    // 2. 🌟 關鍵更正：必須對準父組件傳入的正確 Key 名稱
-    // 父組件傳入的是 teacherGlobalPrompt 而非 teacherPrompt
+    // 2. 獲取教師指令
     const globalRule = props.srlSession?.teacherGlobalPrompt || "無";
     const groupRule = props.srlSession?.teacherGroupPrompt || "無";
 
@@ -348,37 +379,55 @@ const generateAiAdvice = async () => {
       teacherInstructions: combinedTeacherPrompt,
     };
 
-    // 3. 除錯紀錄：這會顯示您在 JSON 中設定的「路徑測試123」等內容
-    console.log("🤖 [AI Request] 最終指令路徑校準:", {
-      global: globalRule,
-      group: groupRule,
-    });
+    // 🌟 核心修正 2：發送請求前再次確認開關狀態
+    if (props.srlSession?.aiAdvice) {
+      const result = await AiService.getEvalAdvice(context);
 
-    const result = await AiService.getEvalAdvice(context);
-    aiAdviceText.value = result;
-
-    recordAction(props.srlSession?.courseId, "成功串接雙重指令生成建議", {
-      unitTitle: props.srlSession?.unitTitle,
-    });
+      // 🌟 三重檢查：確保在非同步等待期間開關沒有被關掉
+      if (props.srlSession?.aiAdvice) {
+        aiAdviceText.value = result;
+        recordAction(props.srlSession?.courseId, "成功生成 Stage 4 AI 建議", {
+          unitTitle: props.srlSession?.unitTitle,
+        });
+      }
+    }
   } catch (error) {
     console.error("❌ AI 建議生成失敗:", error);
-    handleFallback();
+    // 只有在 AI 開啟時才跑備援邏輯
+    if (props.srlSession?.aiAdvice) {
+      handleFallback();
+    }
   } finally {
     isAiLoading.value = false;
   }
 };
+
 const handleFallback = () => {
+  // 🌟 修正：若 AI 已關閉，備援文字也不應寫入
+  if (!props.srlSession?.aiAdvice) return;
+
   const diff = props.actualMins - props.plannedMins;
-  aiAdviceText.value = `【分析模式】預計 ${props.plannedMins}m, 實際 ${props.actualMins}m。您的時間管理表現穩定。`;
+  aiAdviceText.value = `【分析模式】預計 ${props.plannedMins}m, 實際 ${props.actualMins}m。您的學習步調與預期相近。`;
 };
 
 // 監聽歸因與評分變化自動觸發 AI (這是研究設計的自動反饋觸發)
 watch(
   [attribution, strategyScore],
   () => {
-    if (attribution.value.length > 0 && strategyScore.value > 0) {
-      console.log("🔄 [Trigger Log] 檢測到歸因或評分異動，自動重新生成建議");
+    // 🌟 核心更新：增加對 aiAdvice 布林值的偵測
+    // 只有在 1.AI功能開啟 2.已選歸因 3.已評分 時才觸發
+    if (
+      props.srlSession?.aiAdvice &&
+      attribution.value.length > 0 &&
+      strategyScore.value > 0
+    ) {
+      console.log(
+        "🔄 [Trigger Log] 檢測到異動且 AI 功能開啟，自動重新生成建議",
+      );
       generateAiAdvice();
+    } else if (!props.srlSession?.aiAdvice) {
+      // 若 AI 關閉，可選擇性地在控制台紀錄（或不處理）
+      console.log("ℹ️ [System] AI 功能已關閉，跳過建議生成。");
     }
   },
   { deep: true },

@@ -207,11 +207,13 @@
               </div>
             </div>
 
-            <div class="monitor-section mb-4">
+            <!-- 🌟 重點：使用 v-if 根據教師端設定決定是否渲染整個 AI 區塊 -->
+            <div v-if="activeFeatures.aiAdvice" class="monitor-section mb-4">
               <label class="section-label-v2">改善建議</label>
               <div
                 class="ai-chat-box p-3 rounded-4 shadow-sm border-start border-4 border-primary"
               >
+                <!-- 標題與 Loading 狀態 -->
                 <div
                   class="d-flex align-items-center justify-content-between mb-3 text-navy"
                 >
@@ -221,6 +223,7 @@
                     </div>
                     <span class="fw-bold small">智慧調節分析：</span>
                   </div>
+
                   <span
                     v-if="isAiThinking"
                     class="badge bg-primary-subtle text-primary border-0 small px-2 py-1"
@@ -234,6 +237,7 @@
                 </div>
 
                 <div class="strategy-list-v2">
+                  <!-- 骨架屏 (Skeleton)：AI 思考時顯示 -->
                   <div v-if="isAiThinking" class="py-3">
                     <div class="placeholder-glow">
                       <span
@@ -245,8 +249,10 @@
                     </div>
                   </div>
 
-                  <div class="strategy-list-v2">
+                  <!-- 策略列表 -->
+                  <div v-else class="strategy-list-container">
                     <Transition name="fade" mode="out-in">
+                      <!-- 有建議內容時 -->
                       <div v-if="aiStrategies.length > 0" key="advice-list">
                         <TransitionGroup name="fade-slide" tag="div">
                           <div
@@ -270,13 +276,14 @@
                         </TransitionGroup>
                       </div>
 
+                      <!-- 無建議內容時 (空狀態) -->
                       <div
                         v-else
                         key="empty-state"
                         class="ai-reply-pill opacity-75 italic text-center py-4 bg-light rounded-3"
                       >
                         <i class="bi bi-shield-check me-2 text-success"></i>
-                        AI 分析中
+                        目前學習狀況穩定，請繼續保持！
                       </div>
                     </Transition>
                   </div>
@@ -1043,17 +1050,16 @@ const initSrlEnvironment = async () => {
 
   const coursePath = `courses/${props.courseId}`;
   const unitPath = `${coursePath}/units/${props.id}`;
-  const tracePath = `${unitPath}/student_traces/${props.userId}`;
+  const studentTracePath = `${unitPath}/student_traces/${props.userId}`;
 
   try {
     isContentLoading.value = true;
 
-    // 1. 讀取學生在該單元的軌跡 (Trace) 數據
-    const traceSnap = await get(dbRef(rtdb, tracePath));
+    // 1. 讀取學生在該單元的軌跡數據
+    const traceSnap = await get(dbRef(rtdb, studentTracePath));
     if (traceSnap.exists()) {
       const tData = traceSnap.val();
       elapsedTime.value = tData.totalSeconds || 0;
-      // 🌟 核心：讀取結案狀態 (Firebase JSON 中的 isFinished 欄位)
       isLocked.value = tData.isFinished || false;
 
       traceData.value = {
@@ -1065,48 +1071,59 @@ const initSrlEnvironment = async () => {
     }
 
     // 2. 獲取實驗專區設定：全域教師指令
-    // 對標 JSON 路徑: experiment/settings/teacherPrompt
     const settingsSnap = await get(
       dbRef(rtdb, `${coursePath}/experiment/settings`),
     );
     if (settingsSnap.exists()) {
-      const settings = settingsSnap.val();
-      experimentPrompts.global = settings.teacherPrompt || "";
-      console.log("📍 [Path Check] 全域指令已加載:", experimentPrompts.global);
+      experimentPrompts.global = settingsSnap.val().teacherPrompt || "";
     }
 
-    // 3. 獲取學生 Profile 與組別設定
+    // 3. 獲取學生 Profile 與組別功能開關 (這是關閉 AI 的關鍵)
     const profileSnap = await get(
       dbRef(rtdb, `${coursePath}/profiles/${props.userId}`),
     );
     if (profileSnap.exists()) {
       const profile = profileSnap.val();
 
-      // 🌟 讀取組別特定指令 (對標 experiment/groups/{groupId}/aiCustomPrompt)
       if (profile.groupId) {
         const groupSnap = await get(
           dbRef(rtdb, `${coursePath}/experiment/groups/${profile.groupId}`),
         );
+
         if (groupSnap.exists()) {
           const groupData = groupSnap.val();
-          Object.assign(activeFeatures, groupData.features);
+
+          // 🌟 修正：明確更新功能開關，確保 aiAdvice 被讀取
+          if (groupData.features) {
+            activeFeatures.aiAdvice = !!groupData.features.aiAdvice;
+            activeFeatures.monitoring = !!groupData.features.monitoring;
+            activeFeatures.planning = !!groupData.features.planning;
+            activeFeatures.reflection = !!groupData.features.reflection;
+            activeFeatures.isLeaderboardAnonymous =
+              !!groupData.features.isLeaderboardAnonymous;
+          }
+
+          // 讀取組別自定義 Prompt
           experimentPrompts.group = groupData.aiCustomPrompt || "";
-          console.log(
-            "📍 [Path Check] 組別指令已加載:",
-            experimentPrompts.group,
-          );
+
+          // 🌟 核心修正：如果讀到 AI 是關閉的，立即清空狀態防止殘留
+          if (!activeFeatures.aiAdvice) {
+            aiStrategies.value = [];
+            isAiThinking.value = false;
+            console.log("🚫 [實驗控制] 本組別 AI 建議功能已關閉");
+          }
         }
       }
       srlSession.value = profile.srl?.planning?.[props.id] || null;
     }
 
-    // 4. 獲取單元詳細資料 (教材、測驗、功課、討論)
+    // 4. 獲取單元詳細資料 (教材、測驗等)
     const unitSnap = await get(dbRef(rtdb, unitPath));
     if (unitSnap.exists()) {
       const uData = unitSnap.val();
       unitTitle.value = uData.title || "未命名單元";
 
-      // 批量讀取詳細內容... (保持您原本的 Promise.all 邏輯)
+      // 批量讀取 (保持原 Promise.all 邏輯)
       const [mSnaps, eSnaps, aSnaps, fSnaps] = await Promise.all([
         uData.materials
           ? Promise.all(
@@ -1158,7 +1175,7 @@ const initSrlEnvironment = async () => {
       }
     }
 
-    // 5. 啟動監控與計時
+    // 5. 啟動監控 (確保在功能開關讀取後才啟動)
     if (activeFeatures.monitoring) {
       await fetchMonitorData();
       if (!isLocked.value) {
@@ -1167,14 +1184,15 @@ const initSrlEnvironment = async () => {
       }
     }
 
-    // 🌟 紀錄進入行為 (包含結案狀態，用於分析學生是否在結案後重複進入)
-    recordAction(props.courseId, `進入單元頁面：${unitTitle.value}`, {
+    // 紀錄進入 Log
+    recordAction(props.courseId, `進入單元：${unitTitle.value}`, {
       unitId: props.id,
-      plannedTime: srlSession.value?.targetTime,
+      isAiEnabled: activeFeatures.aiAdvice,
       isLocked: isLocked.value,
     });
   } catch (error) {
     console.error("🔥 單元環境初始化失敗:", error);
+    Swal.fire("載入失敗", "無法取得課程設定", "error");
   } finally {
     isContentLoading.value = false;
   }
@@ -1280,11 +1298,21 @@ const lastAiCheckMin = ref(-1);
 const lastProcessedErrorCount = ref(0);
 
 const triggerAiDiagnostic = async () => {
-  if (!activeFeatures.aiAdvice || isAiThinking.value) return;
+  // 1. 🌟 物理阻斷：若功能關閉，強制清空所有狀態並立即返回
+  // 這確保了「對照組」學生即便觸發了 watch，邏輯也會在此終止，不會進入 try-catch
+  if (!activeFeatures.aiAdvice) {
+    if (aiStrategies.value.length > 0) aiStrategies.value = [];
+    isAiThinking.value = false;
+    return;
+  }
+
+  // 2. 防止重複觸發 (防抖)
+  if (isAiThinking.value) return;
+
   isAiThinking.value = true;
 
   try {
-    // 🌟 彙整診斷上下文，包含即時學習數據與教師自定義指令
+    // 3. 彙整診斷上下文 (用於論文中描述：AI 診斷模型輸入變項)
     const context = {
       unitTitle: unitTitle.value || "未命名單元",
       videoMins: Number(traceData.value.videoMins || 0),
@@ -1294,31 +1322,38 @@ const triggerAiDiagnostic = async () => {
       elapsedTime: Math.floor(elapsedTime.value / 60),
       plannedTime: Number(srlSession.value?.targetTime || 0),
 
-      // 🌟 注入來自實驗專區的指令
-      teacherGlobalPrompt: experimentPrompts.global || "", // 來自 settings.teacherPrompt
-      teacherGroupPrompt: experimentPrompts.group || "", // 來自 groups[id].aiCustomPrompt
+      // 🌟 核心：注入教師自定義 Prompt 指令
+      teacherGlobalPrompt: experimentPrompts.global || "",
+      teacherGroupPrompt: experimentPrompts.group || "",
     };
 
-    // 呼叫 AiService 並獲取根據教師指令優化後的建議
+    // 4. 呼叫 AiService
     const aiResult = await AiService.getLearningAdvice(context);
 
-    if (aiResult) {
-      // 這裡建議將 AI 回傳的字串放入陣列，以符合您原本 Template 的渲染邏輯
+    // 5. 🌟 雙重檢查：回傳時檢查開關是否被動態關閉
+    if (activeFeatures.aiAdvice && aiResult) {
       aiStrategies.value = [aiResult];
+    } else {
+      aiStrategies.value = [];
     }
 
+    // 更新狀態紀錄
     lastUpdateTime.value = new Date().toLocaleTimeString();
     lastProcessedErrorCount.value = context.errorCount;
 
-    // 紀錄行為：AI 觸發了一次診斷建議
+    // 6. 🌟 紀錄行為 Log (用於論文分析：實驗組觸發頻率與介入成效)
     recordAction(props.courseId, `觸發 AI 改善建議：${unitTitle.value}`, {
       unitId: props.id,
       errorCount: context.errorCount,
       elapsedTimeMins: context.elapsedTime,
+      aiEnabled: activeFeatures.aiAdvice, // 紀錄此筆數據屬於實驗組
     });
   } catch (error) {
     console.error("❌ AI 診斷失敗:", error);
-    aiStrategies.value = ["AI 導師目前連線繁忙，請繼續您的學習。"];
+    // 僅在功能開啟時顯示佔位符，否則不干擾對照組
+    if (activeFeatures.aiAdvice) {
+      aiStrategies.value = ["AI 導師目前正在分析數據，請稍後..."];
+    }
   } finally {
     isAiThinking.value = false;
   }
@@ -1581,6 +1616,7 @@ const srlSessionData = computed(() => {
     // 🌟 這裡必須對準 StuSRLEval.vue 內部的變數名稱
     teacherGlobalPrompt: experimentPrompts.global,
     teacherGroupPrompt: experimentPrompts.group,
+    aiAdvice: activeFeatures.aiAdvice,
   };
 });
 </script>
