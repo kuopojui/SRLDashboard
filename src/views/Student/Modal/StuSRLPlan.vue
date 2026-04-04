@@ -65,7 +65,7 @@
               class="notice-box p-3 rounded bg-white border-start border-4 border-warning shadow-xs mb-3"
             >
               <h6 class="fw-bold text-warning mb-1 small">
-                <i class="bi bi-star-fill me-1"></i>優秀同儕參考 (前 25%)
+                <i class="bi bi-star-fill me-1"></i> 前 25%同儕參考
               </h6>
               <div class="d-flex align-items-baseline">
                 <span class="fs-4 fw-800 text-warning">{{
@@ -152,7 +152,7 @@
                 v-model="planData.targetGoal"
                 class="form-control shadow-sm"
                 rows="2"
-                placeholder="例如：掌握光合作用的關鍵步驟"
+                placeholder="例如：學習這單元的單字與課文"
               ></textarea>
             </div>
 
@@ -386,22 +386,60 @@ const formatTimeLabel = (totalMinutes) => {
 };
 
 // 1. 教師建議標竿
+// --- 修正後的數據對標邏輯 ---
+
+// 1. 教師建議標竿 (由教師後端設定，維持直接讀取)
 const displayBenchmarkTime = computed(() =>
   formatTimeLabel(props.unitData?.targetTime),
 );
 
-// 2. 優秀同儕參考 (前 25%)
-// 假設資料庫欄位名為 topPerformanceTime
+// 2. 優秀同儕參考 (前 25% 或 最高者)
 const displayTop25Time = computed(() => {
-  const mins = props.unitData?.topPerformanceTime;
-  return mins ? formatTimeLabel(mins) : "收集數據中";
+  // 從傳入的單元資料中提取所有學生的軌跡資料
+  const tracesMap = props.unitData?.student_traces || {};
+  const allTraces = Object.values(tracesMap);
+  const count = allTraces.length;
+
+  if (count === 0) return "收集數據中";
+
+  // 取得所有人的總秒數並由大到小排序 (投入時間最長的排第一)
+  const sortedTimes = allTraces
+    .map((t) => t.totalSeconds || 0)
+    .sort((a, b) => b - a);
+
+  if (count < 4) {
+    // 🌟 修正：少於 4 人時，顯示目前「最高的」那一位學生的時間
+    return formatTimeLabel(Math.round(sortedTimes[0] / 60));
+  } else {
+    // 🌟 正常邏輯：計算前 25% 的平均值
+    const topCount = Math.ceil(count * 0.25);
+    const topSum = sortedTimes.slice(0, topCount).reduce((a, b) => a + b, 0);
+    const topAvgMins = Math.round(topSum / topCount / 60);
+    return formatTimeLabel(topAvgMins);
+  }
 });
 
-// 3. 全體平均時間 (50%)
-// 假設資料庫欄位名為 averageTime
+// 3. 全體平均時間 (50% 或 唯一值)
 const displayAverageTime = computed(() => {
-  const mins = props.unitData?.averageTime;
-  return mins ? formatTimeLabel(mins) : "計算中...";
+  const tracesMap = props.unitData?.student_traces || {};
+  const allTraces = Object.values(tracesMap);
+  const count = allTraces.length;
+
+  // 🌟 修正：如果是第一個學生
+  if (count === 0) return "計算中";
+  if (count === 1) return "計算中";
+
+  // 計算全體平均值
+  const totalSum = allTraces.reduce((acc, t) => acc + (t.totalSeconds || 0), 0);
+  const avgMins = Math.round(totalSum / count / 60);
+
+  if (count < 2) {
+    // 🌟 修正：少於 2 人時呈現唯一的學生數據 (其實已被上面 count===1 攔截，此為邏輯保險)
+    return formatTimeLabel(avgMins);
+  } else {
+    // 🌟 正常邏輯：顯示平均
+    return formatTimeLabel(avgMins);
+  }
 });
 
 //右側

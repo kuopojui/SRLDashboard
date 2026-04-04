@@ -1,33 +1,102 @@
 <template>
   <div class="StudentSchedule p-3">
-    <div v-if="preTestData" class="mb-4">
-      <div
-        class="p-3 border rounded bg-white shadow-sm d-flex justify-content-between align-items-center"
-        :class="
-          testRecords.pre
-            ? 'border-light bg-light-subtle'
-            : 'border-primary shadow-hover'
-        "
-        @click="handleExperimentTestClick('pre')"
-        style="cursor: pointer; border-left: 6px solid #4a70a9 !important"
-      >
-        <div>
-          <h6
-            class="fw-bold mb-1"
-            :class="testRecords.pre ? 'text-muted' : 'text-navy'"
-          >
-            <i class="bi bi-pencil-square me-2"></i>【階段一】實驗前測問卷
-          </h6>
-          <p class="small text-muted mb-0">{{ preTestData.title }}</p>
-          <span v-if="testRecords.pre" class="badge bg-success mt-2">
-            <i class="bi bi-check-circle-fill me-1"></i>已完成 (點擊檢視答案)
-          </span>
-          <span v-else class="badge bg-warning text-dark mt-2">
-            <i class="bi bi-exclamation-triangle-fill me-1"></i>尚未填寫
-          </span>
+    <div v-if="preTests.length > 0" class="mb-4 pretest-container">
+      <div class="pretest-header-wrapper mb-3 ms-1">
+        <h6 class="text-secondary small fw-bold pretest-title">
+          <i class="bi bi-pencil-square me-2"></i>【階段一】實驗前測問卷
+        </h6>
+
+        <div v-if="preTests.length > 1" class="pretest-tabs-scroll-area">
+          <div class="btn-group btn-group-sm custom-pill-group shadow-sm">
+            <button
+              v-for="(p, idx) in preTests"
+              :key="idx"
+              @click="currentPreIdx = idx"
+              class="btn tab-btn"
+              :class="currentPreIdx === idx ? 'btn-navy' : 'btn-outline-navy'"
+            >
+              問卷 {{ idx + 1 }}
+            </button>
+          </div>
         </div>
-        <i class="bi bi-chevron-right text-primary"></i>
       </div>
+
+      <Transition name="fade" mode="out-in">
+        <div
+          :key="currentPreIdx"
+          class="p-3 border rounded-4 bg-white shadow-sm d-flex justify-content-between align-items-center shadow-hover-up"
+          :class="[
+            testRecords[preTests[currentPreIdx].id]
+              ? 'border-light bg-light-subtle opacity-90'
+              : 'border-primary border-2',
+          ]"
+          @click="handleExperimentTestClick(preTests[currentPreIdx], 'pre')"
+          style="
+            cursor: pointer;
+            border-left: 8px solid #4a70a9 !important;
+            transition: all 0.3s ease;
+          "
+        >
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <h6
+                class="fw-800 mb-0"
+                :class="
+                  testRecords[preTests[currentPreIdx].id]
+                    ? 'text-muted'
+                    : 'text-navy'
+                "
+              >
+                {{ preTests[currentPreIdx].title }}
+              </h6>
+              <i
+                v-if="testRecords[preTests[currentPreIdx].id]"
+                class="bi bi-patch-check-fill text-success"
+              ></i>
+            </div>
+            <p class="small text-muted mb-0">
+              {{
+                testRecords[preTests[currentPreIdx].id]
+                  ? "點擊檢視您的回答紀錄"
+                  : "完成此問卷後即可進入學習單元"
+              }}
+            </p>
+            <div class="mt-2">
+              <span
+                v-if="testRecords[preTests[currentPreIdx].id]"
+                class="badge rounded-pill bg-success-subtle text-success px-3 border border-success-subtle"
+              >
+                已完成
+              </span>
+              <span
+                v-else
+                class="badge rounded-pill bg-warning-subtle text-dark px-3 border border-warning-subtle pulse-animation"
+              >
+                尚未填寫
+              </span>
+            </div>
+          </div>
+          <div class="ms-3">
+            <div
+              class="action-icon-circle"
+              :class="
+                testRecords[preTests[currentPreIdx].id]
+                  ? 'bg-light'
+                  : 'bg-primary-subtle'
+              "
+            >
+              <i
+                class="bi fs-5"
+                :class="
+                  testRecords[preTests[currentPreIdx].id]
+                    ? 'bi-eye-fill text-secondary'
+                    : 'bi-chevron-right text-primary'
+                "
+              ></i>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
 
     <h6 class="text-secondary small fw-bold mb-3 ms-1">
@@ -142,35 +211,89 @@
       <div
         v-if="showResultModal"
         class="ScheduleModalOverlay"
-        @click.self="showResultModal = false"
+        @click.self="closeResultModal"
       >
         <div
           class="test-result-modal shadow-lg animate__animated animate__zoomIn"
         >
           <div class="modal-header-custom border-bottom pb-3 mb-3">
-            <h5 class="fw-bold text-navy mb-0">
-              <i class="bi bi-file-earmark-check me-2"></i>問卷回答紀錄
-            </h5>
-            <button class="btn-close" @click="showResultModal = false"></button>
+            <div class="d-flex justify-content-between align-items-start w-100">
+              <div>
+                <h5 class="fw-bold text-navy mb-0">
+                  <i class="bi bi-file-earmark-check me-2"></i>問卷回答紀錄
+                </h5>
+
+                <div
+                  v-if="preTests.length > 1"
+                  class="mt-3 btn-group btn-group-sm shadow-xs"
+                >
+                  <button
+                    v-for="(p, idx) in preTests"
+                    :key="p.id"
+                    @click="switchResultInModal(p, idx)"
+                    class="btn px-3"
+                    :class="
+                      currentPreIdx === idx ? 'btn-navy' : 'btn-outline-navy'
+                    "
+                  >
+                    前測 {{ idx + 1 }}
+                  </button>
+                </div>
+              </div>
+              <button class="btn-close-minimal" @click="closeResultModal">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
           </div>
 
           <div
             class="modal-body-custom custom-scrollbar"
-            style="max-height: 65vh; overflow-y: auto"
+            style="max-height: 60vh; overflow-y: auto"
           >
             <div v-if="loadingResult" class="text-center py-5">
-              <div class="spinner-border text-primary"></div>
+              <div class="spinner-border text-primary mb-2"></div>
+              <p class="text-muted small italic">正在讀取回答紀錄...</p>
             </div>
+
             <div v-else>
+              <div
+                class="alert alert-secondary py-2 px-3 mb-4 rounded-3 border-0 d-flex align-items-center"
+              >
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <span class="small fw-bold"
+                  >正在檢視：{{ resultData.title || "問卷內容" }}</span
+                >
+              </div>
+
               <div
                 v-for="(q, idx) in resultData.questions"
                 :key="idx"
-                class="mb-4 p-3 bg-light rounded-3"
+                class="mb-4 p-3 bg-light rounded-4 border-0 shadow-xs"
               >
-                <p class="fw-bold mb-2">{{ idx + 1 }}. {{ q.text }}</p>
-                <div class="text-primary fw-bold">
-                  您的回答：{{ resultData.answers[idx] || "未填寫" }}
+                <p class="fw-bold mb-2 text-dark" style="font-size: 0.95rem">
+                  {{ idx + 1 }}. {{ q.text }}
+                </p>
+                <div
+                  class="answer-box p-2 px-3 rounded-3 bg-white border-start border-4 border-primary"
+                >
+                  <span class="text-muted xx-small d-block mb-1">您的回答</span>
+                  <div class="text-navy fw-800">
+                    {{
+                      resultData.answers && resultData.answers[idx]
+                        ? resultData.answers[idx]
+                        : "未填寫"
+                    }}
+                  </div>
                 </div>
+              </div>
+
+              <div
+                v-if="
+                  !resultData.questions || resultData.questions.length === 0
+                "
+                class="text-center py-4"
+              >
+                <p class="text-muted italic">暫無題目資料</p>
               </div>
             </div>
           </div>
@@ -198,9 +321,19 @@ const unitPlans = ref({});
 const unitTraces = ref({});
 const activeFeatures = ref({ planning: false });
 
-const preTestData = ref(null);
+// --- 🌟 更新後的狀態定義 ---
+
+// 存放所有前測問卷的陣列 (支援 1~N 份)
+const preTests = ref([]);
+
+// 存放後測問卷 (通常實驗後測只有一份，維持單一物件或陣列皆可)
 const postTestData = ref(null);
-const testRecords = ref({ pre: false, post: false });
+
+// 紀錄所有問卷的完成狀態，格式為 { [testId]: true/false }
+const testRecords = ref({});
+
+// 🌟 新增：目前切換到第幾份前測 (用於 UI 切換分頁)
+const currentPreIdx = ref(0);
 
 // 🌟 需新增的狀態
 const showResultModal = ref(false); // 控制檢視彈窗顯示
@@ -227,101 +360,157 @@ const canTakePostTest = computed(() => {
 });
 
 /**
- * 🌟 實驗問卷點擊與彈窗邏輯 (已更新為彈窗檢視模式)
+ * 🌟 核心私有函式：從 Firebase 抓取特定的問卷答案紀錄
  */
-const handleExperimentTestClick = async (type) => {
-  const isFinished = testRecords.value[type];
-  const testData = type === "pre" ? preTestData.value : postTestData.value;
+const fetchSubmissionRecord = async (testData) => {
+  loadingResult.value = true;
+  const uid = auth.currentUser?.uid || props.userId;
 
+  try {
+    const { get } = await import("firebase/database");
+    const recordPath = dbRef(
+      rtdb,
+      `courses/${props.courseId}/experiment/submissions/${testData.id}/${uid}`,
+    );
+    const snap = await get(recordPath);
+
+    if (snap.exists()) {
+      resultData.value = {
+        title: testData.title,
+        questions: testData.questions,
+        answers: snap.val().answers || [],
+      };
+      return true;
+    } else {
+      throw new Error("找不到提交紀錄");
+    }
+  } catch (e) {
+    console.error("讀取紀錄失敗:", e);
+    Swal.fire("錯誤", "無法讀取您的回答紀錄", "error");
+    return false;
+  } finally {
+    loadingResult.value = false;
+  }
+};
+
+/**
+ * 🌟 實驗問卷點擊邏輯 (主畫面入口)
+ */
+const handleExperimentTestClick = async (testData, category = "pre") => {
   if (!testData) return;
 
-  // 情況 A：已經填寫過了 -> 彈窗顯示紀錄 (不跳轉頁面)
+  const isFinished = !!testRecords.value[testData.id];
+  const testName = category === "pre" ? "前測" : "後測";
+
+  // 情況 A：已經完成 -> 顯示檢視彈窗
   if (isFinished) {
-    recordAction(
-      props.courseId,
-      `觸發已完成的${type === "pre" ? "前" : "後"}測檢視`,
-      {
-        testId: testData.id,
-      },
-    );
+    recordAction(props.courseId, `查看已完成${testName}`, {
+      testId: testData.id,
+      testTitle: testData.title,
+      currentPreIdx: currentPreIdx.value,
+    });
 
-    // 開啟彈窗並進入載入狀態
     showResultModal.value = true;
-    loadingResult.value = true;
-
-    const uid = auth.currentUser?.uid || props.userId;
-
-    try {
-      // 🌟 根據 JSON 結構讀取紀錄：courses/{courseId}/experiment/submissions/{testId}/{uid}
-      const { get } = await import("firebase/database"); // 動態匯入 get
-      const recordPath = dbRef(
-        rtdb,
-        `courses/${props.courseId}/experiment/submissions/${testData.id}/${uid}`,
-      );
-      const snap = await get(recordPath);
-
-      if (snap.exists()) {
-        resultData.value = {
-          questions: testData.questions,
-          answers: snap.val().answers || [],
-        };
-      } else {
-        throw new Error("找不到提交紀錄");
-      }
-    } catch (e) {
-      console.error("讀取紀錄失敗:", e);
-      showResultModal.value = false;
-      Swal.fire("錯誤", "無法讀取您的回答紀錄，請稍後再試", "error");
-    } finally {
-      loadingResult.value = false;
-    }
+    await fetchSubmissionRecord(testData);
     return;
   }
 
-  // 情況 B：後測被鎖定 (保持原樣)
-  if (type === "post" && !canTakePostTest.value) {
-    recordAction(props.courseId, "嘗試進入後測但被鎖定", {
-      reason: "units_incomplete",
+  // 情況 B：後測鎖定檢查
+  if (category === "post" && !canTakePostTest.value) {
+    recordAction(props.courseId, "嘗試點擊尚未解鎖的後測", {
+      testId: testData.id,
+      reason: "units_not_completed",
     });
+
     Swal.fire({
       title: "尚未開放後測",
-      text: "請先完成所有學習單元的「課程學習」與「自我反思」，系統才會自動解鎖後測問卷喔！",
+      text: "請先完成所有單元的學習與反思，系統才會自動解鎖喔！",
       icon: "warning",
       confirmButtonColor: "#4a70a9",
     });
     return;
   }
 
-  // 情況 C：尚未填寫 -> 跳轉填寫頁面
-  const testName = type === "pre" ? "前測" : "後測";
+  // 情況 C：尚未填寫 -> 觸發詢問彈窗
+  recordAction(props.courseId, `點擊未完成${testName}卡片`, {
+    testId: testData.id,
+    testTitle: testData.title,
+  });
+
   const startResult = await Swal.fire({
-    title: `開始填寫${testName}`,
-    text: `您即將開始填寫「${testData.title}」，提交後將無法修改。準備好了嗎？`,
+    title: `開始填寫`,
+    text: `即將填寫「${testData.title}」，提交後無法修改。準備好了嗎？`,
     icon: "question",
     showCancelButton: true,
     confirmButtonText: "開始回答",
-    cancelButtonText: "稍後再說",
+    cancelButtonText: "先不要",
     confirmButtonColor: "#4a70a9",
   });
 
   if (startResult.isConfirmed) {
-    recordAction(props.courseId, `進入${type === "pre" ? "前" : "後"}測填寫`, {
+    recordAction(props.courseId, `確認進入${testName}填寫頁`, {
       testId: testData.id,
     });
     router.push(`/stutest/take/${props.courseId}/${testData.id}`);
+  } else {
+    recordAction(props.courseId, `取消進入${testName}填寫`, {
+      testId: testData.id,
+    });
   }
 };
 
+/**
+ * 🌟 彈窗內切換問卷邏輯
+ */
+const switchResultInModal = async (testData, index) => {
+  const oldIdx = currentPreIdx.value;
+  currentPreIdx.value = index;
+
+  // 紀錄切換行為（研究學生是否會跨問卷對照答案）
+  recordAction(props.courseId, "彈窗內切換檢視問卷", {
+    fromIdx: oldIdx,
+    toIdx: index,
+    testId: testData.id,
+    testTitle: testData.title,
+  });
+
+  if (!testRecords.value[testData.id]) {
+    recordAction(props.courseId, "彈窗內切換至未填寫問卷", {
+      testId: testData.id,
+    });
+
+    resultData.value = {
+      title: testData.title,
+      questions: testData.questions,
+      answers: [],
+    };
+
+    Swal.fire({
+      title: "尚未填寫",
+      text: "您還沒有完成這份問卷，無法檢視答案內容。",
+      icon: "info",
+      toast: true,
+      position: "top-end",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  await fetchSubmissionRecord(testData);
+};
+
+/**
+ * 🌟 單元卡片點擊邏輯
+ */
 const handleUnitClick = (unit) => {
   const unitId = unit.id;
-  // 1. 檢查是否已完成總結（結案）
   const isFinished = !!unitTraces.value[unitId]?.isFinished;
-  // 2. 檢查是否已有規劃數據
   const hasPlan = !!unitPlans.value[unitId];
 
-  // 情況 A：單元已總結完成 -> 直接進入單元檢視
+  // 情況 A：單元已總結完成
   if (isFinished) {
-    recordAction(props.courseId, "查看已完成單元", {
+    recordAction(props.courseId, "點擊已結案單元", {
       unitId,
       unitTitle: unit.title,
     });
@@ -329,25 +518,37 @@ const handleUnitClick = (unit) => {
     return;
   }
 
-  // 情況 B：實驗組功能開啟且「尚未完成規劃」 -> 顯示規劃彈窗
+  // 情況 B：需先規劃 (實驗組且尚未規劃)
   if (activeFeatures.value.planning && !hasPlan) {
-    recordAction(props.courseId, "觸發學習規劃引導", {
+    recordAction(props.courseId, "觸發單元規劃彈窗", {
       unitId,
       unitTitle: unit.title,
+      entry_point: "schedule_card",
     });
+
     activeTaskId.value = unitId;
     activeTaskInitialData.value = { unitTitle: unit.title };
     showActiveModal.value = true;
   }
-  // 情況 C：已經規劃過 或 非實驗組 -> 直接進入單元
+  // 情況 C：直接進入或已規劃過
   else {
-    recordAction(props.courseId, "點擊進入學習單元", {
+    recordAction(props.courseId, "點擊進入學習頁面", {
       unitId,
       unitTitle: unit.title,
-      status: hasPlan ? "already_planned" : "normal_entry",
+      has_previous_plan: hasPlan,
     });
     handleRedirectToUnit(unitId);
   }
+};
+
+/**
+ * 🌟 額外建議補強：關閉彈窗 Log
+ */
+const closeResultModal = () => {
+  recordAction(props.courseId, "關閉問卷紀錄彈窗", {
+    lastViewedIdx: currentPreIdx.value,
+  });
+  showResultModal.value = false;
 };
 
 // 🌟 補回跳轉至單元頁面的邏輯
@@ -373,23 +574,22 @@ const handleRedirectToUnit = (unitId) => {
   });
 };
 
-// --- 🌟 更新：onMounted 監聽路徑校準 ---
+// --- 🌟 更新：onMounted 監聽路徑校準 (支援多份前測版本) ---
 onMounted(() => {
   if (!props.courseId) return;
   const uid = auth.currentUser?.uid || props.userId;
   const coursePath = `courses/${props.courseId}`;
 
-  // 1. 監聽單元清單與可見性 (對標 JSON: courses/ID/units)
+  // 1. 監聽單元清單與可見性 (保持不變)
   onValue(dbRef(rtdb, `${coursePath}/units`), (snapshot) => {
     const data = snapshot.val() || {};
-    // 🌟 修正：確保 visible 欄位被正確解析 (JSON 中 visible: true)
     schedule.value = Object.entries(data).map(([id, val]) => ({
       id,
       ...val,
-      visible: val.visible !== false, // 只要不是明確寫 false，就預設為 true
+      visible: val.visible !== false,
     }));
 
-    // 2. 同步監聽單元執行軌跡 (對標 JSON: units/ID/student_traces/UID)
+    // 2. 同步監聽單元執行軌跡
     const myTraces = {};
     Object.entries(data).forEach(([uId, uVal]) => {
       if (uVal.student_traces?.[uid]) {
@@ -399,32 +599,40 @@ onMounted(() => {
     unitTraces.value = myTraces;
   });
 
-  // 3. 監聽前/後測問卷定義 (對標 JSON: experiment/test/pretest)
+  // 3. 🌟 關鍵更新：監聽前測問卷定義 (改為支援多份陣列)
   onValue(dbRef(rtdb, `${coursePath}/experiment/test/pretest`), (s) => {
     const data = s.val();
     if (data) {
-      preTestData.value = Object.entries(data).map(([id, v]) => ({
+      // 將所有前測轉為陣列，不再鎖死 [0]
+      preTests.value = Object.entries(data).map(([id, v]) => ({
         id,
         ...v,
-      }))[0];
-      // 🌟 關鍵修正：一拿到前測 ID，立刻去抓提交紀錄
-      checkTestSubmission(preTestData.value.id, "pre");
+      }));
+
+      // 🌟 為每一份前測單獨建立提交紀錄監聽 (使用 testId 作為 Key)
+      preTests.value.forEach((test) => {
+        checkTestSubmission(test.id);
+      });
     }
   });
 
+  // 監聽後測 (通常只有一份，但同樣改為支援 ID 監聽)
   onValue(dbRef(rtdb, `${coursePath}/experiment/test/posttest`), (s) => {
     const data = s.val();
     if (data) {
-      postTestData.value = Object.entries(data).map(([id, v]) => ({
+      const list = Object.entries(data).map(([id, v]) => ({
         id,
         ...v,
-      }))[0];
-      checkTestSubmission(postTestData.value.id, "post");
+      }));
+      postTestData.value = list[0];
+      if (postTestData.value) {
+        checkTestSubmission(postTestData.value.id);
+      }
     }
   });
 
   if (uid) {
-    // 4. 監聽規劃紀錄 (對標 JSON: profiles/UID/srl/planning)
+    // 4. 監聽規劃紀錄 (保持不變)
     onValue(
       dbRef(rtdb, `${coursePath}/profiles/${uid}/srl/planning`),
       (snap) => {
@@ -432,7 +640,7 @@ onMounted(() => {
       },
     );
 
-    // 5. 監聽實驗組功能開關 (對標 JSON: experiment/groups/ID/features)
+    // 5. 監聽實驗組功能開關 (保持不變)
     onValue(dbRef(rtdb, `${coursePath}/profiles/${uid}`), (snap) => {
       const profile = snap.val();
       if (profile?.groupId) {
@@ -450,12 +658,21 @@ onMounted(() => {
   }
 });
 
-// 🌟 新增輔助函數：解決前測顯示「未填寫」的時序問題
-const checkTestSubmission = (testId, type) => {
+/**
+ * 🌟 修正後的檢查函數：支援多份問卷獨立狀態
+ * @param {string} testId - 問卷的唯一 ID
+ */
+const checkTestSubmission = (testId) => {
+  if (!testId) return;
+
   const uid = auth.currentUser?.uid || props.userId;
+  // 路徑校準：依據 JSON 結構，學生提交紀錄存放在 submissions/{testId}/{uid}
   const path = `courses/${props.courseId}/experiment/submissions/${testId}/${uid}`;
+
   onValue(dbRef(rtdb, path), (snap) => {
-    testRecords.value[type] = snap.exists();
+    // 🌟 核心修正：使用 testId 作為 Key 存入物件
+    // 這樣 testRecords 就會變成 { "pre_001": true, "pre_002": false }
+    testRecords.value[testId] = snap.exists();
   });
 };
 </script>

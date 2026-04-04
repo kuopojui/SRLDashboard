@@ -527,26 +527,25 @@ const deleteUnitItem = async (unitKey, itemId, type) => {
   await set(dbRef(db, path), newList);
 };
 
-//時間
-// 🌟 核心修正：將介面上的「日時分」合併回資料庫所需的「總分鐘數」
+// 🌟 核心修正：只負責合併計算，不負責自動存檔
 const updateTimeParts = (unit, part, value) => {
-  // 1. 先拆解目前的總分鐘數 (確保有預設值 0)
+  // 1. 先拆解目前的總分鐘數
   const currentTime = Number(unit.targetTime) || 0;
   let d = Math.floor(currentTime / 1440);
   let h = Math.floor((currentTime % 1440) / 60);
   let m = currentTime % 60;
 
-  // 2. 根據修改的欄位 (d, h, m) 更新數值
+  // 2. 更新對應數值
   const val = parseInt(value) || 0;
   if (part === "d") d = val;
   if (part === "h") h = val;
   if (part === "m") m = val;
 
-  // 3. 🌟 合併計算總分鐘數並寫回 unit 物件
+  // 3. 寫回 unit 物件 (這會讓畫面上的小時/分鐘同步跳動)
   unit.targetTime = d * 1440 + h * 60 + m;
 
-  // 4. 觸發您已寫好的儲存邏輯
-  saveUnit(unit);
+  // ❌ 刪除或註解掉這行：saveUnit(unit);
+  // 這樣就不會一碰鍵盤就存檔了
 };
 
 // 儲存標題變更 (Inline 更新)

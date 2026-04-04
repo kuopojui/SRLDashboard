@@ -1,255 +1,384 @@
-/* --- 1. 容器與基礎設定 --- */
+/* ==========================================================================
+   1. 基礎變數與容器 (Variables & Global)
+   ========================================================================== */
+:root {
+  --navy-dark: #002c53;
+  --navy-primary: #4a70a9;
+  --navy-light: #eef2ff;
+  --success: #198754;
+  --warning: #ffc107;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --glass-bg: rgba(255, 255, 255, 0.95);
+}
+
 .StudentSchedule {
-  max-width: 850px;
-  margin: 2rem auto;
-  padding: 0 1.25rem;
-  font-family: "Inter", "Noto Sans TC", system-ui, sans-serif;
-  /* 增加進場動畫，讓列表載入更流暢 */
-  animation: fadeIn 0.6s ease-out;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: "Inter", "Noto Sans TC", sans-serif;
+  color: var(--text-main);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* ==========================================================================
+   前測區域 (Pre-test Section) - 手機滑動優化版
+   ========================================================================== */
 
-/* --- 2. 核心卡片設計：頂級海軍藍風格 --- */
-.unit-card-premium {
-  position: relative;
-  background: #ffffff;
-  border: 1px solid rgba(0, 44, 83, 0.1) !important;
-  border-radius: 16px !important;
-  transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-  overflow: hidden;
+/* --- 1. Header 佈局控制 --- */
+.pretest-header-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 1;
-  cursor: pointer;
-  padding: 1.25rem;
+  /* 桌機版維持並排，間距 10px */
+  gap: 10px;
   margin-bottom: 1rem;
 }
 
-/* 懸停：深度懸浮感 + 邊框強化 */
-.unit-card-premium:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 25px rgba(0, 44, 83, 0.12) !important;
-  border-color: #002c53 !important;
-}
-
-/* 背景流光特效 */
-.unit-card-premium::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(0, 44, 83, 0.03),
-    transparent
-  );
-  transition: 0.6s;
-}
-
-.unit-card-premium:hover::before {
-  left: 100%;
-}
-
-/* --- 3. 狀態指示系統 --- */
-.status-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 5px;
-  background: #e2e8f0; /* 預設灰色 */
-  transition: all 0.3s ease;
-}
-
-.unit-card-premium:hover .status-bar {
-  width: 8px;
-}
-
-/* 狀態顏色變換 */
-.is-finished .status-bar {
-  background: #002c53;
-} /* 已完成 */
-.is-planned .status-bar {
-  background: #198754;
-} /* 已規劃 */
-.needs-planning .status-bar {
-  background: #ffc107; /* 需規劃 */
-  box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
-}
-
-/* --- 4. 序號球與裝飾元件 --- */
-.unit-index-badge {
-  width: 38px;
-  height: 38px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  color: #002c53;
-  transition: all 0.3s ease;
-  line-height: 1;
+.pretest-title {
+  margin-bottom: 0 !important;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
-.unit-card-premium:hover .unit-index-badge {
-  background: #002c53;
-  color: #ffffff;
-  transform: rotate(-8deg) scale(1.1);
+/* --- 2. 手機版橫向滾動容器 --- */
+.pretest-tabs-scroll-area {
+  /* 限制寬度並開啟橫向滑動 */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* iOS 滑動流暢感 */
+  max-width: 100%;
+  display: flex;
+  /* 隱藏桌面版可能出現的捲軸空間 */
+  padding-bottom: 4px;
 }
 
-.badge-custom {
-  font-size: 0.75rem;
-  padding: 4px 12px;
-  border-radius: 50px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+/* 隱藏捲軸，保持介面乾淨 */
+.pretest-tabs-scroll-area::-webkit-scrollbar {
+  display: none;
 }
 
-/* 右側箭頭動效 */
-.arrow-wrapper {
-  color: #002c53;
-  opacity: 0.3;
+/* 藥丸型按鈕組容器 */
+.custom-pill-group {
+  display: inline-flex !important; /* 🌟 關鍵：讓容器隨內容撐開，才能滑動 */
+  flex-wrap: nowrap !important; /* 強制禁止換行 */
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 50px !important;
+  border: 1px solid #e2e8f0;
+}
+
+/* 個別分頁按鈕 */
+.tab-btn {
+  border-radius: 50px !important;
+  border: none !important;
+  padding: 0.4rem 1.1rem !important;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap !important; /* 防止文字換行 */
+  flex-shrink: 0 !important; /* 防止按鈕被壓扁 */
   transition: all 0.3s ease;
-  transform: translateX(0);
+  color: #64748b;
 }
 
-.unit-card-premium:hover .arrow-wrapper {
-  opacity: 1;
-  transform: translateX(5px) scale(1.2);
+/* 選中與未選中顏色定義 (請確保 var(--navy-dark) 已定義) */
+.btn-navy {
+  background-color: var(--navy-dark) !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(0, 44, 83, 0.2);
 }
 
-/* --- 5. Modal 彈窗：絕對置中與玻璃擬態 --- */
-.ScheduleModalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 20, 40, 0.4); /* 深藍透明底 */
-  backdrop-filter: blur(10px); /* 玻璃模糊 */
-  z-index: 10000;
-  /* 🌟 強制置中關鍵 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1.5rem;
-  animation: modalIn 0.4s ease-out;
+.btn-outline-navy {
+  color: var(--navy-dark) !important;
+  background: transparent;
 }
 
-.test-result-modal {
-  background: #ffffff;
-  width: 100%;
-  max-width: 650px;
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  max-height: 85vh; /* 確保長問卷不會超出螢幕 */
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  overflow: hidden; /* 確保內部的捲動不會撐破圓角 */
-}
+/* ==========================================================================
+   RWD 響應式優化 (重點修正)
+   ========================================================================== */
 
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    backdrop-filter: blur(0px);
+@media (max-width: 768px) {
+  /* 🌟 手機版排版：標題與按鈕上下排列 */
+  .pretest-header-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
-  to {
-    opacity: 1;
-    backdrop-filter: blur(10px);
+
+  /* 🌟 標題佔滿一行 */
+  .pretest-title {
+    width: 100%;
+    white-space: normal; /* 手機標題若太長允許換行 */
+    font-size: 1rem;
+  }
+
+  /* 🌟 滑動區域寬度設定 */
+  .pretest-tabs-scroll-area {
+    width: 100%;
+    justify-content: flex-start;
+    /* 增加一點左側間距讓視覺不貼邊 */
+    padding-left: 2px;
+  }
+
+  /* 手機按鈕尺寸稍微縮減 */
+  .tab-btn {
+    padding: 0.35rem 0.9rem !important;
+    font-size: 0.8rem;
   }
 }
 
-/* 內部回答區塊微調 */
-.modal-body-custom {
-  padding: 1.5rem;
-  overflow-y: auto;
+/* ==========================================================================
+   3. 學習單元與後測 (Units & Post-test)
+   ========================================================================== */
+.schedule-unit-card {
+  transition: all 0.25s ease;
+  border-left: 5px solid transparent !important;
 }
-
-.bg-light.rounded-3 {
+.schedule-unit-card:hover {
   background-color: #f8fafc !important;
-  border: 1px solid #f1f5f9;
-  transition: transform 0.2s ease;
+  border-left-color: var(--navy-primary) !important;
 }
 
-.bg-light.rounded-3:hover {
-  transform: scale(1.01);
+.pulse-animation {
+  animation: pulse-ring 2s infinite;
 }
 
-/* --- 6. 特效動畫 --- */
-@keyframes pulse-navy {
+@keyframes pulse-ring {
   0% {
     box-shadow: 0 0 0 0 rgba(74, 112, 169, 0.4);
   }
   70% {
-    box-shadow: 0 0 0 12px rgba(74, 112, 169, 0);
+    box-shadow: 0 0 0 10px rgba(74, 112, 169, 0);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(74, 112, 169, 0);
   }
 }
 
-.pulse-animation {
-  animation: pulse-navy 2s infinite;
+/* ==========================================================================
+   4. 彈窗系統 (Modal System) - 手機優化版
+   ========================================================================== */
+.ScheduleModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem; /* 確保手機版邊緣有留白 */
 }
 
-/* --- 7. RWD 響應式優化 --- */
+.test-result-modal {
+  background: white;
+  width: 100%;
+  max-width: 650px;
+  border-radius: 24px;
+  max-height: 85vh; /* 縮小高度比例，防止手機版遮住上下邊緣 */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+/* Header 部分：標籤按鈕優化 */
+.modal-header-custom {
+  padding: 1.5rem;
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* 🌟 核心修正：手機版標籤橫向滑動容器 */
+.btn-group.shadow-xs {
+  display: flex !important;
+  flex-wrap: nowrap !important; /* 禁止換行 */
+  overflow-x: auto; /* 開啟橫滑 */
+  gap: 8px;
+  padding-bottom: 5px;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 隱藏捲軸 */
+.btn-group.shadow-xs::-webkit-scrollbar {
+  display: none;
+}
+
+.btn-group .btn {
+  white-space: nowrap !important; /* 🌟 關鍵：防止文字擠壓換行 */
+  border-radius: 12px !important; /* 獨立圓角，不要連在一起 */
+  padding: 6px 16px !important;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid #e2e8f0 !important;
+  flex: 0 0 auto; /* 防止被 flex 壓縮 */
+}
+
+/* 關閉按鈕 */
+.btn-close-minimal {
+  background: #f8fafc;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.btn-close-minimal:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+/* Body 內容區 */
+.modal-body-custom {
+  padding: 1.5rem;
+  background-color: #ffffff;
+}
+
+/* 🌟 題目卡片與回答框優化 */
+.bg-light.rounded-4 {
+  background-color: #ffffff !important;
+  border: 1px solid #f1f5f9 !important;
+  padding: 1rem !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.answer-box {
+  background: #f8fafc !important; /* 淺灰色背景增加區隔感 */
+  border: 1px solid #e2e8f0 !important;
+  border-left: 5px solid #4a70a9 !important; /* 🌟 只保留左側粗線，視覺更俐落 */
+  border-radius: 10px !important;
+  padding: 12px 16px !important;
+  margin-top: 10px;
+}
+
+.xx-small {
+  font-size: 0.65rem;
+  letter-spacing: 0.05rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.text-navy.fw-800 {
+  color: #1e293b !important;
+  font-size: 1.1rem;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------
+   RWD 響應式優化
+--------------------------------------------------------- */
 @media (max-width: 576px) {
-  .StudentSchedule {
-    margin: 1rem auto;
+  .test-result-modal {
+    width: 95%; /* 讓左右留下一點點縫隙，不要死貼 */
+    border-radius: 20px;
   }
 
-  .unit-card-premium {
-    padding: 1rem;
-    flex-wrap: wrap; /* 手機版內容自動換行 */
+  .modal-header-custom {
+    padding: 1.25rem 1rem;
   }
 
-  .unit-index-badge {
-    width: 32px;
-    height: 32px;
-    font-size: 0.8rem;
+  .modal-body-custom {
+    padding: 1.25rem 1rem;
   }
 
-  /* 手機版文字換行與間距處理 */
-  .unit-card-premium > div:nth-child(2) {
-    width: calc(100% - 80px);
-    padding-left: 0.5rem;
+  .fw-bold.text-navy.mb-0 {
+    font-size: 1.1rem;
   }
+}
 
-  .badge-custom {
-    display: inline-block;
-    margin-top: 5px;
+/* ==========================================================================
+   5. 響應式優化 (RWD)
+   ========================================================================== */
+
+/* 平板尺寸 (768px 以下) */
+@media (max-width: 768px) {
+  .modal-header-custom {
+    padding: 1.25rem;
+  }
+  .modal-body-custom {
+    padding: 1.25rem;
   }
 
   .test-result-modal {
-    max-height: 90vh; /* 手機版彈窗佔比稍大 */
+    max-height: 95vh;
     border-radius: 20px;
+  }
+
+  .d-flex.justify-content-between.align-items-start {
+    flex-direction: column; /* 彈窗內 Header 標題與按鈕垂直排列 */
+  }
+
+  .btn-close-minimal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
   }
 }
 
-/* 滾動條美化 */
+/* 手機尺寸 (576px 以下) */
+@media (max-width: 576px) {
+  .StudentSchedule {
+    padding: 0.75rem !important;
+  }
+
+  .fw-800 {
+    font-size: 1rem;
+  } /* 縮小標題字體 */
+
+  .p-3.border.rounded-4 {
+    padding: 1rem !important; /* 縮小卡片內距 */
+  }
+
+  .action-icon-circle {
+    width: 35px;
+    height: 35px;
+  }
+
+  .btn-group-sm > .btn {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.75rem;
+  }
+
+  /* 調整單元列表中的徽章顯示 */
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.35rem 0.65rem;
+  }
+}
+
+/* 捲動條美化 */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 動畫庫整合 */
+.fade-enter-active,
+.fade-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.fade-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
 }

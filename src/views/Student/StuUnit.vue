@@ -800,7 +800,7 @@ const router = useRouter();
 const showMonitor = ref(false);
 const showEvalModal = ref(false);
 const activeTab = ref("material");
-const unitTitle = ref("正在載入...");
+const unitTitle = ref("");
 const isMonitorLoading = ref(false);
 const isContentLoading = ref(false);
 const lastUpdateTime = ref("");
@@ -1118,61 +1118,81 @@ const initSrlEnvironment = async () => {
     }
 
     // 4. 獲取單元詳細資料 (教材、測驗等)
+    // 4. 獲取單元詳細資料 (教材、測驗等)
     const unitSnap = await get(dbRef(rtdb, unitPath));
+
     if (unitSnap.exists()) {
       const uData = unitSnap.val();
+
+      // 🌟 修正點 1：立即更新標題並紀錄行為，確保 Log 與當前單元一致
       unitTitle.value = uData.title || "未命名單元";
 
-      // 批量讀取 (保持原 Promise.all 邏輯)
-      const [mSnaps, eSnaps, aSnaps, fSnaps] = await Promise.all([
-        uData.materials
-          ? Promise.all(
-              uData.materials.map((mid) =>
-                get(dbRef(rtdb, `${coursePath}/materials/${mid}`)),
-              ),
-            )
-          : [],
-        uData.exams
-          ? Promise.all(
-              uData.exams.map((eid) =>
-                get(dbRef(rtdb, `${coursePath}/exams/${eid}`)),
-              ),
-            )
-          : [],
-        uData.assignments
-          ? Promise.all(
-              uData.assignments.map((aid) =>
-                get(dbRef(rtdb, `${coursePath}/assignments/${aid}`)),
-              ),
-            )
-          : [],
-        uData.forums
-          ? Promise.all(
-              uData.forums.map((fid) =>
-                get(dbRef(rtdb, `${coursePath}/discussions/${fid}`)),
-              ),
-            )
-          : [],
-      ]);
+      recordAction(props.courseId, `進入單元頁面：${unitTitle.value}`, {
+        unitId: props.id,
+        plannedTime: srlSession.value?.targetTime,
+        isLocked: isLocked.value,
+      });
 
-      unitMaterials.value = mSnaps
-        .filter((s) => s.exists())
-        .map((s) => ({ id: s.key, ...s.val() }));
-      unitExams.value = eSnaps
-        .filter((s) => s.exists())
-        .map((s) => ({ id: s.key, ...s.val() }));
-      unitAssignments.value = aSnaps
-        .filter((s) => s.exists())
-        .map((s) => ({ id: s.key, ...s.val() }));
-      unitForums.value = fSnaps
-        .filter((s) => s.exists())
-        .map((s) => ({ id: s.key, ...s.val() }));
+      try {
+        // 批量讀取 (保持原 Promise.all 邏輯，但增加空陣列保護)
+        const [mSnaps, eSnaps, aSnaps, fSnaps] = await Promise.all([
+          uData.materials && Array.isArray(uData.materials)
+            ? Promise.all(
+                uData.materials.map((mid) =>
+                  get(dbRef(rtdb, `${coursePath}/materials/${mid}`)),
+                ),
+              )
+            : [],
+          uData.exams && Array.isArray(uData.exams)
+            ? Promise.all(
+                uData.exams.map((eid) =>
+                  get(dbRef(rtdb, `${coursePath}/exams/${eid}`)),
+                ),
+              )
+            : [],
+          uData.assignments && Array.isArray(uData.assignments)
+            ? Promise.all(
+                uData.assignments.map((aid) =>
+                  get(dbRef(rtdb, `${coursePath}/assignments/${aid}`)),
+                ),
+              )
+            : [],
+          uData.forums && Array.isArray(uData.forums)
+            ? Promise.all(
+                uData.forums.map((fid) =>
+                  get(dbRef(rtdb, `${coursePath}/discussions/${fid}`)),
+                ),
+              )
+            : [],
+        ]);
 
-      if (unitMaterials.value.length > 0) {
-        unitContent.value =
-          unitMaterials.value.find((m) => m.fileUrl?.includes(".mp4")) ||
-          unitMaterials.value[0];
+        // 🌟 修正點 2：清空舊資料再賦值，防止切換單元時資料殘留「多一個」
+        unitMaterials.value = mSnaps
+          .filter((s) => s && s.exists())
+          .map((s) => ({ id: s.key, ...s.val() }));
+        unitExams.value = eSnaps
+          .filter((s) => s && s.exists())
+          .map((s) => ({ id: s.key, ...s.val() }));
+        unitAssignments.value = aSnaps
+          .filter((s) => s && s.exists())
+          .map((s) => ({ id: s.key, ...s.val() }));
+        unitForums.value = fSnaps
+          .filter((s) => s && s.exists())
+          .map((s) => ({ id: s.key, ...s.val() }));
+
+        // 預設選中教材邏輯
+        if (unitMaterials.value.length > 0) {
+          unitContent.value =
+            unitMaterials.value.find((m) =>
+              m.fileUrl?.toLowerCase().includes(".mp4"),
+            ) || unitMaterials.value[0];
+        }
+      } catch (batchError) {
+        console.error("🔥 批量讀取單元組件失敗:", batchError);
       }
+    } else {
+      // 若單元不存在的處理
+      unitTitle.value = "找不到該單元";
     }
 
     // 5. 啟動監控 (確保在功能開關讀取後才啟動)
