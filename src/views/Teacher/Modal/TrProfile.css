@@ -1,119 +1,169 @@
-/* 教師個人設定彈窗主題樣式 */
+/* ==========================================================================
+   教師個人設定彈窗 (TrProfile) 精緻化更新
+   ========================================================================== */
 
+/* 1. 遮罩層 (Overlay) - 增加毛玻璃與深層視覺 */
 .TrProfile.TrProfile-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(5px);
-  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(10px); /* 🌟 稍微加強模糊感，更有質感 */
+  z-index: 3000;
+  display: flex !important;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
 }
 
+/* 2. 彈窗本體 (Card) */
 .TrProfile .TrProfile-card {
   width: 95%;
   max-width: 550px;
-  background: white;
-  border-radius: 20px;
+  background-color: #ffffff;
+  border-radius: 30px; /* 圓角調整得更圓潤 */
   overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+  border: none;
+  position: relative;
 }
 
+/* 3. 標題區 (Header) */
 .TrProfile .TrProfile-header {
-  padding: 24px;
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.TrProfile .avatar-circle-white {
-  width: 50px;
-  height: 50px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-/* 選項按鈕樣式 */
-.TrProfile .btn-option {
-  padding: 8px 16px;
-  border-radius: 50px;
-  border: 1px solid #dee2e6;
-  background: white;
-  color: #6c757d;
-  font-size: 0.9rem;
-  transition: 0.2s;
-}
-
-.TrProfile .btn-option:hover {
-  background: #f8f9fa;
-}
-
-.TrProfile .btn-option.active {
-  background: #4a70a9;
-  border-color: #4a70a9;
-  color: white;
-  font-weight: bold;
-}
-
-.TrProfile .xx-small {
-  font-size: 0.75rem;
-}
-
-/* 統一關閉按鈕設計封裝 */
 .TrProfile .btn-close-red {
-  background: none;
+  background: none !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.3s ease;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff !important;
-  font-weight: bold;
-  opacity: 1;
-
-  /* 互動平滑度 */
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+  border-radius: 50%;
 }
 
-/* Hover 互動效果：稍微放大並旋轉 90 度 */
 .TrProfile .btn-close-red:hover {
-  color: #bf4646 !important; /* 深一點點的紅色增加層次 */
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff !important;
   transform: rotate(90deg);
-  font-weight: bold;
-  opacity: 0.8;
 }
 
-/* 移除點擊時的藍色外框 */
-.TrProfile .btn-close-red:focus {
-  box-shadow: none;
+/* 4. 內容區 (Body) */
+.TrProfile .TrProfile-body {
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 32px !important; /* 🌟 增加內距，不擁擠 */
+}
+
+/* 5. 表單元件美化 */
+.TrProfile .section-title {
+  font-size: 1.1rem;
+  color: #4a70a9;
+  letter-spacing: 0.5px;
+}
+
+.TrProfile .form-control {
+  background-color: #ffffff;
+  border: 1px solid rgba(74, 112, 169, 0.1); /* 🌟 淺藍色邊框取代死黑 */
+  border-radius: 15px;
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.TrProfile .form-control:focus {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(74, 112, 169, 0.12);
+  border-color: #4a70a9;
   outline: none;
 }
 
-/* 確保 X 在深色背景下清晰 */
-.TrProfile .text-white {
-  color: #ffffff !important;
+/* 6. 選項按鈕 (修正圖片中生硬的黑框) */
+.TrProfile .btn-option {
+  padding: 10px 22px;
+  border-radius: 50px;
+  border: 1.5px solid #dee2e6; /* 🌟 使用淺灰邊框 */
+  background: white;
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  margin-right: 4px;
 }
 
-/* RWD 微調 */
+.TrProfile .btn-option:hover {
+  border-color: #4a70a9;
+  color: #4a70a9;
+  background-color: rgba(74, 112, 169, 0.05);
+}
+
+.TrProfile .btn-option.active {
+  background-color: #4a70a9 !important;
+  border-color: #4a70a9 !important;
+  color: white !important;
+  box-shadow: 0 6px 15px rgba(74, 112, 169, 0.25);
+  transform: translateY(-2px); /* 🌟 點選後微上浮 */
+}
+
+/* 7. 儲存按鈕增強 */
+.TrProfile .btn.rounded-pill {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-size: 1.05rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(74, 112, 169, 0.2);
+}
+
+.TrProfile .btn.rounded-pill:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(74, 112, 169, 0.35);
+}
+
+/* 8. RWD 響應式優化 (手機版底部抽屜) */
 @media (max-width: 576px) {
-  .TrProfile .TrProfile-header {
-    padding: 16px;
+  .TrProfile .TrProfile-card {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 30px 30px 0 0 !important;
+    animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
   }
-  .TrProfile .TrProfile-body {
+
+  .TrProfile .TrProfile-header {
     padding: 20px;
   }
 }
 
-/* 動畫效果 */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
+
+/* 其他細節 */
+.TrProfile .custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.TrProfile .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(74, 112, 169, 0.2);
+  border-radius: 10px;
+}
+.TrProfile .xx-small {
+  font-size: 0.75rem;
+  color: #888;
 }

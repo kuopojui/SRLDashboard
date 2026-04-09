@@ -1,70 +1,134 @@
-/* --- PrePost 共用視覺規範 --- */
+/* ==========================================================================
+   前測問卷容器
+   ========================================================================== */
 .PrePost-Container {
-  --navy: #3a5a8a;
-  --navy-dark: #2d456b;
-  --bg-light: #f8fafc;
-  --white: #ffffff;
-  background-color: var(--white);
+  background-color: #efece3; /* 統一背景米色 */
+  scroll-behavior: smooth;
 }
 
-.PrePost-Container .text-navy {
-  color: var(--navy) !important;
-}
-.PrePost-Container .bg-navy {
-  background-color: var(--navy) !important;
-}
-
-/* 頂部進度條 */
+/* 導覽列與進度條 */
 .test-header {
-  border-bottom: 2px solid #f1f5f9;
-  z-index: 1020;
+  border-bottom: 1px solid rgba(74, 112, 169, 0.1);
+}
+.bg-navy,
+.text-navy {
+  color: #4a70a9 !important;
+}
+.bg-navy {
+  background-color: #4a70a9 !important;
 }
 
-.progress {
-  background-color: #eef2f7;
-  border-radius: 10px;
-}
-
-.progress-bar {
-  transition: width 0.4s ease;
-}
-
-/* 題目卡片設計 */
+/* 題目卡片基礎樣式 */
 .question-card {
-  transition: all 0.3s ease;
   border: 2px solid transparent !important;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-.question-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(58, 90, 138, 0.08) !important;
+/* 🌟 已回答卡片的效果：左側指示條 */
+.answered-card {
+  border-left: 8px solid #4a70a9 !important;
+  background-color: #fcfcfc !important;
+  box-shadow: 0 10px 25px rgba(74, 112, 169, 0.08) !important;
 }
 
-/* Likert 量表樣式 */
-.likert-option .form-check-input {
-  width: 1.8rem;
-  height: 1.8rem;
+/* --- 李克特量表設計 --- */
+.scale-guide {
+  font-size: 0.75rem;
+  color: #4a70a9;
+  font-weight: 800;
+  background: rgba(74, 112, 169, 0.08);
+  padding: 4px 14px;
+  border-radius: 50px;
+}
+
+.likert-option {
+  flex: 1;
+}
+
+.likert-option .option-label {
   cursor: pointer;
-  border: 2px solid #cbd5e1;
+  width: 100%;
+  display: block;
+}
+
+.likert-option .form-check-input {
+  width: 1.6rem;
+  height: 1.6rem;
+  cursor: pointer;
+  border: 2px solid #dee2e6;
+  transition: transform 0.2s;
 }
 
 .likert-option .form-check-input:checked {
-  background-color: var(--navy);
-  border-color: var(--navy);
+  background-color: #4a70a9;
+  border-color: #4a70a9;
+  transform: scale(1.1);
 }
 
-/* 答題回饋動畫 */
-.answered-card {
-  border-left: 5px solid var(--navy) !important;
-  background-color: #f0f4f8 !important;
+/* --- 🌟 填充題輸入框設計 --- */
+.custom-textarea {
+  display: block !important;
+  width: 100% !important;
+  background-color: #f8f9fa !important;
+  border: 2px solid #edf0f2 !important;
+  border-radius: 18px !important;
+  padding: 18px !important;
+  font-size: 1rem;
+  color: #2c3e50;
+  transition: all 0.3s ease;
+  min-height: 140px;
 }
 
-/* RWD 適配 */
+.custom-textarea:focus {
+  background-color: #ffffff !important;
+  border-color: #4a70a9 !important;
+  box-shadow: 0 0 0 5px rgba(74, 112, 169, 0.12) !important;
+  outline: none;
+}
+
+/* --- 提交按鈕設計 --- */
+.btn-navy {
+  background-color: #4a70a9 !important;
+  color: white !important;
+  border: none;
+  transition: all 0.3s;
+}
+
+.btn-navy:hover:not(:disabled) {
+  background-color: #3a5a8a !important;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(74, 112, 169, 0.3) !important;
+}
+
+.btn-navy:disabled {
+  background-color: #adb5bd !important;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* --- RWD 手機版優化 --- */
 @media (max-width: 576px) {
+  .question-card {
+    padding: 1.25rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .scale-guide {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+
   .likert-container {
     padding: 0 !important;
   }
-  .likert-option label {
-    font-size: 0.7rem;
+
+  .likert-option .form-check-input {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+
+  .custom-textarea {
+    padding: 12px !important;
+    border-radius: 14px !important;
   }
 }

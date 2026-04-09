@@ -392,7 +392,9 @@
 
                       <div v-else-if="unitContent" class="material-active-area">
                         <div
-                          v-if="unitContent.fileUrl?.includes('.mp4')"
+                          v-if="
+                            unitContent.fileUrl?.toLowerCase().includes('.mp4')
+                          "
                           class="video-section mb-4"
                         >
                           <div
@@ -409,16 +411,82 @@
                             ></video>
                           </div>
                           <div
-                            class="p-3 border border-top-0 rounded-bottom-4 d-flex justify-content-between align-items-center bg-white"
+                            class="p-3 border border-top-0 rounded-bottom-4 d-flex justify-content-between align-items-center bg-white text-start"
                           >
                             <h6 class="fw-bold mb-0 text-navy">
-                              {{ unitContent.title }}
+                              <i class="bi bi-play-btn me-2"></i
+                              >{{ unitContent.title }}
                             </h6>
                             <span
                               class="badge bg-primary-subtle text-primary border border-primary-subtle"
                             >
-                              已觀看：{{ traceData.videoMins.toFixed(1) }} min
+                              影片觀看：{{ traceData.videoMins.toFixed(1) }} min
                             </span>
+                          </div>
+                        </div>
+
+                        <div
+                          v-else-if="
+                            unitContent.materialType === 'reading' ||
+                            unitContent.fileUrl === 'reading_mode'
+                          "
+                          class="reading-prompt-section mb-4"
+                        >
+                          <div
+                            class="card border-0 shadow-sm rounded-4 overflow-hidden"
+                          >
+                            <div
+                              class="card-header bg-success-subtle border-0 p-3 d-flex justify-content-between align-items-center"
+                            >
+                              <span class="fw-bold text-success small">
+                                <i class="bi bi-book-half me-2"></i
+                                >此為線下教材讀書 (計時中)
+                              </span>
+                              <span
+                                class="badge bg-white text-success border border-success-subtle"
+                              >
+                                累計時間：{{
+                                  traceData.readingMins.toFixed(1)
+                                }}
+                                min
+                              </span>
+                            </div>
+                            <div class="card-body p-4 bg-white text-start">
+                              <div
+                                class="teacher-instruction-box p-4 rounded-4 shadow-sm"
+                                style="
+                                  background-color: #fdfdfd;
+                                  border: 1px solid #e9ecef;
+                                  border-left: 6px solid #198754;
+                                "
+                              >
+                                <h6 class="fw-bold text-dark mb-3">
+                                  <i
+                                    class="bi bi-chat-left-quote-fill text-success me-2"
+                                  ></i
+                                  >教師學習指引：
+                                </h6>
+                                <p
+                                  class="fs-6 text-secondary mb-0 leading-relaxed"
+                                  style="white-space: pre-wrap"
+                                >
+                                  {{
+                                    unitContent.description ||
+                                    "請依照老師提供的紙本教材或指定章節進行閱讀學習。"
+                                  }}
+                                </p>
+                              </div>
+                              <div
+                                class="mt-3 py-2 px-3 bg-light rounded-3 d-flex align-items-center"
+                              >
+                                <i
+                                  class="bi bi-info-circle text-muted me-2 small"
+                                ></i>
+                                <span class="text-muted small italic"
+                                  >系統提示：此單元旨在導引實體閱讀，不提供檔案下載。</span
+                                >
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -434,20 +502,22 @@
                             <div
                               class="card-header bg-navy text-white p-3 d-flex justify-content-between align-items-center"
                             >
-                              <span class="fw-bold small"
-                                ><i class="bi bi-file-earmark-pdf me-2"></i
-                                >{{ unitContent.title }}</span
-                              >
+                              <span class="fw-bold small">
+                                <i class="bi bi-file-earmark-pdf me-2"></i
+                                >{{ unitContent.title }}
+                              </span>
                               <span
                                 class="badge bg-info-subtle text-info border border-info-subtle"
                               >
-                                閱讀計時：{{ traceData.readingMins.toFixed(1) }}
+                                閱讀計時：{{
+                                  traceData.readingMins.toFixed(1)
+                                }}
                                 min
                               </span>
                             </div>
                             <div
                               class="card-body p-0 bg-light"
-                              style="height: 55vh"
+                              style="height: 60vh"
                             >
                               <iframe
                                 :src="unitContent.fileUrl"
@@ -459,7 +529,13 @@
                           </div>
                         </div>
 
-                        <div v-else class="download-section mb-4">
+                        <div
+                          v-else-if="
+                            unitContent.fileUrl &&
+                            unitContent.fileUrl !== 'reading_mode'
+                          "
+                          class="download-section mb-4"
+                        >
                           <div
                             class="card border-dashed p-5 text-center bg-white rounded-4 shadow-sm"
                           >
@@ -470,44 +546,53 @@
                               {{ unitContent.title }}
                             </h5>
                             <p class="text-muted small mb-4">
-                              此文件格式無法在線上預覽，請下載學習。
+                              此文件格式無法直接預覽，請點擊下方按鈕下載學習。
                             </p>
                             <button
                               @click="handleDownload(unitContent)"
-                              class="btn btn-navy rounded-pill px-4"
+                              class="btn btn-navy rounded-pill px-5"
                             >
-                              <i class="bi bi-cloud-download me-2"></i>下載文件
+                              <i class="bi bi-cloud-download me-2"></i
+                              >下載學習文件
                             </button>
                           </div>
                         </div>
 
-                        <div class="material-list-section mt-4">
+                        <div class="material-list-section mt-4 text-start">
                           <label class="section-label-v2 mb-2"
                             >單元教材清單</label
                           >
-                          <div class="list-group rounded-3 border-0 shadow-sm">
+                          <div
+                            class="list-group rounded-4 border-0 shadow-sm overflow-hidden"
+                          >
                             <button
                               v-for="(mat, mIdx) in unitMaterials"
                               :key="mIdx"
-                              class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-light"
+                              class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3"
                               :class="{
                                 'active bg-navy-light text-navy fw-bold':
-                                  unitContent.fileUrl === mat.fileUrl,
+                                  unitContent.id === mat.id,
                               }"
                               @click="switchMaterial(mat)"
                             >
                               <div class="d-flex align-items-center small">
                                 <i
-                                  :class="
-                                    mat.fileUrl?.includes('.mp4')
+                                  :class="[
+                                    mat.fileUrl?.toLowerCase().includes('.mp4')
                                       ? 'bi bi-play-circle-fill me-3'
-                                      : 'bi bi-file-earmark-text me-3'
-                                  "
+                                      : mat.fileUrl
+                                            ?.toLowerCase()
+                                            .includes('.pdf')
+                                        ? 'bi bi-file-earmark-pdf-fill me-3 text-danger'
+                                        : mat.materialType === 'reading'
+                                          ? 'bi bi-book-half me-3 text-success'
+                                          : 'bi bi-file-earmark-arrow-down me-3',
+                                  ]"
                                 ></i>
                                 <span>{{ mat.title }}</span>
                               </div>
                               <i
-                                v-if="unitContent.fileUrl === mat.fileUrl"
+                                v-if="unitContent.id === mat.id"
                                 class="bi bi-check-circle-fill text-primary"
                               ></i>
                             </button>
@@ -892,7 +977,7 @@ const scoreGap = computed(
 
 // --- 6. 事件處理與計時邏輯 ---
 
-// --- 1. 教材切換邏輯 (強化行為追蹤) ---
+// --- 1. 教材切換邏輯 (強化行為追蹤與類型識別) ---
 const switchMaterial = (mat) => {
   if (!mat) return;
 
@@ -900,19 +985,31 @@ const switchMaterial = (mat) => {
   unitContent.value = mat;
   lastTrackTime.value = 0; // 重置影片追蹤起點
 
-  // 2. 🌟 關鍵更新：將教材名稱直接鑲嵌進「行為標題」中
-  // 這樣在 Console 或資料庫中會顯示如：「切換學習教材：影片測試1」
+  // 🌟 核心更新：根據資料庫結構進行精準類型判定
+  let currentType = "file"; // 預設為普通文件
+  const url = mat.fileUrl?.toLowerCase() || "";
+
+  if (url.includes(".mp4")) {
+    currentType = "video";
+  }
+  // 優先判定線下讀書：對應資料庫中的 materialType: "reading"
+  else if (mat.materialType === "reading" || url === "reading_mode") {
+    currentType = "reading";
+  } else if (url.includes(".pdf")) {
+    currentType = "pdf";
+  }
+
+  // 2. 紀錄行為 (紀錄精確的教材類型用於後續分析)
   recordAction(props.courseId, `切換學習教材：${mat.title}`, {
     unitId: props.id,
-    materialId: mat.id || mat.firebaseKey, // 紀錄教材唯一識別碼
-    materialTitle: mat.title, // 同時保留在 metadata 中方便後續分析
-    materialType: mat.fileUrl?.toLowerCase().includes(".mp4")
-      ? "video"
-      : "document",
+    materialId: mat.id || mat.firebaseKey,
+    materialTitle: mat.title,
+    materialType: currentType, // 將存入 "video", "reading", "pdf", 或 "file"
     timestamp: Date.now(),
   });
 
-  // 3. 重新啟動計時器 (PDF 類啟動閱讀計時，影片則由 handleVideoProgress 處理)
+  // 3. 重新啟動計時器
+  // 影片類會由影片播放器的 timeupdate 處理，非影片類則啟動閱讀計時
   manageReadingTimer();
 };
 
@@ -947,15 +1044,24 @@ const handleVideoProgress = () => {
 
 const manageReadingTimer = () => {
   if (readingTimer) clearInterval(readingTimer);
-  if (
+
+  // 🌟 判定條件：必須在教材分頁、有教材內容、且類型不是影片
+  const isReadingMode =
     activeTab.value === "material" &&
     unitContent.value &&
-    !unitContent.value.fileUrl?.includes(".mp4")
-  ) {
+    (unitContent.value.type === "reading" ||
+      !unitContent.value.fileUrl?.toLowerCase().includes(".mp4"));
+
+  if (isReadingMode) {
     readingTimer = setInterval(() => {
       if (!traceData.value.readingMins) traceData.value.readingMins = 0;
+
+      // 累積閱讀分鐘數
       traceData.value.readingMins += 1 / 60;
+
       const currentSecs = Math.floor(traceData.value.readingMins * 60);
+
+      // 每 15 秒同步一次到 Firebase，確保數據持久化
       if (currentSecs > 0 && currentSecs % 15 === 0) {
         update(dbRef(rtdb, tracePath.value), {
           readingMins: traceData.value.readingMins,
@@ -995,10 +1101,12 @@ const handleDownload = (mat) => {
   window.open(mat.fileUrl, "_blank");
 };
 
-// --- 🌟 修正：儲存筆記與行為紀錄 ---
+// --- 🌟 修正：儲存筆記與行為紀錄 (統一存放在單元節點) ---
 const handleSaveNote = async () => {
-  // 防呆：如果沒輸入內容就不紀錄
-  if (!noteText.value.trim()) {
+  const content = noteText.value.trim();
+
+  // 1. 防呆：如果沒輸入內容就不紀錄
+  if (!content) {
     Swal.fire({
       title: "請輸入筆記內容",
       icon: "warning",
@@ -1010,19 +1118,21 @@ const handleSaveNote = async () => {
   }
 
   try {
-    const tracePath = `student_traces/${props.userId}_${props.id}`;
+    // 🌟 修正路徑：統一存放在 課程 -> 單元 -> student_traces -> [學生ID] 之下
+    // 此路徑能確保筆記與該單元的 readingMins, totalSeconds 等數據整合在一起
+    const tracePath = `courses/${props.courseId}/units/${props.id}/student_traces/${props.userId}`;
 
-    // 1. 實際存檔到 Firebase (確保老師看得到內容)
-    // 修正前：const tracePath = `student_traces/${props.userId}_${props.id}`;
-    await update(dbRef(rtdb, tracePath.value), {
-      note: noteText.value,
+    // 2. 實際存檔到 Firebase (移除原本錯誤的 .value)
+    // 修正點：tracePath 是字串，直接傳入 dbRef 即可
+    await update(dbRef(rtdb, tracePath), {
+      note: content,
       lastActive: serverTimestamp(),
     });
 
-    // 2. 紀錄 Log 行為 (用於 SRL 行為路徑分析)
+    // 3. 紀錄 Log 行為 (用於 SRL 行為路徑分析)
     recordAction(props.courseId, "儲存學習筆記", {
       unitId: props.id,
-      contentLength: noteText.value.length,
+      contentLength: content.length, // 紀錄字數有助於分析學生的監控深度
     });
 
     // 成功提示
@@ -1035,7 +1145,14 @@ const handleSaveNote = async () => {
       showConfirmButton: false,
     });
   } catch (e) {
-    console.error("筆記儲存失敗:", e);
+    console.error("❌ 筆記儲存失敗:", e);
+
+    // 紀錄失敗 Log 供除錯參考
+    recordAction(props.courseId, "筆記儲存失敗", {
+      unitId: props.id,
+      errorMessage: e.message,
+    });
+
     Swal.fire("錯誤", "儲存失敗，請檢查網路連線", "error");
   }
 };

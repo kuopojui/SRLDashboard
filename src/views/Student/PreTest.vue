@@ -5,13 +5,17 @@
         <h5 class="fw-bold text-navy mb-0">
           <i class="bi bi-file-earmark-medical me-2"></i>實驗前測問卷
         </h5>
-        <div class="small text-muted">
-          已完成：{{ answeredCount }} / {{ questions.length }}
+        <div class="small text-muted fw-bold">
+          已完成：<span class="text-navy">{{ answeredCount }}</span> /
+          {{ questions.length }}
         </div>
       </div>
-      <div class="progress mt-3 mx-auto container p-0" style="height: 6px">
+      <div
+        class="progress mt-3 mx-auto container p-0"
+        style="height: 8px; border-radius: 10px"
+      >
         <div
-          class="progress-bar bg-navy"
+          class="progress-bar bg-navy progress-bar-striped progress-bar-animated"
           :style="{ width: progress + '%' }"
         ></div>
       </div>
@@ -23,56 +27,77 @@
           <div
             v-for="(q, idx) in questions"
             :key="idx"
-            class="question-card p-4 mb-4 rounded-4 shadow-sm bg-light"
+            class="question-card p-4 mb-4 rounded-4 shadow-sm bg-white"
             :class="{
               'answered-card':
                 answers[idx] !== '' && answers[idx] !== undefined,
             }"
           >
-            <h6 class="fw-bold mb-4 text-dark">{{ idx + 1 }}. {{ q.text }}</h6>
+            <h6 class="fw-bold mb-4 text-dark d-flex">
+              <span class="me-2 text-navy">Q{{ idx + 1 }}.</span>
+              <span>{{ q.text }}</span>
+            </h6>
 
             <div
-              v-if="q.type.startsWith('likert')"
-              class="likert-container d-flex justify-content-between px-md-3"
+              v-if="q.type && q.type.startsWith('likert')"
+              class="likert-wrapper"
             >
               <div
-                v-for="n in q.scale ||
-                parseInt(q.type.replace('likert', '')) ||
-                5"
-                :key="n"
-                class="likert-option text-center"
+                class="likert-label-row d-flex justify-content-between mb-3 px-1"
               >
-                <input
-                  type="radio"
-                  :name="'pre' + idx"
-                  v-model="answers[idx]"
-                  :value="n"
-                  class="form-check-input mb-2"
-                />
-                <label
-                  class="d-block small text-muted"
-                  style="font-size: 10px"
-                  >{{ n }}</label
+                <span class="scale-guide">1 非常不同意</span>
+                <span class="scale-guide">5 非常同意</span>
+              </div>
+
+              <div
+                class="likert-container d-flex justify-content-between px-md-4"
+              >
+                <div
+                  v-for="n in q.scale ||
+                  parseInt(q.type.replace('likert', '')) ||
+                  5"
+                  :key="n"
+                  class="likert-option text-center"
                 >
+                  <label class="option-label">
+                    <input
+                      type="radio"
+                      :name="'pre' + idx"
+                      v-model="answers[idx]"
+                      :value="n"
+                      class="form-check-input mb-2"
+                    />
+                    <span class="d-block small text-muted fw-bold">{{
+                      n
+                    }}</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <textarea
-              v-else-if="q.type === 'essay' || q.type === 'text'"
-              v-model="answers[idx]"
-              class="form-control border-0 rounded-3"
-              rows="3"
-              placeholder="請輸入您的回答..."
-            ></textarea>
+            <div v-else class="essay-wrapper mt-2">
+              <textarea
+                v-model="answers[idx]"
+                class="form-control custom-textarea"
+                rows="4"
+                placeholder="請點擊此處輸入您的回答內容..."
+              ></textarea>
+            </div>
           </div>
 
-          <button
-            class="btn btn-navy w-100 py-3 rounded-pill fw-bold shadow mt-4"
-            :disabled="!isComplete || loading"
-            @click="submit"
-          >
-            {{ isComplete ? "提交前測並開始學習" : "請回答所有題目" }}
-          </button>
+          <div class="submit-section pb-5">
+            <button
+              class="btn btn-navy w-100 py-3 rounded-pill fw-bold shadow-lg mt-4"
+              :disabled="!isComplete || loading"
+              @click="submit"
+            >
+              <i class="bi bi-check-circle me-2"></i>
+              {{ isComplete ? "提交前測並開始學習" : "請填寫所有題目以繼續" }}
+            </button>
+            <p v-if="!isComplete" class="text-center text-muted mt-3 small">
+              還有 {{ questions.length - answeredCount }} 題尚未回答
+            </p>
+          </div>
         </div>
       </div>
     </main>

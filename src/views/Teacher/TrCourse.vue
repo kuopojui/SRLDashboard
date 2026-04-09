@@ -1,5 +1,5 @@
 <template>
-  <div class="CoursePage d-flex min-vh-100" style="background-color: #efece3">
+  <div class="CoursePage d-flex min-vh-100">
     <aside
       class="sidebar d-lg-flex flex-column py-4 shadow"
       :class="{ 'sidebar-open': sidebarOpen, 'd-none': !sidebarOpen }"
@@ -107,9 +107,9 @@
                   <small class="d-block text-muted" style="font-size: 10px"
                     >邀請碼</small
                   >
-                  <span class="font-monospace fw-bold text-navy fs-6">
-                    {{ course.joinCode }}
-                  </span>
+                  <span class="font-monospace fw-bold text-navy fs-6">{{
+                    course.joinCode
+                  }}</span>
                 </div>
                 <div class="text-navy opacity-50">
                   <i class="bi bi-chevron-right"></i>
@@ -123,7 +123,8 @@
 
     <div
       v-if="showModal"
-      class="CoursePage modal-overlay d-flex align-items-center justify-content-center"
+      class="CoursePage modal-overlay"
+      @click.self="showModal = false"
     >
       <div
         class="modal-content-custom bg-white p-4 rounded-4 shadow-lg animate__animated animate__zoomIn"
